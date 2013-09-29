@@ -2,14 +2,28 @@
 'use strict';
 
 /**
- * Deps
+ * Dependencies
  */
 var request = require('superagent');
 var express = require('express');
+var request = require('superagent');
+var url = require('url');
+
+/**
+ * Local Vars
+ */
 var app = module.exports = express();
+var port = process.env.PORT || 5000;
+var baseUrl = process.env.BASE_URL || 'localhost:' + port;
 
-
+/**
+ * Express Configuration
+ */
 app.use(express.bodyParser());
+app.use(express.static(__dirname + '/assets'));
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
 
 
 //BAD NEWS: SCRIPT ALERTS ONLY PASS PARAMETERS.
@@ -38,14 +52,40 @@ MVP1
  *
  */
 
-//dumb console.log for now
-app.get('/', function(req, res){
-  
-  console.log(req.query);
-  res.send(req.query);
+app.get('/', function(req, res, next){
+  res.format({
+    /**
+     * Dashboard View
+     */
+    'text/html': function() {
+      return request
+        .get(baseUrl)
+        .set('Accept', 'application/json')
+        .end(function(response) {
+          return res.render('dashboard', { appData : response.body });
+        });
+    },
 
+    /**
+     * JSON View
+     * It seems like this might be consumed, so
+     * I assume we could just rely on the accept header.
+     * Would a separate "API" be better?
+     */
+    'application/json': function() {
+      return res.send([
+        { "name" : "fs-home-prod", "status" : "good" },
+        { "name" : "fs-home-test", "status" : "busy" },
+        { "name" : "fs-search-prod", "status" : "down" },
+        { "name" : "fs-search-test", "status" : "good" }
+      ]);
+    }
+  });
 });
 
+/**
+ * Adding statuses to the log
+ */
 app.post('/', function(req, res){
   // console.log("req.body", req.body);
   console.log("req.body", req.body);
@@ -53,10 +93,14 @@ app.post('/', function(req, res){
   // console.log("req.body.username", req.body.username);
   //res.send(req.body);
   res.send(200);
-
 });
 
-var port = process.env.PORT || 5000;
+/**
+ * Serve superagent to the browser, when necessary
+ */
+// app.get('/js/superagent.js', function(req, res, next) {
+//   res.sendfile(__dirname + '/node_modules/superagent/superagent.js');
+// });
 
 app.listen(port, function() {
   console.log("Listening on " + port);
@@ -64,6 +108,9 @@ app.listen(port, function() {
 
 
 /**
+ * Splunk alert:
+ req.body { alert_title: 'status.dashboard.frontier.response_times',data:'[{"fs_host":"fs-archives-prod","p50":"20","p90":"485","p95":"580","max":"3160"},{"fs_host":"fs-ask-prod","p50":"41","p90":"105","p95":"126","max":"2829"},{"fs_host":"fs-catalog-prod","p50":"78","p90":"185","p95":"312","max":"541"},{"fs_host":"fs-collection-prod","p50":"146","p90":"340","p95":"410","max":"1639"},{"fs_host":"fs-first-run-prod","p50":"244","p90":"540","p95":"1200","max":"4592"},{"fs_host":"fs-header-footer-prod","p50":"5","p90":"15","p95":"21","max":"1093"},{"fs_host":"fs-home-prod","p50":"31","p90":"450","p95":"1000","max":"4855"},{"fs_host":"fs-hr-prod","p50":"830","p90":"1640","p95":"2100","max":"8754"},{"fs_host":"fs-identity-prod","p50":"8","p90":"587","p95":"1803","max":"2153"},{"fs_host":"fs-image-prod","p50":"310","p90":"720","p95":"1000","max":"5445"},{"fs_host":"fs-lls-prod","p50":"186","p90":"1400","p95":"2000","max":"5060"},{"fs_host":"fs-photos-prod","p50":"160","p90":"730","p95":"1000","max":"19731"},{"fs_host":"fs-registration-prod","p50":"204","p90":"1157","p95":"1619","max":"1870"},{"fs_host":"fs-search-prod","p50":"135","p90":"135","p95":"135","max":"135"},{"fs_host":"fs-temple-prod","p50":"888","p90":"1602","p95":"2039","max":"4245"},{"fs_host":"fs-tree-prod","p50":"7","p90":"15","p95":"25","max":"185"},{"fs_host":"fs-waypoint-prod","p50":"110","p90":"290","p95":"350"
+
  * Librato alert:
  req.body { payload: '{"alert":{"id":167489},"metric":{"name":"router.service.p95","type":"gauge"},"measurement":{"value":2079.777777777778,"source":"fs-home-prod"},"trigger_time":1378415400}' }
 
