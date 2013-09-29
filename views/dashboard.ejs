@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <table class="dashboard table">
+    <%
+      var i, l, _rel
+      for (i=0, l=appData.length; i<l; i++) {
+        _rel = appData[i];
+    %>
+      <tr class="<%- { "good" :  "success", "slow" : "warning", "down" : "danger"}[_rel.status]  %>">
+        <td><%- _rel.name %></td>
+      </tr>
+    <% } %>
+  </table>
+  <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+</body>
+</html>

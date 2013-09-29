@@ -1,12 +1,25 @@
 {
   "name": "fs-status",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Frontier Status Dashboard",
-  "main": "app.js",
+  "author": "Jamis Charles",
+  "contributors": [
+    {
+      "name" : "Jamis Charles"
+    },
+    {
+      "name" : "Dan Crews",
+      "email" : "crewsd@gmail.com",
+      "url" : "http://github.com/dncrews"
+    }
+  ],
   "dependencies": {
     "express": "3.x",
-    "superagent": "~0.15.4"
+    "superagent": "~0.15.4",
+    "ejs": "~0.8.4"
   },
+  "repository": "git://github.com/jamischarles/simple-dash.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,7 +27,5 @@
     "node": "0.10.x",
     "npm": "1.2.x"
   },
-  "repository": "",
-  "author": "Jamis Charles",
   "license": "BSD"
 }
