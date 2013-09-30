@@ -4,17 +4,18 @@
 /**
  * Dependencies
  */
-var request = require('superagent');
-var express = require('express');
-var request = require('superagent');
-var url = require('url');
+var request = require('superagent')
+  , express = require('express')
+  , request = require('superagent')
+  , url = require('url');
 
 /**
  * Local Vars
  */
-var app = module.exports = express();
-var port = process.env.PORT || 5000;
-var baseUrl = process.env.BASE_URL || 'localhost:' + port;
+var app = module.exports = express()
+  , port = process.env.PORT || 5000
+  , baseUrl = process.env.BASE_URL || 'localhost:' + port
+  , db = require('./lib/mongoClient');
 
 /**
  * Express Configuration
@@ -87,12 +88,45 @@ app.get('/', function(req, res, next){
  * Adding statuses to the log
  */
 app.post('/', function(req, res){
+  var content = req.body;
+    // , timestamp = new Date().getTime()
+    // , dataType = content.alert_title
+    // , data = content.data
+    // , i=0
+    // , l=data.length
+    // , _rel, appData, key;
+
+  content.timestamp = new Date().getTime();
+
+  // for (i; i<l; i++) {
+  //   _rel = data[i];
+  //   appData = {
+  //     "timestamp" : timestamp,
+  //     "appName" : _rel.fs_host,
+  //     "dataType" : dataType,
+  //     "data" : {}
+  //   };
+  //   for(key in _rel) {
+  //     appData.data[key] = _rel[key];
+  //     delete appData.data.fs_host;
+  //   }
+
+  //   console.log(appData);
+  // }
+
+  db.appStatus.save(content);
+
   // console.log("req.body", req.body);
-  console.log("req.body", req.body);
   // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
   // console.log("req.body.username", req.body.username);
   //res.send(req.body);
   res.send(200);
+});
+
+app.get('/sample', function(req, res, next) {
+  var data = db.appStatus.find(function(err, data) {
+    res.send(data);
+  });
 });
 
 /**
