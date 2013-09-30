@@ -128,7 +128,7 @@ app.post('/', function(req, res){
   // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
   // console.log("req.body.username", req.body.username);
   //res.send(req.body);
-  res.send(200);
+  res.send(201);
 });
 
 app.get('/sample', function(req, res, next) {
