@@ -95,6 +95,14 @@ app.post('/', function(req, res){
     // , i=0
     // , l=data.length
     // , _rel, appData, key;
+  if (typeof content.data === 'string') {
+    try {
+      content.data = JSON.parse(content.data);
+    } catch (e) {
+      console.log(e);
+      return res.send(500);
+    }
+  }
 
   content.timestamp = new Date().getTime();
 
