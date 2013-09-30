@@ -7,7 +7,8 @@
 var request = require('superagent')
   , express = require('express')
   , request = require('superagent')
-  , url = require('url');
+  , url = require('url')
+  , Q = require('q');
 
 /**
  * Local Vars
@@ -24,7 +25,6 @@ app.use(express.bodyParser());
 app.use(express.static(__dirname + '/assets'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
-
 
 
 //BAD NEWS: SCRIPT ALERTS ONLY PASS PARAMETERS.
@@ -74,12 +74,30 @@ app.get('/', function(req, res, next){
      * Would a separate "API" be better?
      */
     'application/json': function() {
-      return res.send([
-        { "name" : "fs-home-prod", "status" : "good" },
-        { "name" : "fs-home-test", "status" : "busy" },
-        { "name" : "fs-search-prod", "status" : "down" },
-        { "name" : "fs-search-test", "status" : "good" }
-      ]);
+      var apps = {};
+      getRecent().then(function(data) {
+        var i, l, _rel, key, _obj, appName;
+
+        for (key in data) {
+          _obj = data[key];
+          for (i=0, l=_obj.data.length; i<l; i++) {
+            _rel = _obj.data[i];
+            appName = _rel.fs_host;
+            delete _rel.fs_host;
+            if (! apps[appName]) {
+              apps[appName] = {};
+            }
+            apps[appName][key] = _rel;
+          }
+        }
+
+        // console.logs(apps);
+
+        res.send(apps);
+
+        // console.log(data);
+        // res.send(data);
+      });
     }
   });
 });
@@ -88,6 +106,7 @@ app.get('/', function(req, res, next){
  * Adding statuses to the log
  */
 app.post('/', function(req, res){
+  // TODO: I think we should parse the response now into app-specific as well
   var content = req.body;
     // , timestamp = new Date().getTime()
     // , dataType = content.alert_title
@@ -136,6 +155,59 @@ app.get('/sample', function(req, res, next) {
     res.send(data);
   });
 });
+
+app.get('/recent', function(req, res, next) {
+  getRecent().then(function(data) {
+    res.send(data);
+  });
+});
+
+
+function getRecent() {
+  var dfd = Q.defer()
+    , localDfds = {
+      memory : Q.defer(),
+      responseTime : Q.defer(),
+      responseCode : Q.defer()
+    }
+  , deferreds = [
+      localDfds.memory,
+      localDfds.responseTime,
+      localDfds.responseCode
+    ]
+  , data = {
+      "memory" : {},
+      "responseTime" : {},
+      "responseCode" : {}
+    };
+
+  function getValue(alertTitle, type) {
+    var dfd = Q.defer();
+    db.appStatus.find({"alert_title" : alertTitle}).sort({timestamp:-1}).limit(1, function(err, doc) {
+      if (err) {
+        console.log(err);
+        data[type] = {};
+      } else {
+        // console.log(doc);
+        data[type] = doc[0];
+      }
+      dfd.resolve();
+      // console.log('type', type);
+      // localDfds[type].resolve('hi');
+    });
+    return dfd.promise;
+  }
+
+  Q.all([
+    getValue('status.dashboard.frontier.memory_avg', 'memory'),
+    getValue('status.dashboard.frontier.response_times', 'responseTime'),
+    getValue('status.dashboard.frontier.response_codes', 'responseCode')
+  ]).then(function success() {
+    dfd.resolve(data);
+  });
+
+  return dfd.promise;
+}
 
 /**
  * Serve superagent to the browser, when necessary
