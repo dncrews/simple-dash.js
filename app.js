@@ -22,7 +22,8 @@ var app = module.exports = express()
  * Express Configuration
  */
 app.use(express.bodyParser());
-app.use(express.static(__dirname + '/assets'));
+app.use(require('stylus').middleware(__dirname + '/public'));
+app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
@@ -101,6 +102,20 @@ app.get('/', function(req, res, next){
     }
   });
 });
+
+
+/**
+ * Detail dashboard page 
+ */
+app.get('/detail', function(req, res){
+  // console.log("req.body", req.body);
+  res.render('dashboard_detail', {});
+  // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
+  // console.log("req.body.username", req.body.username);
+  //res.send(req.body);
+  
+});
+
 
 /**
  * Adding statuses to the log

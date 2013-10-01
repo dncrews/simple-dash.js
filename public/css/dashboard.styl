@@ -1,0 +1,89 @@
+body
+  border-top: 5px #3D3D3D solid
+  color: #3D3D3D  
+  padding: 40px 40px
+
+
+.detail  
+  .page_title
+    font-weight: normal
+  .section
+    margin-bottom: 40px
+
+    .section_heading
+      font-weight: normal
+
+  .curr_status.good
+    color: #54C966
+    font-size: 40px
+
+  .curr_status.warning
+    color: #E97223
+    font-size: 40px    
+
+  .curr_status.down
+    color: #C95454
+    font-size: 40px  
+
+  .health
+    .item
+      float: left
+      width: 300px
+      .metric
+        display: block
+        font-size: 45px
+        margin-top: -13px
+        .suffix
+          opacity: .3
+    
+      
+    .title
+      display: block
+      font-size: 12px   
+      text-transform: uppercase
+      opacity: .8
+    .error_rate
+      width: 200px
+    .status_count
+      width: 100px   
+      .totals span
+        display: block
+      // .metric
+      //   float: left
+      //   margin-right: 45px
+      // .totals
+      //   float: left
+      //   width: 75px  
+
+    // .throughput 
+
+       
+
+
+// Clearfix
+/**
+ * For modern browsers
+ * 1. The space content is one way to avoid an Opera bug when the
+ *    contenteditable attribute is included anywhere else in the document.
+ *    Otherwise it causes space to appear at the top and bottom of elements
+ *    that are clearfixed.
+ * 2. The use of `table` rather than `block` is only necessary if using
+ *    `:before` to contain the top-margins of child elements.
+ */
+.cf:before,
+.cf:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.cf:after {
+    clear: both;
+}
+
+/**
+ * For IE 6/7 only
+ * Include this rule to trigger hasLayout and contain floats.
+ */
+.cf {
+    *zoom: 1;
+} 

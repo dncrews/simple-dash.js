@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+
+<!-- 
+  TODO:
+  1) Make the Uptime history as part of the header part...
+
+
+ -->
+
+<body class="detail">
+  <p class="last_updated">Last updated at ...</p>
+  
+  <div class="mast_head section">
+    <h1 class="page_title">FS-Home-Prod </h1> 
+  
+    <div class="curr_status good">
+      <span class="glyphicon glyphicon-ok-sign" style="top: 4px;"></span>
+      <span>Good</span>
+    </div>
+    
+
+    <!-- <p>Home page</p> -->
+
+  </div>
+  
+
+  
+
+  <div class="health section cf">
+    <h2 class="section_heading">Current Health</h2>
+
+    <div class="item throughput">
+      <span class="title">req / 5 min</span>
+      <span class="metric">200<span class="suffix">req</span></span>
+    </div>
+
+    <div class="item resp_time">
+      <span class="title">p95 response time</span>
+      <span class="metric">432<span class="suffix">ms</span></span>
+    </div>
+
+    <div class="item error_rate">
+      <span class="title">Error rate (5xx / total)</span>
+      <span class="metric">10<span class="suffix">%</span></span>
+
+    </div>
+
+    <div class="item status_count">
+      <span class="title">Status codes</span>
+      <div class="totals">
+        <span>2xx: 100</span>
+        <span>3xx: 100</span>
+        <span>4xx: 100</span>
+        <span>5xx: 100</span>
+      </div>
+      
+    </div>
+
+  </div><!-- /.health-->
+
+  <div class="history section">
+    <h2 class="section_heading">Uptime History</h2>
+    Timeline here
+  </div>
+
+  
+
+  <div class="other_apis section">
+    <h2 class="section_heading">Dependent APIs</h2>
+    Other APIs go in here...
+  </div>
+
+  <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+</body>
+</html>

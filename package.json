@@ -19,7 +19,8 @@
     "ejs": "~0.8.4",
     "redis": "~0.8.5",
     "mongojs": "~0.9.6",
-    "q": "~0.9.7"
+    "q": "~0.9.7",
+    "stylus": "~0.38.0"
   },
   "repository": "git://github.com/jamischarles/simple-dash.js",
   "main": "app.js",

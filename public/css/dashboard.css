@@ -1,0 +1,79 @@
+body {
+  border-top: 5px #3d3d3d solid;
+  color: #3d3d3d;
+  padding: 40px 40px;
+}
+.detail .page_title {
+  font-weight: normal;
+}
+.detail .section {
+  margin-bottom: 40px;
+}
+.detail .section .section_heading {
+  font-weight: normal;
+}
+.detail .curr_status.good {
+  color: #54c966;
+  font-size: 40px;
+}
+.detail .curr_status.warning {
+  color: #e97223;
+  font-size: 40px;
+}
+.detail .curr_status.down {
+  color: #c95454;
+  font-size: 40px;
+}
+.detail .health .item {
+  float: left;
+  width: 300px;
+}
+.detail .health .item .metric {
+  display: block;
+  font-size: 45px;
+  margin-top: -13px;
+}
+.detail .health .item .metric .suffix {
+  opacity: 0.3;
+}
+.detail .health .title {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.detail .health .error_rate {
+  width: 200px;
+}
+.detail .health .status_count {
+  width: 100px;
+}
+.detail .health .status_count .totals span {
+  display: block;
+}
+/**
+ * For modern browsers
+ * 1. The space content is one way to avoid an Opera bug when the
+ *    contenteditable attribute is included anywhere else in the document.
+ *    Otherwise it causes space to appear at the top and bottom of elements
+ *    that are clearfixed.
+ * 2. The use of `table` rather than `block` is only necessary if using
+ *    `:before` to contain the top-margins of child elements.
+ */
+.cf:before,
+.cf:after {
+  content: " ";
+/* 1 */
+  display: table;
+/* 2 */
+}
+.cf:after {
+  clear: both;
+}
+/**
+ * For IE 6/7 only
+ * Include this rule to trigger hasLayout and contain floats.
+ */
+.cf {
+  *zoom: 1;
+}
