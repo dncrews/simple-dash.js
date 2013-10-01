@@ -25,12 +25,12 @@
         responseTime = _rel.responseTime || {};
         status = "success";
         switch (true) {
-          case (responseAvg > 5):
+          case (responseAvg >= 5):
             status = "danger";
             break;
-          case (responseAvg > 2):
-          case (responseTime > 500):
-          case (avgMemory > 200):
+          case (responseAvg >= 2):
+          case (responseTime.p95 >= 500):
+          case (avgMemory >= 200):
             status = "warning";
             break;
         }
