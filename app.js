@@ -141,7 +141,7 @@ app.post('/', function(req, res){
   //   console.log(appData);
   // }
 
-  db.appStatus.save(content);
+  db.rawStatus.save(content);
 
   // console.log("req.body", req.body);
   // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
@@ -151,7 +151,7 @@ app.post('/', function(req, res){
 });
 
 app.get('/sample', function(req, res, next) {
-  var data = db.appStatus.find(function(err, data) {
+  var data = db.rawStatus.find(function(err, data) {
     res.send(data);
   });
 });
@@ -183,7 +183,7 @@ function getRecent() {
 
   function getValue(alertTitle, type) {
     var dfd = Q.defer();
-    db.appStatus.find({"alert_title" : alertTitle}).sort({timestamp:-1}).limit(1, function(err, doc) {
+    db.rawStatus.find({"alert_title" : alertTitle}).sort({timestamp:-1}).limit(1, function(err, doc) {
       if (err) {
         console.log(err);
         data[type] = {};
