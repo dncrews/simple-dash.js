@@ -107,46 +107,34 @@ app.get('/', function(req, res, next){
  */
 app.post('/', function(req, res){
   // TODO: I think we should parse the response now into app-specific as well
-  var content = req.body;
-    // , timestamp = new Date().getTime()
-    // , dataType = content.alert_title
-    // , data = content.data
-    // , i=0
-    // , l=data.length
-    // , _rel, appData, key;
-  if (typeof content.data === 'string') {
+  var content = req.body
+    , timestamp = new Date().getTime()
+    , data = content.data
+    , i, l, _rel;
+
+  if (typeof data === 'string') {
     try {
-      content.data = JSON.parse(content.data);
+      content.data = JSON.parse(data);
     } catch (e) {
       console.log(e);
       return res.send(500);
     }
   }
 
-  content.timestamp = new Date().getTime();
-
-  // for (i; i<l; i++) {
-  //   _rel = data[i];
-  //   appData = {
-  //     "timestamp" : timestamp,
-  //     "appName" : _rel.fs_host,
-  //     "dataType" : dataType,
-  //     "data" : {}
-  //   };
-  //   for(key in _rel) {
-  //     appData.data[key] = _rel[key];
-  //     delete appData.data.fs_host;
-  //   }
-
-  //   console.log(appData);
-  // }
-
+  /**
+   * For the overview dash (/), we want to save
+   * off the raw-ish log
+   */
+  content.timestamp = timestamp;
   db.rawStatus.save(content);
 
-  // console.log("req.body", req.body);
-  // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
-  // console.log("req.body.username", req.body.username);
-  //res.send(req.body);
+  for (i=0, l=data.length; i<l; i++) {
+    _rel = data[i];
+    _rel.alert_title = content.alert_title;
+    _rel.timestamp = timestamp;
+    db.appStatus.save(_rel);
+  }
+
   res.send(201);
 });
 
