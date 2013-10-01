@@ -16,5 +16,4 @@ testing
 cover_html
 test.js
 .idea
-Procfile.dev
 .env
