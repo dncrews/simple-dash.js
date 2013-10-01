@@ -25,7 +25,7 @@
       var i, l, _rel
       for (appName in appData) {
         _rel = appData[appName];
-        avgMemory = _rel.memory && parseFloat(_rel.memory.avg) || 0;
+        avgMemory = _rel.memory && parseInt(_rel.memory.avg) || 0;
         responseCode = _rel.responseCode || {};
         responseAvg = (responseCode['5xx'] && responseCode.total ? Math.round((responseCode['5xx']/responseCode.total) * 10000)/100 : 0);
         responseTime = _rel.responseTime || {};
