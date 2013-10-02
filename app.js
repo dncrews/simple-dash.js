@@ -104,7 +104,7 @@ app.get('/detail/:appName', function(req, res){
     //parse the docs for a status timeline
     for(var i=0; i< docs.length; i++) {
       //if timestamp is available, use get the time data
-      var timestamp = docs[i]["timeBucket"] * bucketLength;
+      var timestamp = docs[i].timeBucket * bucketLength;
       var date = new Date(timestamp);
       var dd = date.getDate(); //this will be important - to verify that we only keep history for today
       var hours = date.getHours();
@@ -209,7 +209,7 @@ app.post('/', function(req, res){
   if (type === 'app') {
     for (i=0, l=content.data.length; i<l; i++) {
       _rel = content.data[i];
-      dfds.push(createAppStatus(_rel));
+      // dfds.push(createAppStatus(_rel));
       dfds.push(createAppBucket(_rel));
     }
   }
@@ -314,11 +314,17 @@ app.get('/history/:appName', function(req, res, next) {
   });
 });
 
+app.get('/api', function(req, res, next) {
+  getApiRecent().then(function(data) {
+    res.send(data);
+  });
+});
+
 /**
  * This shows ALL entries in the rawStatus
  */
 app.get('/sample', function(req, res, next) {
-  db.appStatus.find().sort({ "timestamp" : -1 }).limit(200, function(err, data) {
+  db.appBucket.find().sort({ "timestamp" : -1 }).limit(200, function(err, data) {
     res.send(data);
   });
 });
@@ -331,6 +337,26 @@ app.get('/recent', function(req, res, next) {
     res.send(data);
   });
 });
+
+function getApiRecent() {
+  var dfd = Q.defer()
+    , apiNames = [];
+
+  // Get all (200 most recent) time buckets for all apps
+  db.apiStatus.find().sort({ "timestamp" : -1, "api": 1 }).limit(200, function(err, docs) {
+    // Remove all duplicate apiNames
+    docs = docs.filter(function(el) {
+      if (apiNames.indexOf(el.api) === -1) {
+        apiNames.push(el.api);
+        return true;
+      }
+      return false;
+    });
+    dfd.resolve(docs);
+  });
+
+  return dfd.promise;
+}
 
 
 function getRecent() {
