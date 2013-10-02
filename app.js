@@ -124,7 +124,7 @@ app.get('/detail/:appName', function(req, res){
       if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
         var p95_rt = docs[i]["status:dashboard:frontier:response_times"].p95;
         //calc error rate from 5xx_count / total_req_count
-        var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"]total;
+        var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"].total;
 
         //prep status obj
         status_data.status = getStatus(p95_rt, err_rate);
