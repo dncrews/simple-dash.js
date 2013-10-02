@@ -31,7 +31,8 @@ body {
   margin-bottom: 20px;
 }
 .home .status-table td {
-  width: 170px;
+  padding: 4px 1px;
+  width: 210px;
 }
 .section {
   margin-bottom: 40px;
