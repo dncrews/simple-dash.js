@@ -106,13 +106,12 @@ app.post('/', function(req, res){
     , alertTitle = content.alert_title.replace(/\./g, ':')
     , timestamp = new Date().getTime()
     , timeBucket = Math.floor(timestamp/bucketLength) // This should create buckets at 5-minute intervals
-    , data = content.data
     , dfds = []
     , i, l, _rel;
 
-  if (typeof data === 'string') {
+  if (typeof content.data === 'string') {
     try {
-      content.data = JSON.parse(data);
+      content.data = JSON.parse(content.data);
     } catch (e) {
       console.warn(e);
       return res.send(500);
@@ -122,12 +121,11 @@ app.post('/', function(req, res){
   dfds.push(createRawStatus());
   dfds.push(createRawBucket());
 
-  for (i=0, l=data.length; i<l; i++) {
-    _rel = data[i];
+  for (i=0, l=content.data.length; i<l; i++) {
+    _rel = content.data[i];
     dfds.push(createAppStatus(_rel));
     dfds.push(createAppBucket(_rel));
   }
-  console.info(timeBucket);
   Q.all(dfds).then(function() {
     res.send(201);
   });
@@ -200,7 +198,6 @@ app.post('/', function(req, res){
  */
 app.get('/history/:appName', function(req, res, next) {
   db.appBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
-    console.log(arguments);
     res.send(docs);
   });
 });
@@ -209,7 +206,7 @@ app.get('/history/:appName', function(req, res, next) {
  * This shows ALL entries in the rawStatus
  */
 app.get('/sample', function(req, res, next) {
-  db.rawStatus.find(function(err, data) {
+  db.appBucket.find(function(err, data) {
     res.send(data);
   });
 });
