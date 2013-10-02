@@ -159,7 +159,7 @@ app.post('/', function(req, res){
     var dfd = Q.defer();
     db.rawBucket.findOne({ "timeBucket" : timeBucket }, function(err, doc) {
       doc = doc || { "timeBucket" : timeBucket };
-      doc[alertTitle] = data;
+      doc[alertTitle] = content.data;
       db.rawBucket.save(doc, getAsyncResolve(dfd));
     });
     return dfd.promise;
