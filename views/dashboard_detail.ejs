@@ -10,6 +10,11 @@
   var API_SLOW_RESPONSE = 1000
     , API_DOWN_THRESHOLD = 50
 
+if (page_type == "api") {
+  SLOW_RESPONSE = API_SLOW_RESPONSE;
+  DOWN_THRESHOLD = API_DOWN_THRESHOLD;
+};
+
   var error_rate = response_codes["5xx"] / response_codes.total;
     error_rate = Math.round(error_rate * 100);
 
@@ -30,6 +35,7 @@
       "slow" : "warning-sign",
       "down" : "minus-sign"
     }[status] || "question-sign");
+
 
 
 %>

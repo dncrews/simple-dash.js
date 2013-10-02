@@ -150,7 +150,8 @@ app.get('/detail/:appName', function(req, res){
         status_history: status_history,
         response_times: docs[0]["status:dashboard:frontier:response_times"],
         response_codes: docs[0]["status:dashboard:frontier:response_codes"],
-        memory_usage: docs[0]["status:dashboard:frontier:memory_avg"]
+        memory_usage: docs[0]["status:dashboard:frontier:memory_avg"],
+        page_type: "app"
       });
     }) //.getRecent()
   }); //appName mongo call
@@ -235,7 +236,8 @@ app.get('/api_detail/:appName', function(req, res){
       app_id: req.params.appName,
       status_history: status_history,
       response_times: docs[0],
-      response_codes: docs[0]
+      response_codes: docs[0],
+      page_type: "api"
     });
   });
 
