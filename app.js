@@ -67,7 +67,7 @@ app.get('/home', function(req, res, next){
         res.render('dashboard', {appData : appData})
       });
     },
- 
+
     /**
      * JSON View
      * It seems like this might be consumed, so
@@ -82,8 +82,8 @@ app.get('/home', function(req, res, next){
     }
   });
 });
- 
- 
+
+
 
 
 /**
@@ -122,18 +122,75 @@ app.get('/detail/:appName', function(req, res){
   // console.log("req.body", req.body);
 
   db.appBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
+
+    // console.log(docs[0]["status:dashboard:frontier:response_times"].p95);
+
+    //TODO: keep history that is TODAY
+    //TODO: show history by 5 min increments and output time
+
+    var status_history = [];
+    //parse the docs for a status timeline
+    for(var i=0; i< docs.length; i++) {
+      // console.log("first-pass: " + i, docs[i]["status:dashboard:frontier:response_times"]);
+      var timestamp = docs[0]["status:dashboard:frontier:response_times"].timestamp;
+      var date = new Date(timestamp * 1000);
+      var dd = date.getDate(); //this will be important - to verify that we only keep history for today
+      var hours = date.getHours();
+      var minutes = date.getMinutes();
+      var seconds = date.getSeconds();
+      var formattedTime = hours + ':' + minutes + ':' + seconds;
+      // console.log("date", date + " | " + formattedTime + " | " + dd);
+
+      //prep status obj
+      var status_data = {
+          day: dd,
+          time: formattedTime
+        };
+
+      //if data is there, parse it. If now, set status to 'unknown'
+      if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
+        var p95_rt = docs[i]["status:dashboard:frontier:response_times"].p95;
+        //calc error rate from 5xx_count / total_req_count
+        var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"]["total"];
+
+        //prep status obj
+        status_data.status = getStatus(p95_rt, err_rate);
+
+        //add status to the array
+        status_history.push(status_data);
+
+      } else {
+        status_data.status = "unknown";//we don't have the data we need.
+      }
+
+      //add to the status_history array
+      status_history.push(status_data);
+
+    } //for()
+
+
     // res.send(docs);
-    console.log(docs[0]["status:dashboard:frontier:response_codes"]);
+    // console.log(docs[0]["status:dashboard:frontier:response_codes"]);
+
     res.render('dashboard_detail', {
-      app_id: req.params.appName, 
-      appData : docs,
+      app_id: req.params.appName,
+      status_history: status_history,
       response_times: docs[0]["status:dashboard:frontier:response_times"],
       response_codes: docs[0]["status:dashboard:frontier:response_codes"],
       memory_usage: docs[0]["status:dashboard:frontier:memory_avg"]
     });
   });
 
- 
+  //BUSINESS RULES FOR STATUS
+  //returns the status of the app (p95 response time, error rate)
+  function getStatus(response_time, error_rate){
+    if (error_rate > 50) return "down"; //if error rate > 50%
+    if (response_time > 5000) return "slow"; //if response time is slower than 5 secs
+
+    return "good"; //if no error flags were thrown, set status to 'good'
+  }
+
+
   // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
   // console.log("req.body.username", req.body.username);
   //res.send(req.body);

@@ -41,7 +41,7 @@
 </head>
 
 
-<!-- 
+<!--
   TODO:
   1) Make the Uptime history as part of the header part...
 
@@ -51,24 +51,24 @@
 <body class="detail">
   <p><a href="/">Home</a></p>
   <p class="last_updated">Last updated at ...</p>
-  
-  <div class="mast_head section">
-    <h1 class="page_title"><%- app_id %> </h1> 
-  
 
-    
+  <div class="mast_head section">
+    <h1 class="page_title"><%- app_id %> </h1>
+
+
+
     <div class="curr_status <%- status %>">
       <span class="glyphicon <%- glyph %>" style="top: 4px;"></span>
       <span style="text-transform: capitalize;"><%- status %></span>
     </div>
-    
+
 
     <!-- <p>Home page</p> -->
 
   </div>
-  
 
-  
+
+
 
   <div class="health section cf">
     <h2 class="section_heading">Current Health</h2>
@@ -83,7 +83,7 @@
       <span class="metric"><%- response_times.p95 %><span class="suffix">ms</span></span>
     </div>
 
-    
+
     <div class="item error_rate">
       <span class="title">Error rate (5xx / total)</span>
       <span class="metric"><%- error_rate %><span class="suffix">%</span></span>
@@ -98,17 +98,22 @@
         <span>4xx: <%- response_codes["4xx"] %></span>
         <span>5xx: <%- response_codes["5xx"] %></span>
       </div>
-      
+
     </div>
 
   </div><!-- /.health-->
 
   <div class="history section">
     <h2 class="section_heading">Uptime History</h2>
-    Timeline here
-  </div>
+    <!-- BUILD IT with fake data first... -->
+    <div class="history_timeline cf">
+      <% for (var i=0; i < status_history.length; i++) { %>
+        <span class="status-<%- status_history[i].status %>" data-day="" data-time-bucket="10:05" title="Status: <%- status_history[i].status %> @ <%- status_history[i].time %>"></span>
+      <% } %>
 
-  
+    </div><!-- /.history_timeline -->
+  </div><!-- /.history -->
+
 
   <div class="other_apis section">
     <h2 class="section_heading">Dependent APIs</h2>

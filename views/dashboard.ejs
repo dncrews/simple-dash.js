@@ -25,7 +25,7 @@
       <th>Memory Usage</th>
     </thead>
     <%
-      for (var i=0, l=appData.length; i<l; i++) {
+      for (var i=0, l=appData.length; i < l; i++) {
         var _rel = appData[i];
         appName = _rel.appName;
         memAvg = _rel[memoryKey] && parseInt(_rel[memoryKey].avg) || 0;

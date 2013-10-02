@@ -21,6 +21,27 @@ body {
 .status-unknown .glyphicon {
   color: #a3a3a3;
 }
+.history_timeline span {
+  background-color: #000;
+  border-right: 1px solid #666;
+  display: block;
+  float: left;
+  height: 6px;
+  margin-bottom: 10px;
+  width: 10px;
+}
+.history_timeline .status-good {
+  background-color: #54c966;
+}
+.history_timeline .status-slow {
+  background-color: #e97223;
+}
+.history_timeline .status-down {
+  background-color: #c95454;
+}
+.history_timeline .status-unknown {
+  background-color: #a3a3a3;
+}
 .home .legend {
   margin-left: 500px;
 }
