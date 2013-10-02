@@ -55,6 +55,36 @@ MVP1
  *
  */
 
+app.get('/home', function(req, res, next){
+  res.format({
+    /**
+     * Dashboard View
+     */
+    'text/html': function() {
+      getRecent().then(function(appData) {
+        console.log(appData);
+        res.render('dashboard', {appData : appData})
+      });
+    },
+ 
+    /**
+     * JSON View
+     * It seems like this might be consumed, so
+     * I assume we could just rely on the accept header.
+     * Would a separate "API" be better?
+     * A: YES. MUCH BETTER.
+     */
+    'application/json': function() {
+      getRecent().then(function(data) {
+        res.send(data);
+      });
+    }
+  });
+});
+ 
+ 
+
+
 /**
  * Main dashboard page
  */

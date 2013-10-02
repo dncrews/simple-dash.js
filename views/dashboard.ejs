@@ -1,0 +1,70 @@
+<%
+  var slowResponse = 5000
+    , fastResponse = 300
+    , downErrorAvg = 50
+    , warnMemory = 400
+    , memoryKey = "status:dashboard:frontier:memory_avg"
+    , codeKey = "status:dashboard:frontier:response_codes"
+    , timeKey = "status:dashboard:frontier:response_times";
+%>
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <table class="dashboard table">
+    <thead>
+      <th>App Name</th>
+      <th>Response Times (ms)</th>
+      <th>Requests Served</th>
+      <th>5xx Error Codes</th>
+      <th>Error Ratio</th>
+      <th>Memory Usage</th>
+    </thead>
+    <%
+      for (var i=0, l=appData.length; i<l; i++) {
+        var _rel = appData[i];
+        appName = _rel.appName;
+        memAvg = _rel[memoryKey] && parseInt(_rel[memoryKey].avg) || 0;
+        codeTotal = _rel[codeKey] && parseInt(_rel[codeKey].total) || 0;
+        codeErr = _rel[codeKey] && parseInt(_rel[codeKey]['5xx']) || 0;
+        codeAvg = (codeTotal && codeErr ? Math.round(10000 * codeErr / codeTotal) / 100 : 0);
+        respTime = _rel[timeKey] && parseInt(_rel[timeKey].p95) || 0;
+        status = "";
+        switch (true) {
+          case (codeAvg >= downErrorAvg):
+            status = 'danger';
+            break;
+          case (respTime >= slowResponse):
+          case (memAvg >= warnMemory):
+            status = 'warning';
+            break;
+          case (respTime < fastResponse):
+            status = 'success';
+            break;
+        }
+    %>
+      <tr class="<%- status %>">
+        <td><%- appName %></td>
+        <td><%- respTime %></td>
+        <td><%- codeTotal %></td>
+        <td><%- codeErr %></td>
+        <td><%- codeAvg %>%</td>
+        <td><%- memAvg %></td>
+      </tr>
+    <% } %>
+  </table>
+  <table class="table">
+    <tr>
+      <td><strong>Legend</strong></td>
+      <td class="success">This app is in an ideal state</td>
+      <td class="">This app is doing alright</td>
+      <td class="warning">This app is running slowly</td>
+      <td class="danger">This app is down</td>
+    </tr>
+  </table>
+</body>
+</html>
