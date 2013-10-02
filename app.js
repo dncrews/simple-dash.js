@@ -55,15 +55,17 @@ MVP1
  *
  */
 
-app.get('/home', function(req, res, next){
+/**
+ * Main dashboard page
+ */
+app.get('/', function(req, res, next){
   res.format({
     /**
      * Dashboard View
      */
     'text/html': function() {
       getRecent().then(function(appData) {
-        console.log(appData);
-        res.render('dashboard', {appData : appData})
+        res.render('dashboard_home', {appData : appData});
       });
     },
 
@@ -82,62 +84,8 @@ app.get('/home', function(req, res, next){
   });
 });
 
-
 /**
- * Detail dashboard page 
- */
-app.get('/', function(req, res, next){
-  res.format({
-    /**
-     * Dashboard View
-     */
-    'text/html': function() {
-      return request
-        .get(baseUrl)
-        .set('Accept', 'application/json')
-        .end(function(response) {
-          return res.render('dashboard_home', { appData : response.body });
-        });
-    },
-
-    /**
-     * JSON View
-     * It seems like this might be consumed, so
-     * I assume we could just rely on the accept header.
-     * Would a separate "API" be better?
-     * A: YES. MUCH BETTER.
-     */
-    'application/json': function() {
-      var apps = {};
-      getRecent().then(function(data) {
-        var i, l, _rel, key, _obj, appName;
-
-        for (key in data) {
-          _obj = data[key];
-          for (i=0, l=_obj.data.length; i<l; i++) {
-            _rel = _obj.data[i];
-            appName = _rel.fs_host;
-            delete _rel.fs_host;
-            if (! apps[appName]) {
-              apps[appName] = {};
-            }
-            apps[appName][key] = _rel;
-          }
-        }
-
-        // console.logs(apps);
-
-        res.send(apps);
-
-        // console.log(data);
-        // res.send(data);
-      });
-    }
-  });
-});
-
-/**
- * Detail dashboard page 
+ * Detail dashboard page
  */
 app.get('/detail/:app_id', function(req, res){
   // console.log("req.body", req.body);
@@ -145,7 +93,7 @@ app.get('/detail/:app_id', function(req, res){
   // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
   // console.log("req.body.username", req.body.username);
   //res.send(req.body);
-  
+
 });
 
 
