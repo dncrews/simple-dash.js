@@ -15,9 +15,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap-theme.min.css">
-  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="css/dashboard.css">
 </head>
 
 
@@ -139,7 +139,7 @@
       </tr><tr>
     <% } %>
 
-      <td class="status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="/api_detail/<%- apiData[j].api %>"><%- apiData[j].api %></a></td>
+      <td class="status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="api_detail/<%- apiData[j].api %>"><%- apiData[j].api %></a></td>
 
     <%
       }

@@ -58,7 +58,7 @@ if (page_type == "api") {
  -->
 
 <body class="detail">
-  <p><a href="/">Home</a></p>
+  <p><a href="../">Home</a></p>
   <p class="last_updated">Last updated at ...</p>
 
   <div class="mast_head section">
@@ -167,7 +167,7 @@ if (page_type == "api") {
 
 
 
-      <td class="status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="/api_detail/<%- dependent_apis[j].api %>"><%- dependent_apis[j].api %></a></td>
+      <td class="status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="../api_detail/<%- dependent_apis[j].api %>"><%- dependent_apis[j].api %></a></td>
 
     <%
       }
