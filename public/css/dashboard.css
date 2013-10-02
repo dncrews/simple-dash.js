@@ -83,13 +83,13 @@ body {
   margin-top: -13px;
 }
 .detail .health .item .metric .suffix {
-  opacity: 0.3;
+  opacity: 0.6;
 }
 .detail .health .title {
   display: block;
   font-size: 12px;
   text-transform: uppercase;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 .detail .health .error_rate {
   width: 200px;
