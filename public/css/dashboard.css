@@ -12,7 +12,7 @@ body {
 .status-good .glyphicon {
   color: #54c966;
 }
-.status-warning .glyphicon {
+.status-slow .glyphicon {
   color: #e97223;
 }
 .status-down .glyphicon {
@@ -44,7 +44,7 @@ body {
   color: #54c966;
   font-size: 40px;
 }
-.detail .curr_status.warning {
+.detail .curr_status.slow {
   color: #e97223;
   font-size: 40px;
 }

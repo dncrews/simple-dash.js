@@ -55,6 +55,7 @@ MVP1
  *
  */
 
+// OLD Home page...
 app.get('/home', function(req, res, next){
   res.format({
     /**
@@ -117,9 +118,22 @@ app.get('/', function(req, res, next){
 /**
  * Detail dashboard page
  */
-app.get('/detail/:app_id', function(req, res){
+app.get('/detail/:appName', function(req, res){
   // console.log("req.body", req.body);
-  res.render('dashboard_detail', {app_id: req.params.app_id});
+
+  db.appBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
+    // res.send(docs);
+    console.log(docs[0]["status:dashboard:frontier:response_codes"]);
+    res.render('dashboard_detail', {
+      app_id: req.params.appName, 
+      appData : docs,
+      response_times: docs[0]["status:dashboard:frontier:response_times"],
+      response_codes: docs[0]["status:dashboard:frontier:response_codes"],
+      memory_usage: docs[0]["status:dashboard:frontier:memory_avg"]
+    });
+  });
+
+ 
   // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
   // console.log("req.body.username", req.body.username);
   //res.send(req.body);

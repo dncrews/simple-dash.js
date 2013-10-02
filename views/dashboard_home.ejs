@@ -39,7 +39,7 @@
 
   <div class="legend">
     <span class="item status-good"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good </span>
-    <span class="item status-warning"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow </span>
+    <span class="item status-slow"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow </span>
     <span class="item status-down"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</span>
     <span class="item status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unkown </span>
   </div>
@@ -48,7 +48,7 @@
     <th colspan="3">Upstream</th>
     <tr>
       <td class="status-good"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> HA Proxy</td>
-      <td class="status-warning"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Heroku</td>
+      <td class="status-slow"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Heroku</td>
       <td class="status-down"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Something</td>
     </tr>
   </table>
@@ -75,7 +75,7 @@
             status = 'down';
             break;
           case (respTime >= SLOW_RESPONSE):
-            status = 'warning';
+            status = 'slow';
             break;
           default:
             status = "good"
@@ -84,7 +84,7 @@
 
         glyph = "glyphicon-" + ({
           "good" : "ok-sign",
-          "warning" : "warning-sign",
+          "slow" : "warning-sign",
           "down" : "minus-sign"
         }[status] || "question-sign");
     %>

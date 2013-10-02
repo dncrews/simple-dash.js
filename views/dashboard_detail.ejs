@@ -1,3 +1,37 @@
+<%
+  var SLOW_RESPONSE = 5000
+    , FAST_RESPONSE = 300
+    , DOWN_THRESHOLD = 50
+    , WARN_MEMORY = 400
+    , MEMORY_KEY = "status:dashboard:frontier:memory_avg"
+    , CODE_KEY = "status:dashboard:frontier:response_codes"
+    , TIME_KEY = "status:dashboard:frontier:response_times";
+
+  var error_rate = response_codes["5xx"] / response_codes.total;
+    error_rate = Math.round(error_rate * 100);
+
+
+  switch (true) {
+      case (error_rate >= DOWN_THRESHOLD):
+        status = 'down';
+        break;
+      case (response_times.p95 >= SLOW_RESPONSE):
+        status = 'slow';
+        break;
+      default:
+        status = "good"
+    }
+
+    glyph = "glyphicon-" + ({
+      "good" : "ok-sign",
+      "slow" : "warning-sign",
+      "down" : "minus-sign"
+    }[status] || "question-sign");
+
+
+%>
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -15,14 +49,17 @@
  -->
 
 <body class="detail">
+  <p><a href="/">Home</a></p>
   <p class="last_updated">Last updated at ...</p>
   
   <div class="mast_head section">
     <h1 class="page_title"><%- app_id %> </h1> 
   
-    <div class="curr_status good">
-      <span class="glyphicon glyphicon-ok-sign" style="top: 4px;"></span>
-      <span>Good</span>
+
+    
+    <div class="curr_status <%- status %>">
+      <span class="glyphicon <%- glyph %>" style="top: 4px;"></span>
+      <span style="text-transform: capitalize;"><%- status %></span>
     </div>
     
 
@@ -38,27 +75,28 @@
 
     <div class="item throughput">
       <span class="title">req / 5 min</span>
-      <span class="metric">200<span class="suffix">req</span></span>
+      <span class="metric"><%- response_codes.total %><span class="suffix">req</span></span>
     </div>
 
     <div class="item resp_time">
       <span class="title">p95 response time</span>
-      <span class="metric">432<span class="suffix">ms</span></span>
+      <span class="metric"><%- response_times.p95 %><span class="suffix">ms</span></span>
     </div>
 
+    
     <div class="item error_rate">
       <span class="title">Error rate (5xx / total)</span>
-      <span class="metric">10<span class="suffix">%</span></span>
+      <span class="metric"><%- error_rate %><span class="suffix">%</span></span>
 
     </div>
 
     <div class="item status_count">
       <span class="title">Status codes</span>
       <div class="totals">
-        <span>2xx: 100</span>
-        <span>3xx: 100</span>
-        <span>4xx: 100</span>
-        <span>5xx: 100</span>
+        <span>2xx: <%- response_codes["2xx"] %></span>
+        <span>3xx: <%- response_codes["3xx"] %></span>
+        <span>4xx: <%- response_codes["4xx"] %></span>
+        <span>5xx: <%- response_codes["5xx"] %></span>
       </div>
       
     </div>
