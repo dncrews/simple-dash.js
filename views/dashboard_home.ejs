@@ -6,14 +6,18 @@
     , MEMORY_KEY = "status:dashboard:frontier:memory_avg"
     , CODE_KEY = "status:dashboard:frontier:response_codes"
     , TIME_KEY = "status:dashboard:frontier:response_times";
+
+
+  var API_SLOW_RESPONSE = 1000
+    , API_DOWN_THRESHOLD = 50
 %>
 
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap-theme.min.css">
-  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
 </head>
 
 
@@ -47,9 +51,9 @@
   <table class="status-table">
     <th colspan="3">Upstream</th>
     <tr>
-      <td class="status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> HA Proxy</td>
+     <!--  <td class="status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> HA Proxy</td>
       <td class="status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Heroku</td>
-      <td class="status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Something</td>
+      <td class="status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Splunk</td> -->
     </tr>
   </table>
 
@@ -61,7 +65,7 @@
     <%
       // TODO: CLEAN UP THIS CODE & THESE RULES. SHOULD THESE EVEN BE HANDLED HERE? A: NO
       var _rel, appName, memAvg, codeTotal, codeErr, codeAvg, respTime, status, glyph;
-      for (var i=0, l=appData.length; i<l; i++) {
+      for (var i=0, l=appData.length; i < l; i++) {
         var _rel = appData[i];
         appName = _rel.appName;
         memAvg = _rel[MEMORY_KEY] && parseInt(_rel[MEMORY_KEY].avg) || 0;
@@ -96,6 +100,54 @@
     <% } %>
     </tr>
   </table>
+
+
+
+  <table class="status-table">
+    <thead>
+      <th colspan="3">APIs</th>
+    </thead>
+    <tr>
+    <%
+      for(var j=0; j < apiData.length; j++){
+
+        var api_error_rate = apiData[j]["5xx"] / apiData[j].total;
+        api_error_rate = Math.round(api_error_rate * 100);
+
+
+        switch (true) {
+          case (api_error_rate >= API_DOWN_THRESHOLD):
+            api_status = 'down';
+            break;
+          case (apiData[j].p95 >= API_SLOW_RESPONSE):
+            api_status = 'slow';
+            break;
+          default:
+            api_status = "good"
+            break
+        }
+
+        api_glyph = "glyphicon-" + ({
+          "good" : "ok-sign",
+          "slow" : "warning-sign",
+          "down" : "minus-sign"
+        }[api_status] || "question-sign")
+
+    %>
+
+    <%  if ( j%3 === 0) { %>
+      </tr><tr>
+    <% } %>
+
+      <td class="status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="/api_detail/<%- apiData[j].api %>"><%- apiData[j].api %></a></td>
+
+    <%
+      }
+    %>
+
+  </tr>
+  </table>
+
 
 
   <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>

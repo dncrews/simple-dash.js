@@ -66,7 +66,9 @@ app.get('/', function(req, res, next){
      */
     'text/html': function() {
       getRecent().then(function(appData) {
-        res.render('dashboard_home', {appData : appData});
+        getApiRecent().then(function(apiData) {
+          res.render('dashboard_home', {appData : appData, apiData: apiData });
+        });
       });
     },
 
@@ -92,6 +94,91 @@ app.get('/detail/:appName', function(req, res){
   // console.log("req.body", req.body);
 
   db.appBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
+    getApiRecent().then(function(apiDocs) {
+      // console.log(docs[0]["status:dashboard:frontier:response_times"].p95);
+
+      //TODO: keep history that is TODAY
+      //TODO: show history by 5 min increments and output time
+
+      // console.log(docs);
+
+      var status_history = [];
+      //parse the docs for a status timeline
+      for(var i=0; i< docs.length; i++) {
+        //if timestamp is available, use get the time data
+        var timestamp = docs[i].timeBucket * bucketLength;
+        var date = new Date(timestamp);
+        var dd = date.getDate(); //this will be important - to verify that we only keep history for today
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+        var formattedTime = hours + ':' + minutes + ':' + seconds;
+
+        // console.log("date", date + " | " + timestamp + " | " + dd);
+
+        //prep status obj
+        var status_data = {
+            day: dd || "",
+            time: formattedTime || ""
+          };
+
+        //if data is there, parse it. If now, set status to 'unknown'
+        if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
+          var p95_rt = docs[i]["status:dashboard:frontier:response_times"].p95;
+          //calc error rate from 5xx_count / total_req_count
+          var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"].total;
+
+          //prep status obj
+          status_data.status = getStatus(p95_rt, err_rate);
+
+        } else {
+          status_data.status = "unknown";//we don't have the data we need.
+        }
+
+        //add to the status_history array
+        status_history.push(status_data);
+
+      } //for()
+
+
+      // res.send(docs);
+      // console.log(docs[0]["status:dashboard:frontier:response_codes"]);
+
+      res.render('dashboard_detail', {
+        api_data: apiDocs,
+        app_id: req.params.appName,
+        status_history: status_history,
+        response_times: docs[0]["status:dashboard:frontier:response_times"],
+        response_codes: docs[0]["status:dashboard:frontier:response_codes"],
+        memory_usage: docs[0]["status:dashboard:frontier:memory_avg"]
+      });
+    }) //.getRecent()
+  }); //appName mongo call
+
+  //BUSINESS RULES FOR STATUS
+  //returns the status of the app (p95 response time, error rate)
+  function getStatus(response_time, error_rate){
+    if (error_rate > 50) return "down"; //if error rate > 50%
+    if (response_time > 5000) return "slow"; //if response time is slower than 5 secs
+
+    return "good"; //if no error flags were thrown, set status to 'good'
+  }
+
+
+  // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
+  // console.log("req.body.username", req.body.username);
+  //res.send(req.body);
+
+});
+
+/**
+ * API DETAIL dashboard page
+ */
+ // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
+app.get('/api_detail/:appName', function(req, res){
+  // console.log("req.body", req.body);
+
+  db.apiStatus.find({ "api" : req.params.appName }).sort({ timestamp : -1 }, function(err, docs) {
 
     // console.log(docs[0]["status:dashboard:frontier:response_times"].p95);
 
@@ -104,7 +191,7 @@ app.get('/detail/:appName', function(req, res){
     //parse the docs for a status timeline
     for(var i=0; i< docs.length; i++) {
       //if timestamp is available, use get the time data
-      var timestamp = docs[i].timeBucket * bucketLength;
+      var timestamp = docs[i].timestamp;
       var date = new Date(timestamp);
       var dd = date.getDate(); //this will be important - to verify that we only keep history for today
       var hours = date.getHours();
@@ -121,10 +208,10 @@ app.get('/detail/:appName', function(req, res){
         };
 
       //if data is there, parse it. If now, set status to 'unknown'
-      if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
-        var p95_rt = docs[i]["status:dashboard:frontier:response_times"].p95;
+      if (docs[i]["api"]) {
+        var p95_rt = docs[i].p95;
         //calc error rate from 5xx_count / total_req_count
-        var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"].total;
+        var err_rate = docs[i]["5xx"] / docs[i].total;
 
         //prep status obj
         status_data.status = getStatus(p95_rt, err_rate);
@@ -142,12 +229,13 @@ app.get('/detail/:appName', function(req, res){
     // res.send(docs);
     // console.log(docs[0]["status:dashboard:frontier:response_codes"]);
 
+    // console.log(docs[0]);
+
     res.render('dashboard_detail', {
       app_id: req.params.appName,
       status_history: status_history,
-      response_times: docs[0]["status:dashboard:frontier:response_times"],
-      response_codes: docs[0]["status:dashboard:frontier:response_codes"],
-      memory_usage: docs[0]["status:dashboard:frontier:memory_avg"]
+      response_times: docs[0],
+      response_codes: docs[0]
     });
   });
 
@@ -155,7 +243,7 @@ app.get('/detail/:appName', function(req, res){
   //returns the status of the app (p95 response time, error rate)
   function getStatus(response_time, error_rate){
     if (error_rate > 50) return "down"; //if error rate > 50%
-    if (response_time > 5000) return "slow"; //if response time is slower than 5 secs
+    if (response_time > 1000) return "slow"; //if response time is slower than 5 secs
 
     return "good"; //if no error flags were thrown, set status to 'good'
   }
@@ -394,7 +482,7 @@ app.get('/home', function(req, res, next){
      */
     'text/html': function() {
       getRecent().then(function(appData) {
-        console.log(appData);
+        // console.log(appData);
         res.render('dashboard', {appData : appData});
       });
     },

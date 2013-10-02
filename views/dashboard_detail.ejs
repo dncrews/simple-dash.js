@@ -7,6 +7,9 @@
     , CODE_KEY = "status:dashboard:frontier:response_codes"
     , TIME_KEY = "status:dashboard:frontier:response_times";
 
+  var API_SLOW_RESPONSE = 1000
+    , API_DOWN_THRESHOLD = 50
+
   var error_rate = response_codes["5xx"] / response_codes.total;
     error_rate = Math.round(error_rate * 100);
 
@@ -35,9 +38,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap-theme.min.css">
-  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
 </head>
 
 
@@ -117,7 +120,58 @@
 
   <div class="other_apis section">
     <h2 class="section_heading">Dependent APIs</h2>
-    Other APIs go in here...
+
+    <table class="status-table">
+
+     <tr>
+    <%
+      if(typeof api_data != "undefined") {
+
+        var dependent_apis = [api_data[0]];
+
+        for(var j=0; j < dependent_apis.length; j++) {
+
+          var api_error_rate = dependent_apis["5xx"] / dependent_apis.total;
+          api_error_rate = Math.round(api_error_rate * 100);
+
+
+          switch (true) {
+            case (api_error_rate >= API_DOWN_THRESHOLD):
+              api_status = 'down';
+              break;
+            case (dependent_apis.p95 >= API_SLOW_RESPONSE):
+              api_status = 'slow';
+              break;
+            default:
+              api_status = "good"
+              break
+          }
+
+          api_glyph = "glyphicon-" + ({
+            "good" : "ok-sign",
+            "slow" : "warning-sign",
+            "down" : "minus-sign"
+          }[api_status] || "question-sign")
+
+    %>
+
+    <%  if ( j%3 === 0) { %>
+      </tr><tr>
+    <% } %>
+
+
+
+      <td class="status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="/api_detail/<%- dependent_apis[j].api %>"><%- dependent_apis[j].api %></a></td>
+
+    <%
+      }
+    }
+    %>
+
+  </tr>
+  </table>
+
+
   </div>
 
   <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
