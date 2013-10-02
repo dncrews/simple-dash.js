@@ -179,7 +179,7 @@ app.get('/detail/:appName', function(req, res){
 app.get('/api_detail/:appName', function(req, res){
   // console.log("req.body", req.body);
 
-  db.apiStatus.find({ "api" : req.params.appName }).sort({ timestamp : -1 }, function(err, docs) {
+  db.apiStatus.find({ "api" : req.params.appName, timestamp : {$lt : 4602495} }).sort({ timestamp : -1 }, function(err, docs) {
 
     // console.log(docs[0]["status:dashboard:frontier:response_times"].p95);
 
