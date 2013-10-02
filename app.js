@@ -274,9 +274,9 @@ app.post('/', function(req, res){
   case 'status:dashboard:frontier:api:response_data':
     type = 'api';
     break;
-  case 'status.dashboard.frontier.response_times':
-  case 'status.dashboard.frontier.response_codes':
-  case 'status.dashboard.frontier.memory_avg':
+  case 'status:dashboard:frontier:response_times':
+  case 'status:dashboard:frontier:response_codes':
+  case 'status:dashboard:frontier:memory_avg':
     type = 'app';
     break;
   }
