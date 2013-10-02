@@ -8,7 +8,8 @@ var request = require('superagent')
   , express = require('express')
   , request = require('superagent')
   , url = require('url')
-  , Q = require('q');
+  , Q = require('q')
+  , stylus = require('stylus');
 
 /**
  * Local Vars
@@ -23,7 +24,7 @@ var app = module.exports = express()
  * Express Configuration
  */
 app.use(express.bodyParser());
-app.use(require('stylus').middleware(__dirname + '/public'));
+app.use(stylus.middleware(__dirname + '/public'));
 app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -54,37 +55,6 @@ MVP1
 
  *
  */
-
-// OLD Home page...
-app.get('/home', function(req, res, next){
-  res.format({
-    /**
-     * Dashboard View
-     */
-    'text/html': function() {
-      getRecent().then(function(appData) {
-        console.log(appData);
-        res.render('dashboard', {appData : appData})
-      });
-    },
-
-    /**
-     * JSON View
-     * It seems like this might be consumed, so
-     * I assume we could just rely on the accept header.
-     * Would a separate "API" be better?
-     * A: YES. MUCH BETTER.
-     */
-    'application/json': function() {
-      getRecent().then(function(data) {
-        res.send(data);
-      });
-    }
-  });
-});
-
-
-
 
 /**
  * Main dashboard page
@@ -133,15 +103,14 @@ app.get('/detail/:appName', function(req, res){
     var status_history = [];
     //parse the docs for a status timeline
     for(var i=0; i< docs.length; i++) {
-      // console.log("first-pass: " + i, docs[i]["status:dashboard:frontier:response_times"]);
       //if timestamp is available, use get the time data
-        var timestamp = docs[i]["timeBucket"] * bucketLength;
-        var date = new Date(timestamp);
-        var dd = date.getDate(); //this will be important - to verify that we only keep history for today
-        var hours = date.getHours();
-        var minutes = date.getMinutes();
-        var seconds = date.getSeconds();
-        var formattedTime = hours + ':' + minutes + ':' + seconds;
+      var timestamp = docs[i]["timeBucket"] * bucketLength;
+      var date = new Date(timestamp);
+      var dd = date.getDate(); //this will be important - to verify that we only keep history for today
+      var hours = date.getHours();
+      var minutes = date.getMinutes();
+      var seconds = date.getSeconds();
+      var formattedTime = hours + ':' + minutes + ':' + seconds;
 
       // console.log("date", date + " | " + timestamp + " | " + dd);
 
@@ -155,7 +124,7 @@ app.get('/detail/:appName', function(req, res){
       if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
         var p95_rt = docs[i]["status:dashboard:frontier:response_times"].p95;
         //calc error rate from 5xx_count / total_req_count
-        var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"]["total"];
+        var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"]total;
 
         //prep status obj
         status_data.status = getStatus(p95_rt, err_rate);
@@ -209,7 +178,21 @@ app.post('/', function(req, res){
     , timestamp = new Date().getTime()
     , timeBucket = Math.floor(timestamp/bucketLength) // This should create buckets at 5-minute intervals
     , dfds = []
-    , i, l, _rel;
+    , type , i, l, _rel;
+
+  switch (alertTitle) {
+  case 'status:dashboard:frontier:api:response_data':
+    type = 'api';
+    break;
+  case 'status.dashboard.frontier.response_times':
+  case 'status.dashboard.frontier.response_codes':
+  case 'status.dashboard.frontier.memory_avg':
+    type = 'app';
+    break;
+  }
+  if (! type) {
+    return res.send(400);
+  }
 
   if (typeof content.data === 'string') {
     try {
@@ -223,14 +206,25 @@ app.post('/', function(req, res){
   dfds.push(createRawStatus());
   dfds.push(createRawBucket());
 
-  for (i=0, l=content.data.length; i<l; i++) {
-    _rel = content.data[i];
-    dfds.push(createAppStatus(_rel));
-    dfds.push(createAppBucket(_rel));
+  if (type === 'app') {
+    for (i=0, l=content.data.length; i<l; i++) {
+      _rel = content.data[i];
+      dfds.push(createAppStatus(_rel));
+      dfds.push(createAppBucket(_rel));
+    }
   }
+
+  if (type === 'api') {
+    for (i=0, l=content.data.length; i<l; i++) {
+      _rel = content.data[i];
+      dfds.push(createApiStatus(_rel));
+    }
+  }
+
   Q.all(dfds).then(function() {
     res.send(201);
   });
+
 
   /**
    * This gets called in the other methods.
@@ -287,10 +281,26 @@ app.post('/', function(req, res){
     var appName = data.fs_host
       , dfd = Q.defer();
     db.appBucket.findOne({ "timeBucket" : timeBucket, "appName" : appName }, function(err, doc) {
-      doc = doc || { "timeBucket" : timeBucket, "appName" : appName };
+      doc = doc || {
+        "timeBucket" : timeBucket,
+        "appName" : appName,
+        "status:dashboard:frontier:response_times" : {},
+        "status:dashboard:frontier:response_codes" : {},
+        "status:dashboard:frontier:memory_avg" : {}
+      };
       doc[alertTitle] = data;
       db.appBucket.save(doc, getAsyncResolve(dfd));
     });
+    return dfd.promise;
+  }
+
+  function createApiStatus(data) {
+    var dfd = Q.defer();
+
+    data.alertTitle = content.alert_title;
+    data.timestamp = timestamp;
+    db.apiStatus.save(data, getAsyncResolve(dfd));
+
     return dfd.promise;
   }
 });
@@ -308,7 +318,7 @@ app.get('/history/:appName', function(req, res, next) {
  * This shows ALL entries in the rawStatus
  */
 app.get('/sample', function(req, res, next) {
-  db.appBucket.find(function(err, data) {
+  db.appStatus.find().sort({ "timestamp" : -1 }).limit(200, function(err, data) {
     res.send(data);
   });
 });
@@ -349,6 +359,35 @@ function getRecent() {
 // app.get('/js/superagent.js', function(req, res, next) {
 //   res.sendfile(__dirname + '/node_modules/superagent/superagent.js');
 // });
+
+// OLD Home page...
+app.get('/home', function(req, res, next){
+  res.format({
+    /**
+     * Dashboard View
+     */
+    'text/html': function() {
+      getRecent().then(function(appData) {
+        console.log(appData);
+        res.render('dashboard', {appData : appData});
+      });
+    },
+
+    /**
+     * JSON View
+     * It seems like this might be consumed, so
+     * I assume we could just rely on the accept header.
+     * Would a separate "API" be better?
+     * A: YES. MUCH BETTER.
+     */
+    'application/json': function() {
+      getRecent().then(function(data) {
+        res.send(data);
+      });
+    }
+  });
+});
+
 
 app.listen(port, function() {
   console.info("Listening on " + port);
