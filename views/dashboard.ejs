@@ -2,7 +2,10 @@
   var slowResponse = 5000
     , fastResponse = 300
     , downErrorAvg = 50
-    , warnMemory = 400;
+    , warnMemory = 400
+    , memoryKey = "status:dashboard:frontier:memory_avg"
+    , codeKey = "status:dashboard:frontier:response_codes"
+    , timeKey = "status:dashboard:frontier:response_times";
 %>
 <!DOCTYPE html>
 <html>
@@ -22,34 +25,35 @@
       <th>Memory Usage</th>
     </thead>
     <%
-      var i, l, _rel
-      for (appName in appData) {
-        _rel = appData[appName];
-        avgMemory = _rel.memory && parseInt(_rel.memory.avg) || 0;
-        responseCode = _rel.responseCode || {};
-        responseAvg = (responseCode['5xx'] && responseCode.total ? Math.round((responseCode['5xx']/responseCode.total) * 10000)/100 : 0);
-        responseTime = _rel.responseTime || {};
+      for (var i=0, l=appData.length; i<l; i++) {
+        var _rel = appData[i];
+        appName = _rel.appName;
+        memAvg = _rel[memoryKey] && parseInt(_rel[memoryKey].avg) || 0;
+        codeTotal = _rel[codeKey] && parseInt(_rel[codeKey].total) || 0;
+        codeErr = _rel[codeKey] && parseInt(_rel[codeKey]['5xx']) || 0;
+        codeAvg = (codeTotal && codeErr ? Math.round(10000 * codeErr / codeTotal) / 100 : 0);
+        respTime = _rel[timeKey] && parseInt(_rel[timeKey].p95) || 0;
         status = "";
         switch (true) {
-          case (responseAvg >= downErrorAvg):
-            status = "danger";
+          case (codeAvg >= downErrorAvg):
+            status = 'danger';
             break;
-          case (responseTime.p95 >= slowResponse):
-          case (avgMemory >= warnMemory):
-            status = "warning";
+          case (respTime >= slowResponse):
+          case (memAvg >= warnMemory):
+            status = 'warning';
             break;
-          case (responseTime.p95 < fastResponse):
-            status = "success";
+          case (respTime < fastResponse):
+            status = 'success';
             break;
         }
     %>
       <tr class="<%- status %>">
         <td><%- appName %></td>
-        <td><%- responseTime.p95 %></td>
-        <td><%- responseCode.total %></td>
-        <td><%- responseCode['5xx'] %></td>
-        <td><%- responseAvg %>%</td>
-        <td><%- avgMemory %></td>
+        <td><%- respTime %></td>
+        <td><%- codeTotal %></td>
+        <td><%- codeErr %></td>
+        <td><%- codeAvg %>%</td>
+        <td><%- memAvg %></td>
       </tr>
     <% } %>
   </table>

@@ -16,7 +16,8 @@ var request = require('superagent')
 var app = module.exports = express()
   , port = process.env.PORT || 5000
   , baseUrl = process.env.BASE_URL || 'localhost:' + port
-  , db = require('./lib/mongoClient');
+  , db = require('./lib/mongoClient')
+  , bucketLength = 300000; // 5 minutes
 
 /**
  * Express Configuration
@@ -60,12 +61,10 @@ app.get('/home', function(req, res, next){
      * Dashboard View
      */
     'text/html': function() {
-      return request
-        .get(baseUrl)
-        .set('Accept', 'application/json')
-        .end(function(response) {
-          return res.render('dashboard', { appData : response.body });
-        });
+      getRecent().then(function(appData) {
+        console.log(appData);
+        res.render('dashboard', {appData : appData})
+      });
     },
 
     /**
@@ -76,29 +75,8 @@ app.get('/home', function(req, res, next){
      * A: YES. MUCH BETTER.
      */
     'application/json': function() {
-      var apps = {};
       getRecent().then(function(data) {
-        var i, l, _rel, key, _obj, appName;
-
-        for (key in data) {
-          _obj = data[key];
-          for (i=0, l=_obj.data.length; i<l; i++) {
-            _rel = _obj.data[i];
-            appName = _rel.fs_host;
-            delete _rel.fs_host;
-            if (! apps[appName]) {
-              apps[appName] = {};
-            }
-            apps[appName][key] = _rel;
-          }
-        }
-
-        // console.logs(apps);
-
-        res.send(apps);
-
-        // console.log(data);
-        // res.send(data);
+        res.send(data);
       });
     }
   });
@@ -177,42 +155,120 @@ app.get('/detail/:app_id', function(req, res){
 app.post('/', function(req, res){
   // TODO: I think we should parse the response now into app-specific as well
   var content = req.body
+    , alertTitle = content.alert_title.replace(/\./g, ':')
     , timestamp = new Date().getTime()
+    , timeBucket = Math.floor(timestamp/bucketLength) // This should create buckets at 5-minute intervals
     , data = content.data
+    , dfds = []
     , i, l, _rel;
 
   if (typeof data === 'string') {
     try {
       content.data = JSON.parse(data);
     } catch (e) {
-      console.log(e);
+      console.warn(e);
       return res.send(500);
     }
   }
 
-  /**
-   * For the overview dash (/), we want to save
-   * off the raw-ish log
-   */
-  content.timestamp = timestamp;
-  db.rawStatus.save(content);
+  dfds.push(createRawStatus());
+  dfds.push(createRawBucket());
 
   for (i=0, l=data.length; i<l; i++) {
     _rel = data[i];
-    _rel.alert_title = content.alert_title;
-    _rel.timestamp = timestamp;
-    db.appStatus.save(_rel);
+    dfds.push(createAppStatus(_rel));
+    dfds.push(createAppBucket(_rel));
+  }
+  console.info(timeBucket);
+  Q.all(dfds).then(function() {
+    res.send(201);
+  });
+
+  /**
+   * This gets called in the other methods.
+   * I just want to make sure the db is finished saving
+   * before I respond saying so.
+   */
+  function getAsyncResolve(dfd) {
+    return function () {
+      dfd.resolve();
+    };
   }
 
-  res.send(201);
+  /**
+   * Creates the record in rawStatus
+   * This is site-wide data
+   */
+  function createRawStatus() {
+    var dfd = Q.defer();
+    content.timestamp = timestamp;
+    db.rawStatus.save(content, getAsyncResolve(dfd));
+    return dfd.promise;
+  }
+  /**
+   * Creates the record in rawBucket
+   * This is site-wide data in sets
+   */
+  function createRawBucket() {
+    var dfd = Q.defer();
+    db.rawBucket.findOne({ "timeBucket" : timeBucket }, function(err, doc) {
+      doc = doc || { "timeBucket" : timeBucket };
+      doc[alertTitle] = data;
+      db.rawBucket.save(doc, getAsyncResolve(dfd));
+    });
+    return dfd.promise;
+  }
+
+  /**
+   * This creates a record in appStatus
+   * These are app-specific records
+   */
+  function createAppStatus(data) {
+    var dfd = Q.defer();
+    data.alertTitle = content.alert_title;
+    data.timestamp = timestamp;
+    db.appStatus.save(data, getAsyncResolve(dfd));
+    return dfd.promise;
+  }
+
+  /**
+   * This creates a record in appBucket
+   * These are app-specific records in sets
+   */
+  function createAppBucket(data) {
+    var appName = data.fs_host
+      , dfd = Q.defer();
+    db.appBucket.findOne({ "timeBucket" : timeBucket, "appName" : appName }, function(err, doc) {
+      doc = doc || { "timeBucket" : timeBucket, "appName" : appName };
+      doc[alertTitle] = data;
+      db.appBucket.save(doc, getAsyncResolve(dfd));
+    });
+    return dfd.promise;
+  }
 });
 
+/**
+ * This should return the app's history in "buckets"
+ */
+app.get('/history/:appName', function(req, res, next) {
+  db.appBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
+    console.log(arguments);
+    res.send(docs);
+  });
+});
+
+/**
+ * This shows ALL entries in the rawStatus
+ */
 app.get('/sample', function(req, res, next) {
-  var data = db.rawStatus.find(function(err, data) {
+  db.rawStatus.find(function(err, data) {
     res.send(data);
   });
 });
 
+/**
+ * This shows the most recent entries in rawStatus
+ */
 app.get('/recent', function(req, res, next) {
   getRecent().then(function(data) {
     res.send(data);
@@ -222,45 +278,19 @@ app.get('/recent', function(req, res, next) {
 
 function getRecent() {
   var dfd = Q.defer()
-    , localDfds = {
-      memory : Q.defer(),
-      responseTime : Q.defer(),
-      responseCode : Q.defer()
-    }
-  , deferreds = [
-      localDfds.memory,
-      localDfds.responseTime,
-      localDfds.responseCode
-    ]
-  , data = {
-      "memory" : {},
-      "responseTime" : {},
-      "responseCode" : {}
-    };
+    , appNames = [];
 
-  function getValue(alertTitle, type) {
-    var dfd = Q.defer();
-    db.rawStatus.find({"alert_title" : alertTitle}).sort({timestamp:-1}).limit(1, function(err, doc) {
-      if (err) {
-        console.log(err);
-        data[type] = {};
-      } else {
-        // console.log(doc);
-        data[type] = doc[0];
+  // Get all (200 most recent) time buckets for all apps
+  db.appBucket.find().sort({ "timeBucket" : -1, "appName": 1 }).limit(200, function(err, docs) {
+    // Remove all duplicate appNames
+    docs = docs.filter(function(el) {
+      if (appNames.indexOf(el.appName) === -1) {
+        appNames.push(el.appName);
+        return true;
       }
-      dfd.resolve();
-      // console.log('type', type);
-      // localDfds[type].resolve('hi');
+      return false;
     });
-    return dfd.promise;
-  }
-
-  Q.all([
-    getValue('status.dashboard.frontier.memory_avg', 'memory'),
-    getValue('status.dashboard.frontier.response_times', 'responseTime'),
-    getValue('status.dashboard.frontier.response_codes', 'responseCode')
-  ]).then(function success() {
-    dfd.resolve(data);
+    dfd.resolve(docs);
   });
 
   return dfd.promise;
@@ -274,7 +304,7 @@ function getRecent() {
 // });
 
 app.listen(port, function() {
-  console.log("Listening on " + port);
+  console.info("Listening on " + port);
 });
 
 
