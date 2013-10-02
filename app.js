@@ -65,10 +65,10 @@ app.get('/', function(req, res, next){
      * Dashboard View
      */
     'text/html': function() {
-      getRecent().then(function(appData) {
-        getApiRecent().then(function(apiData) {
-          res.render('dashboard_home', {appData : appData, apiData: apiData });
-        });
+      return Q.all([getRecent(), getApiRecent()]).then(function(data) {
+        var appData = data[0]
+          , apiData = data[1];
+        res.render('dashboard_home', {appData : appData, apiData: apiData, updated : appData[0].timeBucket });
       });
     },
 
@@ -80,8 +80,8 @@ app.get('/', function(req, res, next){
      * A: YES. MUCH BETTER.
      */
     'application/json': function() {
-      getRecent().then(function(data) {
-        res.send(data);
+      getRecent().then(function(appData) {
+        res.send(appData);
       });
     }
   });
@@ -93,6 +93,7 @@ app.get('/', function(req, res, next){
 app.get('/detail/:appName', function(req, res){
   // console.log("req.body", req.body);
 
+  // TODO: switch these to simultanious calls
   db.appBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
     getApiRecent().then(function(apiDocs) {
       // console.log(docs[0]["status:dashboard:frontier:response_times"].p95);
@@ -106,21 +107,9 @@ app.get('/detail/:appName', function(req, res){
       //parse the docs for a status timeline
       for(var i=0; i< docs.length; i++) {
         //if timestamp is available, use get the time data
-        var timestamp = docs[i].timeBucket * bucketLength;
-        var date = new Date(timestamp);
-        var dd = date.getDate(); //this will be important - to verify that we only keep history for today
-        var hours = date.getHours();
-        var minutes = date.getMinutes();
-        var seconds = date.getSeconds();
-        var formattedTime = hours + ':' + minutes + ':' + seconds;
-
-        // console.log("date", date + " | " + timestamp + " | " + dd);
-
-        //prep status obj
         var status_data = {
-            day: dd || "",
-            time: formattedTime || ""
-          };
+          time: getUXDate(docs[i].timeBucket)
+        };
 
         //if data is there, parse it. If now, set status to 'unknown'
         if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
@@ -151,9 +140,10 @@ app.get('/detail/:appName', function(req, res){
         response_times: docs[0]["status:dashboard:frontier:response_times"],
         response_codes: docs[0]["status:dashboard:frontier:response_codes"],
         memory_usage: docs[0]["status:dashboard:frontier:memory_avg"],
-        page_type: "app"
+        page_type: "app",
+        updated : docs[0].timeBucket
       });
-    }) //.getRecent()
+    }); //.getRecent()
   }); //appName mongo call
 
   //BUSINESS RULES FOR STATUS
@@ -179,37 +169,23 @@ app.get('/detail/:appName', function(req, res){
 app.get('/api_detail/:appName', function(req, res){
   // console.log("req.body", req.body);
 
-  db.apiStatus.find({ "api" : req.params.appName, timestamp : {$lt : 4602495} }).sort({ timestamp : -1 }, function(err, docs) {
+  db.apiStatus.find({ "api" : req.params.appName }).sort({ timestamp : -1 }, function(err, docs) {
 
     // console.log(docs[0]["status:dashboard:frontier:response_times"].p95);
 
     //TODO: keep history that is TODAY
     //TODO: show history by 5 min increments and output time
 
-    // console.log(docs);
-
     var status_history = [];
     //parse the docs for a status timeline
     for(var i=0; i< docs.length; i++) {
-      //if timestamp is available, use get the time data
-      var timestamp = docs[i].timestamp;
-      var date = new Date(timestamp);
-      var dd = date.getDate(); //this will be important - to verify that we only keep history for today
-      var hours = date.getHours();
-      var minutes = date.getMinutes();
-      var seconds = date.getSeconds();
-      var formattedTime = hours + ':' + minutes + ':' + seconds;
-
-      // console.log("date", date + " | " + timestamp + " | " + dd);
-
       //prep status obj
       var status_data = {
-          day: dd || "",
-          time: formattedTime || ""
-        };
+        time: getUXDate(docs[i].timestamp)
+      };
 
       //if data is there, parse it. If now, set status to 'unknown'
-      if (docs[i]["api"]) {
+      if (docs[i].api) {
         var p95_rt = docs[i].p95;
         //calc error rate from 5xx_count / total_req_count
         var err_rate = docs[i]["5xx"] / docs[i].total;
@@ -237,7 +213,8 @@ app.get('/api_detail/:appName', function(req, res){
       status_history: status_history,
       response_times: docs[0],
       response_codes: docs[0],
-      page_type: "api"
+      page_type: "api",
+      updated : docs[0].timestamp
     });
   });
 
@@ -467,6 +444,32 @@ function getRecent() {
   });
 
   return dfd.promise;
+}
+
+function getUXDate(timestamp) {
+  var date, dd, hours, minutes, seconds;
+  if ((timestamp.toString()).length < 13) {
+    // We're working with a timeBucket
+    timestamp = timestamp * bucketLength;
+  }
+
+  date = new Date(timestamp);
+  dd = date.getDate();
+  hours = date.getHours();
+  minutes = date.getMinutes();
+  seconds = date.getSeconds();
+
+  function pad(unit) {
+    var s = unit.toString();
+
+    while (s.length < 2) {
+      s += '0';
+    }
+
+    return s;
+  }
+
+  return '' + hours + ':' + pad(minutes) + ':' + pad(seconds) || '';
 }
 
 /**

@@ -29,7 +29,7 @@
  -->
 
 <body class="home">
-  <!-- <p class="last_updated">Last updated at ...</p> -->
+  <p class="last_updated">Last updated at <span id="updatedTimestamp" data-stamp="<%- updated %>"></span></p>
 
   <div class="mast_head section">
     <h1 class="page_title">FamilySearch Status </h1>
@@ -101,8 +101,6 @@
     </tr>
   </table>
 
-
-
   <table class="status-table">
     <thead>
       <th colspan="3">APIs</th>
@@ -150,6 +148,6 @@
 
 
 
-  <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+  <script src="js/utils.js"></script>
 </body>
 </html>

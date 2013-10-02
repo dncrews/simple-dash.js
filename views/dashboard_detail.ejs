@@ -59,7 +59,7 @@ if (page_type == "api") {
 
 <body class="detail">
   <p><a href="../">Home</a></p>
-  <!-- <p class="last_updated">Last updated at ...</p> -->
+  <p class="last_updated">Last updated at <span id="updatedTimestamp" data-stamp="<%- updated %>"></span></p>
 
   <div class="mast_head section">
     <h1 class="page_title"><%- app_id %> </h1>
@@ -117,7 +117,7 @@ if (page_type == "api") {
     <!-- BUILD IT with fake data first... -->
     <div class="history_timeline cf">
       <% for (var i=0; i < status_history.length; i++) { %>
-        <span class="status-<%- status_history[i].status %>" data-day="" data-time-bucket="10:05" title="Status: <%- status_history[i].status %> @ <%- status_history[i].time %>"></span>
+        <span class="status-<%- status_history[i].status %>" data-day="" data-time-bucket="10:05" title="Status: <%- status_history[i].status %> @ <%- status_history[i].time %> GMT"></span>
       <% } %>
 
     </div><!-- /.history_timeline -->
@@ -180,6 +180,6 @@ if (page_type == "api") {
 
   </div>
 
-  <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+  <script src="../js/utils.js"></script>
 </body>
 </html>
