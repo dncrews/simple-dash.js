@@ -128,23 +128,27 @@ app.get('/detail/:appName', function(req, res){
     //TODO: keep history that is TODAY
     //TODO: show history by 5 min increments and output time
 
+    // console.log(docs);
+
     var status_history = [];
     //parse the docs for a status timeline
     for(var i=0; i< docs.length; i++) {
       // console.log("first-pass: " + i, docs[i]["status:dashboard:frontier:response_times"]);
-      var timestamp = docs[0]["status:dashboard:frontier:response_times"].timestamp;
-      var date = new Date(timestamp * 1000);
-      var dd = date.getDate(); //this will be important - to verify that we only keep history for today
-      var hours = date.getHours();
-      var minutes = date.getMinutes();
-      var seconds = date.getSeconds();
-      var formattedTime = hours + ':' + minutes + ':' + seconds;
-      // console.log("date", date + " | " + formattedTime + " | " + dd);
+      //if timestamp is available, use get the time data
+        var timestamp = docs[i]["timeBucket"] * bucketLength;
+        var date = new Date(timestamp);
+        var dd = date.getDate(); //this will be important - to verify that we only keep history for today
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+        var formattedTime = hours + ':' + minutes + ':' + seconds;
+
+      // console.log("date", date + " | " + timestamp + " | " + dd);
 
       //prep status obj
       var status_data = {
-          day: dd,
-          time: formattedTime
+          day: dd || "",
+          time: formattedTime || ""
         };
 
       //if data is there, parse it. If now, set status to 'unknown'
@@ -155,9 +159,6 @@ app.get('/detail/:appName', function(req, res){
 
         //prep status obj
         status_data.status = getStatus(p95_rt, err_rate);
-
-        //add status to the array
-        status_history.push(status_data);
 
       } else {
         status_data.status = "unknown";//we don't have the data we need.
