@@ -60,7 +60,7 @@ if (page_type == "api") {
 
 <body class="detail">
   <p><a href="../">Home</a></p>
-  <p class="last_updated">Last updated at <span id="updatedTimestamp" data-stamp="<%- updated %>"></span></p>
+  <p class="last_updated">Last updated at <span id="updatedTimestamp" data-timestamp="<%- updated %>"></span></p>
 
   <div class="mast_head section">
     <h1 class="page_title"><%- app_id %> </h1>
@@ -124,6 +124,11 @@ if (page_type == "api") {
     </div><!-- /.history_timeline -->
   </div><!-- /.history -->
 
+<!--   <div class="memory section">
+    <h2 class="section_heading">Memory History</h2>
+    <div class="graph" data-memory-status='<%- JSON.stringify(status_history) %>'></div>
+  </div> -->
+
 
   <div class="other_apis section">
     <h2 class="section_heading">Dependent APIs</h2>
@@ -182,5 +187,6 @@ if (page_type == "api") {
   </div>
 
   <script src="../js/utils.js"></script>
+  <script src="http://mbostock.github.com/d3/d3.v2.js"></script>
 </body>
 </html>
