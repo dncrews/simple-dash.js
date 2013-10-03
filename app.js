@@ -256,9 +256,10 @@ app.post('/', function(req, res){
   case 'status:dashboard:frontier:memory_avg':
     type = 'app';
     break;
-  }
-  if (! type) {
-    return res.send(400);
+  default:
+    console.log("I NEED AN ADULT!!!");
+    console.log(content);
+    res.send(400);
   }
 
   if (typeof content.data === 'string') {
