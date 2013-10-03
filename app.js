@@ -225,7 +225,7 @@ app.post('/', function(req, res){
     , type , i, l, _rel;
 
   switch (alertTitle) {
-  case 'status.dashboard.frontier.mem_response':
+  case 'status:dashboard:frontier:mem_response':
     type = 'fullApp';
     break;
   case 'status:dashboard:frontier:api:response_data':
