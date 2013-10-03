@@ -113,7 +113,7 @@ app.get('/detail/:appName', function(req, res){
       //if data is there, parse it. If now, set status to 'unknown'
       if (docs[i]["status:dashboard:frontier:memory_avg"]) {
         status_data.memory = docs[i]["status:dashboard:frontier:memory_avg"].avg;
-      };
+      }
       if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
         var p95_rt = docs[i]["status:dashboard:frontier:response_times"].p95;
         //calc error rate from 5xx_count / total_req_count
