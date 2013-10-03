@@ -91,60 +91,57 @@ app.get('/', function(req, res, next){
  * Detail dashboard page
  */
 app.get('/detail/:appName', function(req, res){
-  // console.log("req.body", req.body);
 
-  // TODO: switch these to simultanious calls
-  db.appBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
-    getApiRecent().then(function(apiDocs) {
-      // console.log(docs[0]["status:dashboard:frontier:response_times"].p95);
+  Q.all([
+    getBucket(req.params.appName),
+    getApiRecent()
+  ]).then(function (results) {
+    var docs = results[0]
+      , apiDocs = results[1];
 
-      //TODO: keep history that is TODAY
-      //TODO: show history by 5 min increments and output time
+    //TODO: keep history that is TODAY
+    //TODO: show history by 5 min increments and output time
 
-      // console.log(docs);
+    var status_history = [];
+    //parse the docs for a status timeline
+    for(var i=0; i< docs.length; i++) {
+      //if timestamp is available, use get the time data
+      var status_data = {
+        time: getUXDate(docs[i].timeBucket)
+      };
 
-      var status_history = [];
-      //parse the docs for a status timeline
-      for(var i=0; i< docs.length; i++) {
-        //if timestamp is available, use get the time data
-        var status_data = {
-          time: getUXDate(docs[i].timeBucket)
-        };
+      //if data is there, parse it. If now, set status to 'unknown'
+      if (docs[i]["status:dashboard:frontier:memory_avg"]) {
+        status_data.memory = docs[i]["status:dashboard:frontier:memory_avg"].avg;
+      };
+      if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
+        var p95_rt = docs[i]["status:dashboard:frontier:response_times"].p95;
+        //calc error rate from 5xx_count / total_req_count
+        var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"].total;
 
-        //if data is there, parse it. If now, set status to 'unknown'
-        if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
-          var p95_rt = docs[i]["status:dashboard:frontier:response_times"].p95;
-          //calc error rate from 5xx_count / total_req_count
-          var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"].total;
+        //prep status obj
+        status_data.status = getStatus(p95_rt, err_rate);
 
-          //prep status obj
-          status_data.status = getStatus(p95_rt, err_rate);
+      } else {
+        status_data.status = "unknown";//we don't have the data we need.
+      }
 
-        } else {
-          status_data.status = "unknown";//we don't have the data we need.
-        }
+      //add to the status_history array
+      status_history.push(status_data);
 
-        //add to the status_history array
-        status_history.push(status_data);
+    } //for()
 
-      } //for()
-
-
-      // res.send(docs);
-      // console.log(docs[0]["status:dashboard:frontier:response_codes"]);
-
-      res.render('dashboard_detail', {
-        api_data: apiDocs,
-        app_id: req.params.appName,
-        status_history: status_history,
-        response_times: docs[0]["status:dashboard:frontier:response_times"],
-        response_codes: docs[0]["status:dashboard:frontier:response_codes"],
-        memory_usage: docs[0]["status:dashboard:frontier:memory_avg"],
-        page_type: "app",
-        updated : docs[0].timeBucket
-      });
-    }); //.getRecent()
-  }); //appName mongo call
+    res.render('dashboard_detail', {
+      api_data: apiDocs,
+      app_id: req.params.appName,
+      status_history: status_history,
+      response_times: docs[0]["status:dashboard:frontier:response_times"],
+      response_codes: docs[0]["status:dashboard:frontier:response_codes"],
+      memory_usage: docs[0]["status:dashboard:frontier:memory_avg"],
+      page_type: "app",
+      updated : docs[0].timeBucket
+    });
+  });
 
   //BUSINESS RULES FOR STATUS
   //returns the status of the app (p95 response time, error rate)
@@ -155,11 +152,6 @@ app.get('/detail/:appName', function(req, res){
     return "good"; //if no error flags were thrown, set status to 'good'
   }
 
-
-  // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
-  // console.log("req.body.username", req.body.username);
-  //res.send(req.body);
-
 });
 
 /**
@@ -167,11 +159,8 @@ app.get('/detail/:appName', function(req, res){
  */
  // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
 app.get('/api_detail/:appName', function(req, res){
-  // console.log("req.body", req.body);
 
   db.apiStatus.find({ "api" : req.params.appName }).sort({ timestamp : -1 }, function(err, docs) {
-
-    // console.log(docs[0]["status:dashboard:frontier:response_times"].p95);
 
     //TODO: keep history that is TODAY
     //TODO: show history by 5 min increments and output time
@@ -202,12 +191,6 @@ app.get('/api_detail/:appName', function(req, res){
 
     } //for()
 
-
-    // res.send(docs);
-    // console.log(docs[0]["status:dashboard:frontier:response_codes"]);
-
-    // console.log(docs[0]);
-
     res.render('dashboard_detail', {
       app_id: req.params.appName,
       status_history: status_history,
@@ -226,12 +209,6 @@ app.get('/api_detail/:appName', function(req, res){
 
     return "good"; //if no error flags were thrown, set status to 'good'
   }
-
-
-  // console.log('Splunk Alert Received: alert_name=' + req.body.alert_title + ' event_count=' + req.body.event_count)
-  // console.log("req.body.username", req.body.username);
-  //res.send(req.body);
-
 });
 
 
@@ -433,8 +410,12 @@ function getRecent() {
 
   // Get all (200 most recent) time buckets for all apps
   db.appBucket.find().sort({ "timeBucket" : -1, "appName": 1 }).limit(200, function(err, docs) {
+    if (err) {
+      console.warn(err);
+      dfd.reject();
+    }
     // Remove all duplicate appNames
-    docs = docs.filter(function(el) {
+    docs = docs && docs.filter(function(el) {
       if (appNames.indexOf(el.appName) === -1) {
         appNames.push(el.appName);
         return true;
@@ -444,6 +425,17 @@ function getRecent() {
     dfd.resolve(docs);
   });
 
+  return dfd.promise;
+}
+
+function getBucket(appName) {
+  var dfd = Q.defer();
+  db.appBucket.find({ "appName" : appName }).sort({ timeBucket : -1 }, function(err, docs) {
+    if (err) {
+      return dfd.reject(err);
+    }
+    dfd.resolve(docs);
+  });
   return dfd.promise;
 }
 
@@ -488,7 +480,6 @@ app.get('/home', function(req, res, next){
      */
     'text/html': function() {
       getRecent().then(function(appData) {
-        // console.log(appData);
         res.render('dashboard', {appData : appData});
       });
     },
