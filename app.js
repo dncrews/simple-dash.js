@@ -265,7 +265,6 @@ app.post('/', function(req, res){
   if (type === 'fullApp') {
     for (i=0, l=content.data.length; i<l; i++) {
       _rel = content.data[i];
-      // dfds.push(createAppStatus(_rel));
       dfds.push(createFullAppBucket(_rel));
     }
   }
@@ -337,8 +336,8 @@ app.post('/', function(req, res){
       doc = doc || {
         "timeBucket" : timeBucket,
         "appName" : appName,
-        "status.dashboard.frontier.mem_response" : {},
-        "status.dashboard.frontier.heroku_errors" : {}
+        "status:dashboard:frontier:mem_response" : {},
+        "status:dashboard:frontier:heroku_errors" : {}
       };
 
       doc[alertTitle] = data;
