@@ -225,6 +225,9 @@ app.post('/', function(req, res){
     , type , i, l, _rel;
 
   switch (alertTitle) {
+  case 'status.dashboard.frontier.mem_response':
+    type = 'fullApp';
+    break;
   case 'status:dashboard:frontier:api:response_data':
     type = 'api';
     break;
@@ -256,6 +259,14 @@ app.post('/', function(req, res){
       _rel = content.data[i];
       // dfds.push(createAppStatus(_rel));
       dfds.push(createAppBucket(_rel));
+    }
+  }
+
+  if (type === 'fullApp') {
+    for (i=0, l=content.data.length; i<l; i++) {
+      _rel = content.data[i];
+      // dfds.push(createAppStatus(_rel));
+      dfds.push(createFullAppBucket(_rel));
     }
   }
 
@@ -315,6 +326,25 @@ app.post('/', function(req, res){
     data.alertTitle = content.alert_title;
     data.timestamp = timestamp;
     db.appStatus.save(data, getAsyncResolve(dfd));
+    return dfd.promise;
+  }
+
+  function createFullAppBucket(data) {
+    var appName = data.fs_host
+      , dfd = Q.defer();
+
+    db.fullAppBucket.findOne({ "timeBucket" : timeBucket, "appName" : appName }, function(err, doc) {
+      doc = doc || {
+        "timeBucket" : timeBucket,
+        "appName" : appName,
+        "status.dashboard.frontier.mem_response" : {},
+        "status.dashboard.frontier.heroku_errors" : {}
+      };
+
+      doc[alertTitle] = data;
+      db.fullAppBucket.save(doc, getAsyncResolve(dfd));
+    });
+
     return dfd.promise;
   }
 
