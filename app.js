@@ -211,7 +211,7 @@ app.post('/', function(req, res){
     , timestamp = new Date().getTime()
     , timeBucket = Math.floor(timestamp/bucketLength) // This should create buckets at 5-minute intervals
     , dfds = []
-    , type , i, l, _rel;
+    , type , i, l, _rel, herokuErrors, _hRel, appName;
 
   switch (alertTitle) {
   case 'status:dashboard:frontier:mem_response':
@@ -219,6 +219,9 @@ app.post('/', function(req, res){
     break;
   case 'status:dashboard:frontier:api:flat_response_data':
     type = 'api';
+    break;
+  case 'status:dashboard:frontier:heroku_errors':
+    type = 'herokuErrors';
     break;
   default:
     console.warn("I NEED AN ADULT!!!");
@@ -237,6 +240,16 @@ app.post('/', function(req, res){
 
   dfds.push(createRawStatus());
   dfds.push(createRawBucket());
+
+  /**
+   * If we're looking at Heroku errors, we want to stick them
+   * into the appBuckets, but we need to format them first to
+   * match the other App-level data (mem_response)
+   */
+  if (type === 'herokuErrors') {
+    content.data = restructureHerokuErrors(content.data);
+    type = 'app';
+  }
 
   if (type === 'app') {
     for (i=0, l=content.data.length; i<l; i++) {
@@ -319,6 +332,29 @@ app.post('/', function(req, res){
     db.apiStatus.save(data, getAsyncResolve(dfd));
 
     return dfd.promise;
+  }
+
+  function restructureHerokuErrors(data) {
+    var i, l, _rel, _hRel, appName
+      , herokuErrors = {}
+      , newData = [];
+    for (i=0, l=data.length; i<l; i++) {
+      _rel = data[i];
+      _hRel = herokuErrors[_rel.fs_host];
+      if (! herokuErrors[_rel.fs_host]) {
+        _hRel = herokuErrors[_rel.fs_host] = {
+          "fs_host" : _rel.fs_host,
+          "codes" : []
+        };
+      }
+      delete _rel.fs_host;
+      _hRel.codes.push(_rel);
+    }
+    for (appName in herokuErrors) {
+      if (! herokuErrors.hasOwnProperty(appName)) continue;
+      newData.push(herokuErrors[appName]);
+    }
+    return newData;
   }
 });
 
