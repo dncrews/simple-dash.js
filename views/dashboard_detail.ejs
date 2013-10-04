@@ -15,7 +15,7 @@ if (page_type == "api") {
   DOWN_THRESHOLD = API_DOWN_THRESHOLD;
 };
 
-  var error_rate = response_codes["5xx"] / response_codes.total;
+  var error_rate = current['status:5xx'] / current['status:total'];
     error_rate = Math.round(error_rate * 100);
 
 
@@ -23,7 +23,7 @@ if (page_type == "api") {
       case (error_rate >= DOWN_THRESHOLD):
         status = 'down';
         break;
-      case (responseP95 >= SLOW_RESPONSE):
+      case (current['time:p95'] >= SLOW_RESPONSE):
         status = 'slow';
         break;
       default:
@@ -85,12 +85,12 @@ if (page_type == "api") {
 
     <div class="item throughput">
       <span class="title">req / 5 min</span>
-      <span class="metric"><%- response_codes.total %><span class="suffix">req</span></span>
+      <span class="metric"><%- current['status:total'] %><span class="suffix">req</span></span>
     </div>
 
     <div class="item resp_time">
       <span class="title">p95 response time</span>
-      <span class="metric"><%- responseP95 %><span class="suffix">ms</span></span>
+      <span class="metric"><%- current['time:p95'] %><span class="suffix">ms</span></span>
     </div>
 
 
@@ -103,10 +103,10 @@ if (page_type == "api") {
     <div class="item status_count">
       <span class="title">Status codes</span>
       <div class="totals">
-        <span>2xx: <%- response_codes["2xx"] %></span>
-        <span>3xx: <%- response_codes["3xx"] %></span>
-        <span>4xx: <%- response_codes["4xx"] %></span>
-        <span>5xx: <%- response_codes["5xx"] %></span>
+        <span>2xx: <%- current['status:2xx'] %></span>
+        <span>3xx: <%- current['status:3xx'] %></span>
+        <span>4xx: <%- current['status:4xx'] %></span>
+        <span>5xx: <%- current['status:5xx'] %></span>
       </div>
 
     </div>
