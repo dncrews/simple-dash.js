@@ -111,19 +111,16 @@ app.get('/detail/:appName', function(req, res){
     //parse the docs for a status timeline
     for(var i=0; i< docs.length; i++) {
       _rel = docs[i];
+      _data = _rel[DATA_KEY];
       //if timestamp is available, use get the time data
       status_data = {
         time: {
           raw: _rel.timeBucket,
           pretty: getUXDate(_rel.timeBucket)
-        }
+        },
+        memory: parseInt(_data['mem:avg'], 10) || 0,
+        status: getStatus(_data, 'app')
       };
-      _data = _rel[DATA_KEY];
-
-      //if data is there, parse it. If not, set status to 'unknown'
-      status_data.memory = parseInt(_data['mem:avg'], 10) || 0;
-      status_data.status = _data['status:5xx'] && _data['status:total'] ?
-                getStatus(_data['time:p95'], _data['status:5xx'] / _data['status:total']) :'unknown';
 
       //add to the status_history array
       status_history.push(status_data);
@@ -138,16 +135,6 @@ app.get('/detail/:appName', function(req, res){
       updated : docs[0].timeBucket
     });
   });
-
-  //BUSINESS RULES FOR STATUS
-  //returns the status of the app (p95 response time, error rate)
-  function getStatus(response_time, error_rate){
-    if (error_rate > 50) return "down"; //if error rate > 50%
-    if (response_time > 5000) return "slow"; //if response time is slower than 5 secs
-
-    return "good"; //if no error flags were thrown, set status to 'good'
-  }
-
 });
 
 /**
@@ -170,12 +157,9 @@ app.get('/api_detail/:apiName', function(req, res){
         time: {
           raw: _rel.timestamp,
           pretty: getUXDate(_rel.timestamp)
-        }
+        },
+        status: getStatus(_rel, 'api')
       };
-
-      //if data is there, parse it. If now, set status to 'unknown'
-      status_data.status = _rel['status:5xx'] && _rel['status:total'] ?
-                getStatus(_rel['time:p95'], _rel['status:5xx'] / _rel['status:total']) :'unknown';
 
       //add to the status_history array
       status_history.push(status_data);
@@ -189,16 +173,33 @@ app.get('/api_detail/:apiName', function(req, res){
       updated : docs[0].timestamp
     });
   });
-
-  //BUSINESS RULES FOR STATUS
-  //returns the status of the app (p95 response time, error rate)
-  function getStatus(response_time, error_rate){
-    if (error_rate > 50) return "down"; //if error rate > 50%
-    if (response_time > 1000) return "slow"; //if response time is slower than 5 secs
-
-    return "good"; //if no error flags were thrown, set status to 'good'
-  }
 });
+
+/**
+ * Returns the status of the app
+ *
+ * Requires ['time:p95'], ['status:5xx'], ['status:total']
+ *
+ * @param  {Object} data The log of the app at that time.
+ * @param  {String} type Either 'app' or 'api', at the moment
+ * @return {String}      Status of the app
+ */
+function getStatus(data, type){
+  var slow = {
+    'app' : 5000,
+    'api' : 1000
+  };
+  if (! slow[type]) type = 'app';
+  var p95 = parseInt(data['time:p95'], 10) || 0
+    , s5xx = parseInt(data['status:5xx'], 10) || 0
+    , sTotal = parseInt(data['status:total'], 10) || 0;
+
+  if (!sTotal) return 'unknown'; // if there was no traffic
+  if ((s5xx / sTotal ) > 0.5) return 'down'; //if error rate > 50%
+  if (p95 > slow[type]) return 'slow'; //if response time is slower than 5 secs
+
+  return "good"; //if no error flags were thrown, set status to 'good'
+}
 
 
 /**
