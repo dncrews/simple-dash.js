@@ -118,9 +118,13 @@ if (page_type == "api") {
     <!-- BUILD IT with fake data first... -->
     <div class="history_timeline cf">
       <% for (var i=0; i < status_history.length; i++) { %>
-        <span class="status-<%- status_history[i].status %>" data-day="" data-time-bucket="10:05" title="Status: <%- status_history[i].status %> @ <%- status_history[i].time %> GMT"></span>
+        <span
+          class="status-<%- status_history[i].status %>"
+          data-day=""
+          data-status="<%- status_history[i].status %>"
+          data-raw-time="<%- status_history[i].time.raw %>"
+          title="Status: <%- status_history[i].status %> @ <%- status_history[i].time.pretty %>"></span>
       <% } %>
-
     </div><!-- /.history_timeline -->
   </div><!-- /.history -->
 
@@ -170,8 +174,6 @@ if (page_type == "api") {
     <%  if ( j%3 === 0) { %>
       </tr><tr>
     <% } %>
-
-
 
       <td class="status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="../api_detail/<%- dependent_apis[j].api %>"><%- dependent_apis[j].api %></a></td>
 

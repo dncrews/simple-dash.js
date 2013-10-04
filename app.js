@@ -113,7 +113,10 @@ app.get('/detail/:appName', function(req, res){
       _rel = docs[i];
       //if timestamp is available, use get the time data
       status_data = {
-        time: getUXDate(_rel.timeBucket)
+        time: {
+          raw: _rel.timeBucket,
+          pretty: getUXDate(_rel.timeBucket)
+        }
       };
       _data = _rel[DATA_KEY];
 
@@ -158,13 +161,16 @@ app.get('/api_detail/:apiName', function(req, res){
 
     var status_history = []
       , current = docs[0]
-      , _rel;
+      , _rel, status_data;
     //parse the docs for a status timeline
     for(var i=0; i< docs.length; i++) {
       _rel = docs[i];
       //prep status obj
-      var status_data = {
-        time: getUXDate(docs[i].timestamp)
+      status_data = {
+        time: {
+          raw: _rel.timestamp,
+          pretty: getUXDate(_rel.timestamp)
+        }
       };
 
       //if data is there, parse it. If now, set status to 'unknown'
@@ -407,7 +413,7 @@ function getAppBucket(appName) {
 
 function getAPIBucket(apiName) {
   var dfd = Q.defer();
-  db.apiStatus.find({ "api" : apiName }).sort({ timeBucket : -1 }, function(err, docs) {
+  db.apiStatus.find({ "api" : apiName }).sort({ timestamp : -1 }, function(err, docs) {
     if (err) {
       return dfd.reject(err);
     }

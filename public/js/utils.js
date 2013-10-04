@@ -21,6 +21,17 @@
       $ts.innerHTML = getUXDate($ts.dataset.timestamp);
     }
 
+    $('[data-raw-time]').each(function() {
+      var status = this.dataset.status
+        , time = getUXDate(this.dataset.rawTime);
+
+      // console.log(this.getAttribute('title'));
+      this.setAttribute('title', 'Status: ' + status + ' @ ' + time);
+      // console.log(this.getAttribute('title'));
+    });
+
+
+
     $('.graph').each(function() {
       var data, mem, graph, x, y, line;
 
@@ -45,13 +56,13 @@
         // assign the X function to plot our line as we wish
         .x(function(d,i) {
           // verbose logging to show what's actually being done
-          console.log('Plotting X value for data point: ' + d + ' using index: ' + i + ' to be at: ' + x(i) + ' using our xScale.');
+          // console.log('Plotting X value for data point: ' + d + ' using index: ' + i + ' to be at: ' + x(i) + ' using our xScale.');
           // return the X coordinate where we want to plot this datapoint
           return x(i);
         })
         .y(function(d) {
           // verbose logging to show what's actually being done
-          console.log('Plotting Y value for data point: ' + d + ' to be at: ' + y(d) + " using our yScale.");
+          // console.log('Plotting Y value for data point: ' + d + ' to be at: ' + y(d) + " using our yScale.");
           // return the Y coordinate where we want to plot this datapoint
           return y(d);
         });
