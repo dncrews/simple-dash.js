@@ -111,7 +111,7 @@
     <%
       for(var j=0; j < apiData.length; j++){
 
-        var api_error_rate = apiData[j]["5xx"] / apiData[j].total;
+        var api_error_rate = apiData[j]['status:5xx'] / apiData[j]['status:total'];
         api_error_rate = Math.round(api_error_rate * 100);
 
 
@@ -119,11 +119,11 @@
           case (api_error_rate >= API_DOWN_THRESHOLD):
             api_status = 'down';
             break;
-          case (apiData[j].p95 >= API_SLOW_RESPONSE):
+          case (apiData[j]['time:p95'] >= API_SLOW_RESPONSE):
             api_status = 'slow';
             break;
           default:
-            api_status = "good"
+            api_status = 'good';
             break
         }
 
