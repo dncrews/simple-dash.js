@@ -194,7 +194,7 @@ function getStatus(data, type){
     , s5xx = parseInt(data['status:5xx'], 10) || 0
     , sTotal = parseInt(data['status:total'], 10) || 0;
 
-  if (!sTotal) return 'unknown'; // if there was no traffic
+  // if (!sTotal) return 'unknown'; // if there was no traffic
   if ((s5xx / sTotal ) > 0.5) return 'down'; //if error rate > 50%
   if (p95 > slow[type]) return 'slow'; //if response time is slower than 5 secs
 
