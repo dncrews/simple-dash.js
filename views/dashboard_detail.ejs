@@ -15,8 +15,10 @@ if (page_type == "api") {
   DOWN_THRESHOLD = API_DOWN_THRESHOLD;
 };
 
-  var error_rate = current['status:5xx'] / current['status:total'];
-    error_rate = Math.round(error_rate * 100);
+  var error_rate = 0;
+  if (current['status:total'] !== '0') {
+    error_rate = Math.round(current['status:5xx'] / current['status:total']);
+  }
 
   switch (true) {
       case (error_rate >= DOWN_THRESHOLD):
