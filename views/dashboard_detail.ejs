@@ -93,8 +93,8 @@ if (page_type == "api") {
 
     <div class="item resp_time">
       <span class="title">p95 response time</span>
-      <span class="metric"><%- current['time:p95'] %>
-        <% if (current['time:p95'] !== 'n/a') { %><span class="suffix">ms</span><% } %>
+      <span class="metric"><%- current['time:p95'] %><% if (current['time:p95'] !== 'n/a')
+        { %><span class="suffix">ms</span><% } %>
       </span>
     </div>
 
