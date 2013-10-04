@@ -18,10 +18,13 @@ if (page_type == "api") {
   var error_rate = current['status:5xx'] / current['status:total'];
     error_rate = Math.round(error_rate * 100);
 
-
   switch (true) {
       case (error_rate >= DOWN_THRESHOLD):
         status = 'down';
+        break;
+      case (parseInt(current['time:p95']) === 0):
+        current['time:p95'] = 'n/a';
+        status = 'unknown';
         break;
       case (current['time:p95'] >= SLOW_RESPONSE):
         status = 'slow';
@@ -90,7 +93,11 @@ if (page_type == "api") {
 
     <div class="item resp_time">
       <span class="title">p95 response time</span>
-      <span class="metric"><%- current['time:p95'] %><span class="suffix">ms</span></span>
+      <span class="metric"><%- current['time:p95'] %>
+        <% if (current['time:p95'] !== 'n/a') { %>
+        <span class="suffix">ms</span>
+        <% } %>
+      </span>
     </div>
 
 
