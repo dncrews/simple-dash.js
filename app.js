@@ -97,7 +97,10 @@ app.get('/detail/:appName', function(req, res){
     getApiRecent()
   ]).then(function (results) {
     var docs = results[0]
-      , apiDocs = results[1];
+      , apiDocs = results[1]
+      , DATA_KEY = 'status:dashboard:frontier:mem_response'
+      , primaryDoc = docs[0][DATA_KEY]
+      , _rel, _data, status_data;
 
     //TODO: keep history that is TODAY
     //TODO: show history by 5 min increments and output time
@@ -105,39 +108,34 @@ app.get('/detail/:appName', function(req, res){
     var status_history = [];
     //parse the docs for a status timeline
     for(var i=0; i< docs.length; i++) {
+      _rel = docs[i];
       //if timestamp is available, use get the time data
-      var status_data = {
-        time: getUXDate(docs[i].timeBucket)
+      status_data = {
+        time: getUXDate(_rel.timeBucket)
       };
+      _data = _rel[DATA_KEY];
 
-      //if data is there, parse it. If now, set status to 'unknown'
-      if (docs[i]["status:dashboard:frontier:memory_avg"]) {
-        status_data.memory = docs[i]["status:dashboard:frontier:memory_avg"].avg;
-      }
-      if (docs[i]["status:dashboard:frontier:response_times"] && docs[i]["status:dashboard:frontier:response_codes"]) {
-        var p95_rt = docs[i]["status:dashboard:frontier:response_times"].p95;
-        //calc error rate from 5xx_count / total_req_count
-        var err_rate = docs[i]["status:dashboard:frontier:response_codes"]["5xx"] / docs[i]["status:dashboard:frontier:response_codes"].total;
-
-        //prep status obj
-        status_data.status = getStatus(p95_rt, err_rate);
-
-      } else {
-        status_data.status = "unknown";//we don't have the data we need.
-      }
+      //if data is there, parse it. If not, set status to 'unknown'
+      status_data.memory = parseInt(_data['mem:avg'], 10) || 0;
+      status_data.status = _data['status:5xx'] && _data['status:total'] ?
+                getStatus(_data['time:p95'], _data['status:5xx'] / _data['status:total']) :'unknown';
 
       //add to the status_history array
       status_history.push(status_data);
-
     } //for()
 
     res.render('dashboard_detail', {
       api_data: apiDocs,
       app_id: req.params.appName,
       status_history: status_history,
-      response_times: docs[0]["status:dashboard:frontier:response_times"],
-      response_codes: docs[0]["status:dashboard:frontier:response_codes"],
-      memory_usage: docs[0]["status:dashboard:frontier:memory_avg"],
+      responseP95: primaryDoc['time:p95'],
+      response_codes: {
+        '2xx' : primaryDoc['status:2xx'],
+        '3xx' : primaryDoc['status:3xx'],
+        '4xx' : primaryDoc['status:4xx'],
+        '5xx' : primaryDoc['status:5xx'],
+        'total' : primaryDoc['status:total']
+      },
       page_type: "app",
       updated : docs[0].timeBucket
     });
@@ -158,9 +156,9 @@ app.get('/detail/:appName', function(req, res){
  * API DETAIL dashboard page
  */
  // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
-app.get('/api_detail/:appName', function(req, res){
+app.get('/api_detail/:apiName', function(req, res){
 
-  db.apiStatus.find({ "api" : req.params.appName }).sort({ timestamp : -1 }, function(err, docs) {
+  db.apiStatus.find({ "api" : req.params.apiName }).sort({ timestamp : -1 }, function(err, docs) {
 
     //TODO: keep history that is TODAY
     //TODO: show history by 5 min increments and output time
@@ -191,10 +189,11 @@ app.get('/api_detail/:appName', function(req, res){
 
     } //for()
 
+    console.log(docs[0]);
     res.render('dashboard_detail', {
-      app_id: req.params.appName,
+      app_id: req.params.apiName,
       status_history: status_history,
-      response_times: docs[0],
+      responseP95: docs[0].p95,
       response_codes: docs[0],
       page_type: "api",
       updated : docs[0].timestamp
@@ -383,7 +382,7 @@ app.post('/', function(req, res){
  * This should return the app's history in "buckets"
  */
 app.get('/history/:appName', function(req, res, next) {
-  db.appBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
+  db.fullAppBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
     res.send(docs);
   });
 });
@@ -398,7 +397,7 @@ app.get('/api', function(req, res, next) {
  * This shows ALL entries in the rawStatus
  */
 app.get('/sample', function(req, res, next) {
-  db.appBucket.find().sort({ "timestamp" : -1 }).limit(200, function(err, data) {
+  db.fullAppBucket.find().sort({ "timestamp" : -1 }).limit(200, function(err, data) {
     res.send(data);
   });
 });
@@ -438,7 +437,8 @@ function getRecent() {
     , appNames = [];
 
   // Get all (200 most recent) time buckets for all apps
-  db.appBucket.find().sort({ "timeBucket" : -1, "appName": 1 }).limit(200, function(err, docs) {
+  // db.appBucket.find().sort({ "timeBucket" : -1, "appName": 1 }).limit(200, function(err, docs) {
+  db.fullAppBucket.find().sort({ "timeBucket" : -1, "appName": 1 }).limit(200, function(err, docs) {
     if (err) {
       console.warn(err);
       dfd.reject();
@@ -459,7 +459,8 @@ function getRecent() {
 
 function getBucket(appName) {
   var dfd = Q.defer();
-  db.appBucket.find({ "appName" : appName }).sort({ timeBucket : -1 }, function(err, docs) {
+  // db.appBucket.find({ "appName" : appName }).sort({ timeBucket : -1 }, function(err, docs) {
+  db.fullAppBucket.find({ "appName" : appName }).sort({ timeBucket : -1 }, function(err, docs) {
     if (err) {
       return dfd.reject(err);
     }
@@ -509,7 +510,7 @@ app.get('/home', function(req, res, next){
      */
     'text/html': function() {
       getRecent().then(function(appData) {
-        res.render('dashboard', {appData : appData});
+        res.render('dashboard_old', {appData : appData});
       });
     },
 

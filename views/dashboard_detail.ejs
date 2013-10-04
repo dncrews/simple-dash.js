@@ -3,12 +3,12 @@
     , FAST_RESPONSE = 300
     , DOWN_THRESHOLD = 50
     , WARN_MEMORY = 400
-    , MEMORY_KEY = "status:dashboard:frontier:memory_avg"
-    , CODE_KEY = "status:dashboard:frontier:response_codes"
-    , TIME_KEY = "status:dashboard:frontier:response_times";
+    , DATA_KEY = 'status:dashboard:frontier:mem_response'
+    , ERROR_KEY = 'status:dashboard:frontier:heroku_errors';
+
 
   var API_SLOW_RESPONSE = 1000
-    , API_DOWN_THRESHOLD = 50
+    , API_DOWN_THRESHOLD = 50;
 
 if (page_type == "api") {
   SLOW_RESPONSE = API_SLOW_RESPONSE;
@@ -23,7 +23,7 @@ if (page_type == "api") {
       case (error_rate >= DOWN_THRESHOLD):
         status = 'down';
         break;
-      case (response_times.p95 >= SLOW_RESPONSE):
+      case (responseP95 >= SLOW_RESPONSE):
         status = 'slow';
         break;
       default:
@@ -90,7 +90,7 @@ if (page_type == "api") {
 
     <div class="item resp_time">
       <span class="title">p95 response time</span>
-      <span class="metric"><%- response_times.p95 %><span class="suffix">ms</span></span>
+      <span class="metric"><%- responseP95 %><span class="suffix">ms</span></span>
     </div>
 
 

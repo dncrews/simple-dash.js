@@ -3,13 +3,12 @@
     , FAST_RESPONSE = 300
     , DOWN_THRESHOLD = 50
     , WARN_MEMORY = 400
-    , MEMORY_KEY = "status:dashboard:frontier:memory_avg"
-    , CODE_KEY = "status:dashboard:frontier:response_codes"
-    , TIME_KEY = "status:dashboard:frontier:response_times";
+    , DATA_KEY = 'status:dashboard:frontier:mem_response'
+    , ERROR_KEY = 'status:dashboard:frontier:heroku_errors';
 
 
   var API_SLOW_RESPONSE = 1000
-    , API_DOWN_THRESHOLD = 50
+    , API_DOWN_THRESHOLD = 50;
 %>
 
 <!DOCTYPE html>
@@ -65,15 +64,17 @@
     <tr>
     <%
       // TODO: CLEAN UP THIS CODE & THESE RULES. SHOULD THESE EVEN BE HANDLED HERE? A: NO
-      var _rel, appName, memAvg, codeTotal, codeErr, codeAvg, respTime, status, glyph;
+      var _rel, _data, _errors, appName, memAvg, codeTotal, codeErr, codeAvg, respTime, status, glyph;
       for (var i=0, l=appData.length; i < l; i++) {
-        var _rel = appData[i];
+        _rel = appData[i];
+        _data = _rel[DATA_KEY];
+        _errors = _rel[ERROR_KEY];
         appName = _rel.appName;
-        memAvg = _rel[MEMORY_KEY] && parseInt(_rel[MEMORY_KEY].avg) || 0;
-        codeTotal = _rel[CODE_KEY] && parseInt(_rel[CODE_KEY].total) || 0;
-        codeErr = _rel[CODE_KEY] && parseInt(_rel[CODE_KEY]['5xx']) || 0;
+        memAvg = parseInt(_data['mem:avg']) || 0;
+        codeTotal = parseInt(_data['status:total']) || 0;
+        codeErr = parseInt(_data['status:5xx']) || 0;
         codeAvg = (codeTotal && codeErr ? Math.round(10000 * codeErr / codeTotal) / 100 : 0);
-        respTime = _rel[TIME_KEY] && parseInt(_rel[TIME_KEY].p95) || 0;
+        respTime = _data['time:p95'] || 0;
 
         switch (true) {
           case (codeAvg >= DOWN_THRESHOLD):
@@ -83,7 +84,7 @@
             status = 'slow';
             break;
           default:
-            status = "good"
+            status = 'good';
             break
         }
 

@@ -1,11 +1,10 @@
 <%
-  var slowResponse = 5000
-    , fastResponse = 300
-    , downErrorAvg = 50
-    , warnMemory = 400
-    , memoryKey = "status:dashboard:frontier:memory_avg"
-    , codeKey = "status:dashboard:frontier:response_codes"
-    , timeKey = "status:dashboard:frontier:response_times";
+  var SLOW_RESPONSE = 5000
+    , FAST_RESPONSE = 300
+    , DOWN_THRESHOLD = 50
+    , WARN_MEMORY = 400
+    , DATA_KEY = 'status:dashboard:frontier:mem_response'
+    , ERROR_KEY = 'status:dashboard:frontier:heroku_errors';
 %>
 <!DOCTYPE html>
 <html>
@@ -25,26 +24,29 @@
       <th>Memory Usage</th>
     </thead>
     <%
+      // TODO: CLEAN UP THIS CODE & THESE RULES. SHOULD THESE EVEN BE HANDLED HERE? A: NO
+      var _rel, _data, _errors, appName, memAvg, codeTotal, codeErr, codeAvg, respTime, status, glyph;
       for (var i=0, l=appData.length; i < l; i++) {
-        var _rel = appData[i];
+        _rel = appData[i];
+        _data = _rel[DATA_KEY];
+        _errors = _rel[ERROR_KEY];
         appName = _rel.appName;
-        memAvg = _rel[memoryKey] && parseInt(_rel[memoryKey].avg) || 0;
-        codeTotal = _rel[codeKey] && parseInt(_rel[codeKey].total) || 0;
-        codeErr = _rel[codeKey] && parseInt(_rel[codeKey]['5xx']) || 0;
+        memAvg = parseInt(_data['mem:avg']) || 0;
+        codeTotal = parseInt(_data['status:total']) || 0;
+        codeErr = parseInt(_data['status:5xx']) || 0;
         codeAvg = (codeTotal && codeErr ? Math.round(10000 * codeErr / codeTotal) / 100 : 0);
-        respTime = _rel[timeKey] && parseInt(_rel[timeKey].p95) || 0;
-        status = "";
-        switch (true) {
-          case (codeAvg >= downErrorAvg):
+        respTime = _data['time:p95'] || 0;
+
+         switch (true) {
+          case (codeAvg >= DOWN_THRESHOLD):
             status = 'danger';
             break;
-          case (respTime >= slowResponse):
-          case (memAvg >= warnMemory):
+          case (respTime >= SLOW_RESPONSE):
             status = 'warning';
             break;
-          case (respTime < fastResponse):
-            status = 'success';
-            break;
+          default:
+            status = '';
+            break
         }
     %>
       <tr class="<%- status %>">
