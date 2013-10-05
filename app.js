@@ -15,10 +15,10 @@ var request = require('superagent')
  * Local Vars
  */
 var app = module.exports = express()
-  , port = process.env.PORT || 5000
-  , baseUrl = process.env.BASE_URL || 'localhost:' + port
-  , db = require('./lib/mongoClient')
-  , bucketLength = 300000; // 5 minutes
+  , config = require('./lib/config')
+  , dash = require('./lib/dash')
+  , details = require('./lib/details')
+  , logger = require('./lib/logger'); // 5 minutes
 
 /**
  * Express Configuration
@@ -65,9 +65,7 @@ app.get('/', function(req, res, next){
      * Dashboard View
      */
     'text/html': function() {
-      return Q.all([getRecent(), getApiRecent()]).then(function(data) {
-        var appData = data[0]
-          , apiData = data[1];
+      dash.appAndApi(function(appData, apiData) {
         res.render('dashboard_home', {appData : appData, apiData: apiData, updated : appData[0].timeBucket });
       });
     },
@@ -80,8 +78,11 @@ app.get('/', function(req, res, next){
      * A: YES. MUCH BETTER.
      */
     'application/json': function() {
-      getRecent().then(function(appData) {
-        res.send(appData);
+      dash.appAndApi(function(appData, apiData) {
+        res.send({
+          appData : appData,
+          apiData : apiData
+        });
       });
     }
   });
@@ -91,49 +92,8 @@ app.get('/', function(req, res, next){
  * Detail dashboard page
  */
 app.get('/detail/:appName', function(req, res){
-
-  Q.all([
-    getAppBucket(req.params.appName),
-    getApiRecent()
-  ]).then(function (results) {
-    var docs = results[0]
-      , apiDocs = results[1]
-      , DATA_KEY = 'status:dashboard:frontier:mem_response'
-      , current = docs[0][DATA_KEY]
-      , _rel, _data, status_data;
-
-    current.timestamp = docs[0].timestamp;
-
-    //TODO: keep history that is TODAY
-    //TODO: show history by 5 min increments and output time
-
-    var status_history = [];
-    //parse the docs for a status timeline
-    for(var i=0; i< docs.length; i++) {
-      _rel = docs[i];
-      _data = _rel[DATA_KEY];
-      //if timestamp is available, use get the time data
-      status_data = {
-        time: {
-          raw: _rel.timeBucket,
-          pretty: getUXDate(_rel.timeBucket)
-        },
-        memory: parseInt(_data['mem:avg'], 10) || 0,
-        status: getStatus(_data, 'app')
-      };
-
-      //add to the status_history array
-      status_history.push(status_data);
-    } //for()
-
-    res.render('dashboard_detail', {
-      api_data: apiDocs,
-      app_id: req.params.appName,
-      status_history: status_history,
-      current: current,
-      page_type: "app",
-      updated : docs[0].timeBucket
-    });
+  details.app(req.params.appName, function(data) {
+    res.render('dashboard_detail', data);
   });
 });
 
@@ -142,348 +102,22 @@ app.get('/detail/:appName', function(req, res){
  */
  // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
 app.get('/api_detail/:apiName', function(req, res){
-  getAPIBucket(req.params.apiName).then(function(docs) {
-    //TODO: keep history that is TODAY
-    //TODO: show history by 5 min increments and output time
-
-    var status_history = []
-      , current = docs[0]
-      , _rel, status_data;
-    //parse the docs for a status timeline
-    for(var i=0; i< docs.length; i++) {
-      _rel = docs[i];
-      //prep status obj
-      status_data = {
-        time: {
-          raw: _rel.timestamp,
-          pretty: getUXDate(_rel.timestamp)
-        },
-        status: getStatus(_rel, 'api')
-      };
-
-      //add to the status_history array
-      status_history.push(status_data);
-    } //for()
-
-    res.render('dashboard_detail', {
-      app_id: req.params.apiName,
-      status_history: status_history,
-      current : current,
-      page_type: "api",
-      updated : docs[0].timestamp
-    });
+  details.api(req.params.apiName, function(data) {
+    res.render('dashboard_detail', data);
   });
 });
-
-/**
- * Returns the status of the app
- *
- * Requires ['time:p95'], ['status:5xx'], ['status:total']
- *
- * @param  {Object} data The log of the app at that time.
- * @param  {String} type Either 'app' or 'api', at the moment
- * @return {String}      Status of the app
- */
-function getStatus(data, type){
-  var slow = {
-    'app' : 5000,
-    'api' : 1000
-  };
-  if (! slow[type]) type = 'app';
-  var p95 = parseInt(data['time:p95'], 10) || 0
-    , s5xx = parseInt(data['status:5xx'], 10) || 0
-    , sTotal = parseInt(data['status:total'], 10) || 0;
-
-  // if (!sTotal) return 'unknown'; // if there was no traffic
-  if ((s5xx / sTotal ) > 0.5) return 'down'; //if error rate > 50%
-  if (p95 > slow[type]) return 'slow'; //if response time is slower than 5 secs
-
-  return "good"; //if no error flags were thrown, set status to 'good'
-}
 
 
 /**
  * Adding statuses to the log
+ *
+ * Should alwasy return a responeCode
  */
 app.post('/', function(req, res){
-  // TODO: I think we should parse the response now into app-specific as well
-  var content = req.body
-    , alertTitle = content.alert_title.replace(/\./g, ':')
-    , timestamp = new Date().getTime()
-    , timeBucket = Math.floor(timestamp/bucketLength) // This should create buckets at 5-minute intervals
-    , dfds = []
-    , type , i, l, _rel, herokuErrors, _hRel, appName;
-
-  switch (alertTitle) {
-  case 'status:dashboard:frontier:mem_response':
-    type = 'app';
-    break;
-  case 'status:dashboard:frontier:api:flat_response_data':
-    type = 'api';
-    break;
-  case 'status:dashboard:frontier:heroku_errors':
-    type = 'herokuErrors';
-    break;
-  default:
-    console.warn("I NEED AN ADULT!!!");
-    console.info(content);
-    res.send(400);
-  }
-
-  if (typeof content.data === 'string') {
-    try {
-      content.data = JSON.parse(content.data);
-    } catch (e) {
-      console.warn(e);
-      return res.send(500);
-    }
-  }
-
-  dfds.push(createRawStatus());
-  dfds.push(createRawBucket());
-
-  /**
-   * If we're looking at Heroku errors, we want to stick them
-   * into the appBuckets, but we need to format them first to
-   * match the other App-level data (mem_response)
-   */
-  if (type === 'herokuErrors') {
-    content.data = restructureHerokuErrors(content.data);
-    type = 'app';
-  }
-
-  if (type === 'app') {
-    for (i=0, l=content.data.length; i<l; i++) {
-      _rel = content.data[i];
-      dfds.push(createAppBucket(_rel));
-    }
-  }
-
-  if (type === 'api') {
-    for (i=0, l=content.data.length; i<l; i++) {
-      _rel = content.data[i];
-      dfds.push(createApiStatus(_rel));
-    }
-  }
-
-  Q.all(dfds).then(function() {
-    res.send(201);
-  });
-
-
-  /**
-   * This gets called in the other methods.
-   * I just want to make sure the db is finished saving
-   * before I respond saying so.
-   */
-  function getAsyncResolve(dfd) {
-    return function () {
-      dfd.resolve();
-    };
-  }
-
-  /**
-   * Creates the record in rawStatus
-   * This is site-wide data
-   */
-  function createRawStatus() {
-    var dfd = Q.defer();
-    content.timestamp = timestamp;
-    db.rawStatus.save(content, getAsyncResolve(dfd));
-    return dfd.promise;
-  }
-  /**
-   * Creates the record in rawBucket
-   * This is site-wide data in sets
-   */
-  function createRawBucket() {
-    var dfd = Q.defer();
-    db.rawBucket.findOne({ "timeBucket" : timeBucket }, function(err, doc) {
-      doc = doc || { "timeBucket" : timeBucket };
-      doc[alertTitle] = content.data;
-      db.rawBucket.save(doc, getAsyncResolve(dfd));
-    });
-    return dfd.promise;
-  }
-
-  function createAppBucket(data) {
-    var appName = data.fs_host
-      , dfd = Q.defer();
-
-    db.appBucket.findOne({ "timeBucket" : timeBucket, "appName" : appName }, function(err, doc) {
-      doc = doc || {
-        "timeBucket" : timeBucket,
-        "appName" : appName,
-        "status:dashboard:frontier:mem_response" : {},
-        "status:dashboard:frontier:heroku_errors" : {}
-      };
-
-      doc[alertTitle] = data;
-      db.appBucket.save(doc, getAsyncResolve(dfd));
-    });
-
-    return dfd.promise;
-  }
-
-  function createApiStatus(data) {
-    var dfd = Q.defer();
-
-    data.alertTitle = content.alert_title;
-    data.timestamp = timestamp;
-    db.apiStatus.save(data, getAsyncResolve(dfd));
-
-    return dfd.promise;
-  }
-
-  function restructureHerokuErrors(data) {
-    var i, l, _rel, _hRel, appName
-      , herokuErrors = {}
-      , newData = [];
-    for (i=0, l=data.length; i<l; i++) {
-      _rel = data[i];
-      _hRel = herokuErrors[_rel.fs_host];
-      if (! herokuErrors[_rel.fs_host]) {
-        _hRel = herokuErrors[_rel.fs_host] = {
-          "fs_host" : _rel.fs_host,
-          "codes" : []
-        };
-      }
-      delete _rel.fs_host;
-      _hRel.codes.push(_rel);
-    }
-    for (appName in herokuErrors) {
-      if (! herokuErrors.hasOwnProperty(appName)) continue;
-      newData.push(herokuErrors[appName]);
-    }
-    return newData;
-  }
+  logger(req.body, function(code) {
+    res.send(code);
+  })
 });
-
-/**
- * This should return the app's history in "buckets"
- */
-app.get('/history/:appName', function(req, res, next) {
-  db.appBucket.find({ "appName" : req.params.appName }).sort({ timeBucket : -1 }, function(err, docs) {
-    res.send(docs);
-  });
-});
-
-app.get('/api', function(req, res, next) {
-  getApiRecent().then(function(data) {
-    res.send(data);
-  });
-});
-
-/**
- * This shows ALL entries in the rawStatus
- */
-app.get('/sample', function(req, res, next) {
-  db.appBucket.find().sort({ "timestamp" : -1 }).limit(200, function(err, data) {
-    res.send(data);
-  });
-});
-
-/**
- * This shows the most recent entries in rawStatus
- */
-app.get('/recent', function(req, res, next) {
-  getRecent().then(function(data) {
-    res.send(data);
-  });
-});
-
-function getApiRecent() {
-  var dfd = Q.defer()
-    , apiNames = [];
-
-  // Get all (200 most recent) time buckets for all apps
-  db.apiStatus.find().sort({ "timestamp" : -1, "api": 1 }).limit(200, function(err, docs) {
-    // Remove all duplicate apiNames
-    docs = docs.filter(function(el) {
-      if (apiNames.indexOf(el.api) === -1) {
-        apiNames.push(el.api);
-        return true;
-      }
-      return false;
-    });
-    dfd.resolve(docs);
-  });
-
-  return dfd.promise;
-}
-
-
-function getRecent() {
-  var dfd = Q.defer()
-    , appNames = [];
-
-  // Get all (200 most recent) time buckets for all apps
-  db.appBucket.find().sort({ "timeBucket" : -1, "appName": 1 }).limit(200, function(err, docs) {
-    if (err) {
-      console.warn(err);
-      dfd.reject();
-    }
-    // Remove all duplicate appNames
-    docs = docs && docs.filter(function(el) {
-      if (appNames.indexOf(el.appName) === -1) {
-        appNames.push(el.appName);
-        return true;
-      }
-      return false;
-    });
-    dfd.resolve(docs);
-  });
-
-  return dfd.promise;
-}
-
-function getAppBucket(appName) {
-  var dfd = Q.defer();
-  db.appBucket.find({ "appName" : appName }).sort({ timeBucket : -1 }, function(err, docs) {
-    if (err) {
-      return dfd.reject(err);
-    }
-    dfd.resolve(docs);
-  });
-  return dfd.promise;
-}
-
-function getAPIBucket(apiName) {
-  var dfd = Q.defer();
-  db.apiStatus.find({ "api" : apiName }).sort({ timestamp : -1 }, function(err, docs) {
-    if (err) {
-      return dfd.reject(err);
-    }
-    dfd.resolve(docs);
-  });
-  return dfd.promise;
-}
-
-function getUXDate(timestamp) {
-  var date, dd, hours, minutes, seconds;
-  if ((timestamp.toString()).length < 13) {
-    // We're working with a timeBucket
-    timestamp = timestamp * bucketLength;
-  }
-
-  date = new Date(timestamp);
-  dd = date.getDate();
-  hours = date.getHours();
-  minutes = date.getMinutes();
-  seconds = date.getSeconds();
-
-  function pad(unit) {
-    var s = unit.toString();
-
-    while (s.length < 2) {
-      s += '0';
-    }
-
-    return s;
-  }
-
-  return '' + hours + ':' + pad(minutes) + ':' + pad(seconds) || '';
-}
 
 /**
  * Serve superagent to the browser, when necessary
@@ -499,7 +133,7 @@ app.get('/home', function(req, res, next){
      * Dashboard View
      */
     'text/html': function() {
-      getRecent().then(function(appData) {
+      dash.appOnly(function(appData) {
         res.render('dashboard_old', {appData : appData});
       });
     },
@@ -512,16 +146,16 @@ app.get('/home', function(req, res, next){
      * A: YES. MUCH BETTER.
      */
     'application/json': function() {
-      getRecent().then(function(data) {
-        res.send(data);
+      dash.appOnly(function(appData) {
+        res.send(appData);
       });
     }
   });
 });
 
 
-app.listen(port, function() {
-  console.info("Listening on " + port);
+app.listen(config.port, function() {
+  console.info("Listening on " + config.port);
 });
 
 
