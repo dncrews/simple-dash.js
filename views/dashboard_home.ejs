@@ -41,27 +41,20 @@
 
   </div>
 
-  <div class="legend">
-    <span class="item status-good"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good </span>
-    <span class="item status-slow"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow </span>
-    <span class="item status-down"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</span>
-    <span class="item status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unknown </span>
+  <div class="row">
+    <span class="col-md-offset-7 col-md-1 item status-good"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good </span>
+    <span class="col-md-1 item status-slow"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow </span>
+    <span class="col-md-1 item status-down"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</span>
+    <span class="col-md-2 item status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unknown </span>
   </div>
 
-  <table class="status-table">
-    <th colspan="3">Upstream</th>
-    <tr>
-     <!--  <td class="status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> HA Proxy</td>
-      <td class="status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Heroku</td>
-      <td class="status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Splunk</td> -->
-    </tr>
+  <div class="container status-table">
+    <h4>Upstream</h4>
   </table>
 
-  <table class="status-table">
-    <thead>
-      <th colspan="3">Frontier</th>
-    </thead>
-    <tr>
+
+  <div class="container status-table">
+    <h4>Frontier</h4>
     <%
       // TODO: CLEAN UP THIS CODE & THESE RULES. SHOULD THESE EVEN BE HANDLED HERE? A: NO
       var _rel, _data, _errors, appName, memAvg, codeTotal, codeErr, codeAvg, respTime, status, glyph;
@@ -94,20 +87,12 @@
           "down" : "minus-sign"
         }[status] || "question-sign");
     %>
-    <%  if ( i%3 === 0) { %>
-      </tr><tr>
+      <div class="col-md-4 status-<%- status %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <a class="app_link" href="detail/<%- appName %>"><%- appName %></a></div>
     <% } %>
+  </div>
 
-      <td class="status-<%- status %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <a class="app_link" href="detail/<%- appName %>"><%- appName %></a></td>
-    <% } %>
-    </tr>
-  </table>
-
-  <table class="status-table">
-    <thead>
-      <th colspan="3">APIs</th>
-    </thead>
-    <tr>
+  <div class="container status-table">
+    <h4>APIs</h4>
     <%
       for(var j=0; j < apiData.length; j++){
 
@@ -134,19 +119,11 @@
         }[api_status] || "question-sign")
 
     %>
-
-    <%  if ( j%3 === 0) { %>
-      </tr><tr>
-    <% } %>
-
-      <td class="status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="api_detail/<%- apiData[j].api %>"><%- apiData[j].api %></a></td>
-
+      <div class="col-md-4 status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="api_detail/<%- apiData[j].api %>"><%- apiData[j].api %></a></div>
     <%
       }
     %>
-
-  </tr>
-  </table>
+  </div>
 
 
 
