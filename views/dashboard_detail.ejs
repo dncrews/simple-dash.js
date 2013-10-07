@@ -17,7 +17,7 @@ if (page_type == "api") {
 
   var error_rate = 0;
   if (current['status:total'] !== '0') {
-    error_rate = Math.round(current['status:5xx'] / current['status:total']);
+    error_rate = Math.round(current['status:5xx'] / current['status:total'] * 100);
   }
 
   switch (true) {
