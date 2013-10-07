@@ -20,7 +20,9 @@
     "redis": "~0.8.5",
     "mongojs": "~0.9.6",
     "q": "~0.9.7",
-    "stylus": "~0.38.0"
+    "stylus": "~0.38.0",
+    "heroku.js": "~0.12.2",
+    "sendgrid": "~0.3.1"
   },
   "repository": "git://github.com/jamischarles/simple-dash.js",
   "main": "app.js",
