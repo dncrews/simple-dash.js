@@ -59,7 +59,7 @@ if (page_type == "api") {
 
  -->
 
-<body class="detail">
+<body class="detail <%- page_type %>_type">
   <p><a href="../">Home</a></p>
   <p class="last_updated">Last updated at <span id="updatedTimestamp" data-timestamp="<%- updated %>"></span></p>
 
@@ -113,6 +113,19 @@ if (page_type == "api") {
         <span>3xx: <%- current['status:3xx'] %></span>
         <span>4xx: <%- current['status:4xx'] %></span>
         <span>5xx: <%- current['status:5xx'] %></span>
+      </div>
+
+    </div>
+
+    <div class="item status_count hide-api">
+      <span class="title">Heroku codes</span>
+      <div class="totals">
+
+      <% if (typeof heroku_errors == "undefined") heroku_errors = []; %>
+      <% for(var k=0; k < heroku_errors.length; k++ ) { %>
+        <span title="<%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['desc'] %>"><%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['count'] %>  </span>
+
+      <% } %>
       </div>
 
     </div>
