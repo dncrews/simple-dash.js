@@ -48,6 +48,7 @@ if (page_type == "api") {
   <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap-theme.min.css">
   <link rel="stylesheet" href="../css/dashboard.css">
+  <meta name="viewport" content="width=device-width">
   <meta http-equiv="refresh" content="60">
 </head>
 
@@ -63,150 +64,137 @@ if (page_type == "api") {
   <p><a href="../">Home</a></p>
   <p class="last_updated">Last updated at <span id="updatedTimestamp" data-timestamp="<%- updated %>"></span></p>
 
-  <div class="mast_head section">
-    <h1 class="page_title"><%- app_id %> </h1>
+  <div class="container">
+    <div class="mast_head section">
+      <h1 class="page_title"><%- app_id %> </h1>
 
 
 
-    <div class="curr_status <%- status %>">
-      <span class="glyphicon <%- glyph %>" style="top: 4px;"></span>
-      <span style="text-transform: capitalize;"><%- status %></span>
-    </div>
-
-
-    <!-- <p>Home page</p> -->
-
-  </div>
-
-
-
-
-  <div class="health section cf">
-    <h2 class="section_heading">Current Health</h2>
-
-    <div class="item throughput">
-      <span class="title">req / 5 min</span>
-      <span class="metric"><%- current['status:total'] %><span class="suffix">req</span></span>
-    </div>
-
-    <div class="item resp_time">
-      <span class="title">p95 response time</span>
-      <% if (parseInt(current['time:p95']) === 0) { %>
-      <span class="metric">n/a</span>
-      <% } else { %>
-      <span class="metric"><%- current['time:p95'] %><span class="suffix">ms</span>
-      <% } %>
-      </span>
-    </div>
-
-
-    <div class="item error_rate">
-      <span class="title">Error rate (5xx / total)</span>
-      <span class="metric"><%- error_rate %><span class="suffix">%</span></span>
-
-    </div>
-
-    <div class="item status_count">
-      <span class="title">Status codes</span>
-      <div class="totals">
-        <span>2xx: <%- current['status:2xx'] %></span>
-        <span>3xx: <%- current['status:3xx'] %></span>
-        <span>4xx: <%- current['status:4xx'] %></span>
-        <span>5xx: <%- current['status:5xx'] %></span>
+      <div class="curr_status <%- status %>">
+        <span class="glyphicon <%- glyph %>" style="top: 4px;"></span>
+        <span style="text-transform: capitalize;"><%- status %></span>
       </div>
 
+
+      <!-- <p>Home page</p> -->
+
     </div>
 
-    <div class="item status_count hide-api">
-      <span class="title">Heroku codes</span>
-      <div class="totals">
 
-      <% if (typeof heroku_errors == "undefined") heroku_errors = []; %>
-      <% for(var k=0; k < heroku_errors.length; k++ ) { %>
-        <span title="<%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['desc'] %>"><%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['count'] %>  </span>
 
-      <% } %>
+
+    <div class="health section cf">
+      <h2 class="section_heading">Current Health</h2>
+
+      <div class="item throughput">
+        <span class="title">req / 5 min</span>
+        <span class="metric"><%- current['status:total'] %><span class="suffix">req</span></span>
       </div>
 
-    </div>
-
-  </div><!-- /.health-->
-
-  <div class="history section">
-    <h2 class="section_heading">Uptime History</h2>
-    <!-- BUILD IT with fake data first... -->
-    <div class="history_timeline cf">
-      <% for (var i=0; i < status_history.length; i++) { %>
-        <span
-          class="status-<%- status_history[i].status %>"
-          data-day=""
-          data-status="<%- status_history[i].status %>"
-          data-raw-time="<%- status_history[i].time.raw %>"
-          title="Status: <%- status_history[i].status %> @ <%- status_history[i].time.pretty %>"></span>
-      <% } %>
-    </div><!-- /.history_timeline -->
-  </div><!-- /.history -->
-
-<!--   <div class="memory section">
-    <h2 class="section_heading">Memory History</h2>
-    <div class="graph" data-memory-status='<%- JSON.stringify(status_history) %>'></div>
-  </div> -->
+      <div class="item resp_time">
+        <span class="title">p95 response time</span>
+        <% if (parseInt(current['time:p95']) === 0) { %>
+        <span class="metric">n/a</span>
+        <% } else { %>
+        <span class="metric"><%- current['time:p95'] %><span class="suffix">ms</span>
+        <% } %>
+        </span>
+      </div>
 
 
-  <div class="other_apis section">
-    <h2 class="section_heading">Dependent APIs</h2>
+      <div class="item error_rate">
+        <span class="title">Error rate (5xx / total)</span>
+        <span class="metric"><%- error_rate %><span class="suffix">%</span></span>
 
-    <table class="status-table">
+      </div>
 
-     <tr>
-    <%
-      if(typeof api_data != "undefined") {
+      <div class="item status_count">
+        <span class="title">Status codes</span>
+        <div class="totals">
+          <span>2xx: <%- current['status:2xx'] %></span>
+          <span>3xx: <%- current['status:3xx'] %></span>
+          <span>4xx: <%- current['status:4xx'] %></span>
+          <span>5xx: <%- current['status:5xx'] %></span>
+        </div>
 
-        var dependent_apis = [api_data[0]];
+      </div>
 
-        for(var j=0; j < dependent_apis.length; j++) {
+      <div class="item status_count hide-api">
+        <span class="title">Heroku codes</span>
+        <div class="totals">
 
-          var api_error_rate = dependent_apis["5xx"] / dependent_apis.total;
-          api_error_rate = Math.round(api_error_rate * 100);
+        <% if (typeof heroku_errors == "undefined") heroku_errors = []; %>
+        <% for(var k=0; k < heroku_errors.length; k++ ) { %>
+          <span title="<%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['desc'] %>"><%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['count'] %>  </span>
+
+        <% } %>
+        </div>
+
+      </div>
+
+    </div><!-- /.health-->
+
+    <div class="history section">
+      <h2 class="section_heading">Uptime History</h2>
+      <!-- BUILD IT with fake data first... -->
+      <div class="history_timeline cf">
+        <% for (var i=0; i < status_history.length; i++) { %>
+          <span
+            class="status-<%- status_history[i].status %>"
+            data-day=""
+            data-status="<%- status_history[i].status %>"
+            data-raw-time="<%- status_history[i].time.raw %>"
+            title="Status: <%- status_history[i].status %> @ <%- status_history[i].time.pretty %>"></span>
+        <% } %>
+      </div><!-- /.history_timeline -->
+    </div><!-- /.history -->
+
+  <!--   <div class="memory section">
+      <h2 class="section_heading">Memory History</h2>
+      <div class="graph" data-memory-status='<%- JSON.stringify(status_history) %>'></div>
+    </div> -->
 
 
-          switch (true) {
-            case (api_error_rate >= API_DOWN_THRESHOLD):
-              api_status = 'down';
-              break;
-            case (dependent_apis.p95 >= API_SLOW_RESPONSE):
-              api_status = 'slow';
-              break;
-            default:
-              api_status = "good"
-              break
-          }
+    <div class="other_apis section">
+      <div class="container status-table">
+        <h3 class="section_heading">Dependent APIs</h3>
+      <%
+        if(typeof api_data != "undefined") {
 
-          api_glyph = "glyphicon-" + ({
-            "good" : "ok-sign",
-            "slow" : "warning-sign",
-            "down" : "minus-sign"
-          }[api_status] || "question-sign")
+          var dependent_apis = [api_data[0]];
 
-    %>
+          for(var j=0; j < dependent_apis.length; j++) {
 
-    <%  if ( j%3 === 0) { %>
-      </tr><tr>
-    <% } %>
+            var api_error_rate = dependent_apis["5xx"] / dependent_apis.total;
+            api_error_rate = Math.round(api_error_rate * 100);
 
-      <td class="status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="../api_detail/<%- dependent_apis[j].api %>"><%- dependent_apis[j].api %></a></td>
 
-    <%
+            switch (true) {
+              case (api_error_rate >= API_DOWN_THRESHOLD):
+                api_status = 'down';
+                break;
+              case (dependent_apis.p95 >= API_SLOW_RESPONSE):
+                api_status = 'slow';
+                break;
+              default:
+                api_status = "good"
+                break
+            }
+
+            api_glyph = "glyphicon-" + ({
+              "good" : "ok-sign",
+              "slow" : "warning-sign",
+              "down" : "minus-sign"
+            }[api_status] || "question-sign")
+
+      %>
+        <div class="col-md-4 status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="../api_detail/<%- dependent_apis[j].api %>"><%- dependent_apis[j].api %></a></div>
+      <%
+        }
       }
-    }
-    %>
-
-  </tr>
-  </table>
-
-
+      %>
+    </div>
   </div>
-
   <script src="../js/utils.js"></script>
   <script src="http://mbostock.github.com/d3/d3.v2.js"></script>
 </body>

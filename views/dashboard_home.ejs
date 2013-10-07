@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css">
   <link rel="stylesheet" href="css/dashboard.css">
+  <meta name="viewport" content="width=device-width">
   <meta http-equiv="refresh" content="60">
 </head>
 
@@ -31,102 +32,103 @@
 <body class="home">
   <p class="last_updated">Last updated at <span id="updatedTimestamp" data-timestamp="<%- updated %>"></span></p>
 
-  <div class="mast_head section">
-    <h1 class="page_title">FamilySearch Status </h1>
+  <div class="container">
+    <div class="mast_head section">
+      <h1 class="page_title">FamilySearch Status </h1>
 
 
 
 
-    <!-- <p>Home page</p> -->
+      <!-- <p>Home page</p> -->
 
-  </div>
+    </div>
 
-  <div class="row">
-    <span class="col-md-offset-7 col-md-1 item status-good"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good </span>
-    <span class="col-md-1 item status-slow"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow </span>
-    <span class="col-md-1 item status-down"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</span>
-    <span class="col-md-2 item status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unknown </span>
-  </div>
+    <div class="row">
+      <span class="col-md-offset-7 col-md-1 item status-good"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good </span>
+      <span class="col-md-1 item status-slow"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow </span>
+      <span class="col-md-1 item status-down"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</span>
+      <span class="col-md-2 item status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unknown </span>
+    </div>
 
-  <div class="container status-table">
-    <h4>Upstream</h4>
-  </table>
+    <div class="container status-table">
+      <h3>Upstream</h3>
+    </table>
 
 
-  <div class="container status-table">
-    <h4>Frontier</h4>
-    <%
-      // TODO: CLEAN UP THIS CODE & THESE RULES. SHOULD THESE EVEN BE HANDLED HERE? A: NO
-      var _rel, _data, _errors, appName, memAvg, codeTotal, codeErr, codeAvg, respTime, status, glyph;
-      for (var i=0, l=appData.length; i < l; i++) {
-        _rel = appData[i];
-        _data = _rel[DATA_KEY];
-        _errors = _rel[ERROR_KEY];
-        appName = _rel.appName;
-        memAvg = parseInt(_data['mem:avg']) || 0;
-        codeTotal = parseInt(_data['status:total']) || 0;
-        codeErr = parseInt(_data['status:5xx']) || 0;
-        codeAvg = (codeTotal && codeErr ? Math.round(10000 * codeErr / codeTotal) / 100 : 0);
-        respTime = _data['time:p95'] || 0;
+    <div class="container status-table">
+      <h3>Frontier</h3>
+      <%
+        // TODO: CLEAN UP THIS CODE & THESE RULES. SHOULD THESE EVEN BE HANDLED HERE? A: NO
+        var _rel, _data, _errors, appName, memAvg, codeTotal, codeErr, codeAvg, respTime, status, glyph;
+        for (var i=0, l=appData.length; i < l; i++) {
+          _rel = appData[i];
+          _data = _rel[DATA_KEY];
+          _errors = _rel[ERROR_KEY];
+          appName = _rel.appName;
+          memAvg = parseInt(_data['mem:avg']) || 0;
+          codeTotal = parseInt(_data['status:total']) || 0;
+          codeErr = parseInt(_data['status:5xx']) || 0;
+          codeAvg = (codeTotal && codeErr ? Math.round(10000 * codeErr / codeTotal) / 100 : 0);
+          respTime = _data['time:p95'] || 0;
 
-        switch (true) {
-          case (codeAvg >= DOWN_THRESHOLD):
-            status = 'down';
-            break;
-          case (respTime >= SLOW_RESPONSE):
-            status = 'slow';
-            break;
-          default:
-            status = 'good';
-            break
+          switch (true) {
+            case (codeAvg >= DOWN_THRESHOLD):
+              status = 'down';
+              break;
+            case (respTime >= SLOW_RESPONSE):
+              status = 'slow';
+              break;
+            default:
+              status = 'good';
+              break
+          }
+
+          glyph = "glyphicon-" + ({
+            "good" : "ok-sign",
+            "slow" : "warning-sign",
+            "down" : "minus-sign"
+          }[status] || "question-sign");
+      %>
+        <div class="col-md-4 status-<%- status %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <a class="app_link" href="detail/<%- appName %>"><%- appName %></a></div>
+      <% } %>
+    </div>
+
+    <div class="container status-table">
+      <h3>APIs</h3>
+      <%
+        for(var j=0; j < apiData.length; j++){
+
+          var api_error_rate = apiData[j]['status:5xx'] / apiData[j]['status:total'];
+          api_error_rate = Math.round(api_error_rate * 100);
+
+
+          switch (true) {
+            case (api_error_rate >= API_DOWN_THRESHOLD):
+              api_status = 'down';
+              break;
+            case (apiData[j]['time:p95'] >= API_SLOW_RESPONSE):
+              api_status = 'slow';
+              break;
+            default:
+              api_status = 'good';
+              break
+          }
+
+          api_glyph = "glyphicon-" + ({
+            "good" : "ok-sign",
+            "slow" : "warning-sign",
+            "down" : "minus-sign"
+          }[api_status] || "question-sign")
+
+      %>
+        <div class="col-md-4 status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="api_detail/<%- apiData[j].api %>"><%- apiData[j].api %></a></div>
+      <%
         }
+      %>
+    </div>
 
-        glyph = "glyphicon-" + ({
-          "good" : "ok-sign",
-          "slow" : "warning-sign",
-          "down" : "minus-sign"
-        }[status] || "question-sign");
-    %>
-      <div class="col-md-4 status-<%- status %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <a class="app_link" href="detail/<%- appName %>"><%- appName %></a></div>
-    <% } %>
+
   </div>
-
-  <div class="container status-table">
-    <h4>APIs</h4>
-    <%
-      for(var j=0; j < apiData.length; j++){
-
-        var api_error_rate = apiData[j]['status:5xx'] / apiData[j]['status:total'];
-        api_error_rate = Math.round(api_error_rate * 100);
-
-
-        switch (true) {
-          case (api_error_rate >= API_DOWN_THRESHOLD):
-            api_status = 'down';
-            break;
-          case (apiData[j]['time:p95'] >= API_SLOW_RESPONSE):
-            api_status = 'slow';
-            break;
-          default:
-            api_status = 'good';
-            break
-        }
-
-        api_glyph = "glyphicon-" + ({
-          "good" : "ok-sign",
-          "slow" : "warning-sign",
-          "down" : "minus-sign"
-        }[api_status] || "question-sign")
-
-    %>
-      <div class="col-md-4 status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="api_detail/<%- apiData[j].api %>"><%- apiData[j].api %></a></div>
-    <%
-      }
-    %>
-  </div>
-
-
-
   <script src="js/utils.js"></script>
 </body>
 </html>
