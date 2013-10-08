@@ -17,3 +17,4 @@ cover_html
 test.js
 .idea
 .env
+public/css/*.css
