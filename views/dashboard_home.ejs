@@ -14,6 +14,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>FamilySearch Status</title>
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css">
   <link rel="stylesheet" href="css/dashboard.css">
@@ -30,34 +31,34 @@
  -->
 
 <body class="home">
+  <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+    <div class="container">
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="/">Home</a></li>
+          <li><a href="./">Last updated at <span id="updatedTimestamp" data-timestamp="<%- updated %>"></span></a></li>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+  <div class="container">
 
-
-  <div class="container pull-left">
-    <p class="last_updated">Last updated at <span id="updatedTimestamp" data-timestamp="<%- updated %>"></span></p>
-    <div class="mast_head section">
-      <h1 class="page_title">FamilySearch Status </h1>
-
-
-
-
-      <!-- <p>Home page</p> -->
-
+    <div class="mast_head section row">
+      <div class="col-md-6 col-xs-12">
+        <h1 class="page_title">FamilySearch Status </h1>
+      </div>
+      <div class="col-md-6 col-xs-12">
+        <div class="legend">
+          <span class="item status-good"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good </span>
+          <span class="item status-slow"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow </span>
+          <span class="item status-down"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</span>
+          <span class="item status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unknown </span>
+        </div>
+      </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-offset-7 col-md-1 item status-good"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good</div>
-      <div class="col-md-1 item status-slow"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow</div>
-      <div class="col-md-1 item status-down"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</div>
-      <div class="col-md-2 item status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unknown</div>
-    </div>
-
-    <div class="row status-table">
-      <h3>Upstream</h3>
-    </div>
-
-
-    <div class="row status-table">
-      <h3>Frontier</h3>
+    <h2>Frontier</h2>
+    <div class="section statuses">
       <%
         // TODO: CLEAN UP THIS CODE & THESE RULES. SHOULD THESE EVEN BE HANDLED HERE? A: NO
         var _rel, _data, _errors, appName, memAvg, codeTotal, codeErr, codeAvg, respTime, status, glyph;
@@ -89,13 +90,11 @@
             "slow" : "warning-sign",
             "down" : "minus-sign"
           }[status] || "question-sign");
-      %>
-        <div class="col-md-4 status-<%- status %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <a class="app_link" href="detail/<%- appName %>"><%- appName %></a></div>
-      <% } %>
+      %><span><a class="app_link status-<%- status %>" href="detail/<%- appName %>"><%- appName %></a></span><% } %>
     </div>
 
-    <div class="row status-table">
-      <h3>APIs</h3>
+    <h2>APIs</h2>
+    <div class="section statuses">
       <%
         for(var j=0; j < apiData.length; j++){
 
@@ -121,13 +120,8 @@
             "down" : "minus-sign"
           }[api_status] || "question-sign")
 
-      %>
-        <div class="col-md-4 status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="api_detail/<%- apiData[j].api %>"><%- apiData[j].api %></a></div>
-      <%
-        }
-      %>
+      %><span><a class="app_link status-<%- api_status %>" href="api_detail/<%- apiData[j].api %>"><%- apiData[j].api %></a></span><% } %>
     </div>
-
 
   </div>
   <script src="js/utils.js"></script>
