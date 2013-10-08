@@ -1,101 +1,98 @@
-body
+body {
   color: #3d3d3d;
   padding: 0;
-
-h1
+}
+h1 {
   margin-top: 0;
-
-body.api_type .hide-api { display: none}
-
-.page_title
+}
+.page_title {
   font-weight: normal;
-
-.app_link, .item
+}
+.app_link,
+.item {
   display: inline-block;
   padding: 1em;
   background: #ccc;
   text-decoration: none;
-
-.history_timeline 
-  span
-    background-color: #000;
-    border-right: 1px solid #666;
-    display: block;
-    float: left;
-    height: 6px;
-    margin-bottom: 10px;
-    width: 10px;
-
-.status-good
+}
+.history_timeline span {
+  background-color: #000;
+  border-right: 1px solid #666;
+  display: block;
+  float: left;
+  height: 6px;
+  margin-bottom: 10px;
+  width: 10px;
+}
+.status-good {
   background-color: #1c8f2d;
   color: #fff;
-
-.status-slow
+}
+.status-slow {
   background-color: #e5df15;
-
-.status-down
+}
+.status-down {
   background-color: #bd1c1c;
   color: #fff;
-
-.status-unknown
+}
+.status-unknown {
   background-color: #ccc;
-
-.home
-  .legend
-    text-align: right;
-  .status-table
-    margin-bottom: 20px;
-    td
-      padding: 4px 1px;
-      width: 210px;
-
-.section
+}
+.home .legend {
+  text-align: right;
+}
+.home .status-table {
   margin-bottom: 20px;
-  &.memory
-    .aGraph
-       width:300px
-       height:60px
-    path
-      stroke: steelblue
-      stroke-width: 1
-      fill: none
-  .section_heading
-    font-weight: normal;
-
-.detail
-  .curr_status.good
-    color: #54c966;
-    font-size: 40px;
-  .curr_status.slow
-    color: #e97223;
-    font-size: 40px;
-  .curr_status.down
-    color: #c95454;
-    font-size: 40px;
-  .health
-    .item
-      float: left;
-      width: 300px;
-      .metric
-        display: block;
-        font-size: 45px;
-        margin-top: -13px;
-        .suffix
-          opacity: 0.6;
-    .title
-      display: block;
-      font-size: 12px;
-      text-transform: uppercase;
-      opacity: 0.9;
-    .error_rate
-      width: 200px;
-    .status_count
-      width: 100px;
-    .status_count
-      .totals
-        span
-          display: block;
-
+}
+.home .status-table td {
+  padding: 4px 1px;
+  width: 210px;
+}
+.section {
+  margin-bottom: 20px;
+}
+.section .section_heading {
+  font-weight: normal;
+}
+.detail .curr_status.good {
+  color: #54c966;
+  font-size: 40px;
+}
+.detail .curr_status.slow {
+  color: #e97223;
+  font-size: 40px;
+}
+.detail .curr_status.down {
+  color: #c95454;
+  font-size: 40px;
+}
+.detail .health .item {
+  float: left;
+  width: 300px;
+}
+.detail .health .item .metric {
+  display: block;
+  font-size: 45px;
+  margin-top: -13px;
+}
+.detail .health .item .metric .suffix {
+  opacity: 0.6;
+}
+.detail .health .title {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.detail .health .error_rate {
+  width: 200px;
+}
+.detail .health .status_count {
+  width: 100px;
+}
+.detail .health .status_count .totals span {
+  display: block;
+}
 /**
  * For modern browsers
  * 1. The space content is one way to avoid an Opera bug when the
@@ -122,7 +119,6 @@ body.api_type .hide-api { display: none}
 .cf {
   *zoom: 1;
 }
-
 @media (min-width: 768px) {
   .app_link {
     -moz-transition: background-color 1s ease;
@@ -139,5 +135,4 @@ body.api_type .hide-api { display: none}
   .app_link.status-good:hover {
     background-color: #0ad529;
   }
-
 }
