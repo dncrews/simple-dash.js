@@ -170,7 +170,7 @@ app.post('/change', function(req, res){
   var change_data = {
     timestamp: commit_timestamp,
     data: {
-      repo_name: "woodruff",
+      repo_name: repo_name,
       commit: {
         timestamp: commit_timestamp,
         id: commit_hash,
