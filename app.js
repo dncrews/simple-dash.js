@@ -126,8 +126,13 @@ app.post('/', function(req, res){
  * Should alwasy return a responseCode
  */
 app.post('/change', function(req, res){
+  var debug = require('debug')('change');
+
   //TODO: have a  lookup table or something that matches up repos to appName in heroku...
   var ua = req.headers['user-agent'];
+  debug("headers", req.headers);
+  debug("user-agent", ua);
+
   //check the user agent, to see if it's from github...
   if (ua === "GitHub Hookshot efd2cd1") { //WHAT does does the hash imply?
     res.send(200); //should we be sending this this early? seems like bad mojo...
@@ -137,7 +142,7 @@ app.post('/change', function(req, res){
   //expire after 5 min? or just purge?
   var github = req.body;
 
-  console.log("github PAYLOAD:", github);
+  debug("github PAYLOAD", github);
 
   //fetch all the github commit data
   var repo_name = github.repository.name;
@@ -152,7 +157,7 @@ app.post('/change', function(req, res){
 
   //log this data to the DB
 
-  console.log(repo_name + " | " + commit_timestamp + " | " + commit_hash + " | " + commit_msg + " | " + commit_url + " | " + JSON.stringify(author));
+  // debug("", repo_name + " | " + commit_timestamp + " | " + commit_hash + " | " + commit_msg + " | " + commit_url + " | " + JSON.stringify(author));
 
   var change_data = {
     timestamp: commit_timestamp,
@@ -169,6 +174,8 @@ app.post('/change', function(req, res){
     type: "github push",
     src: "github" //TODO: pull this from the user agent
   };
+
+  debug("change_data", change_data);
 
   saveChange(change_data, function(err, stuff) {
     if (err) return console.log('ERRROR Saving change data to DB');
