@@ -145,6 +145,8 @@ app.post('/change', function(req, res){
   debug("github PAYLOAD", github);
 
   //fetch all the github commit data
+  debug("github.repository", github.repository);
+  debug("github.repository.name", github.repository.name);
   var repo_name = github.repository.name;
 
   var commit_timestamp = github.commits[0].timestamp;
@@ -157,7 +159,7 @@ app.post('/change', function(req, res){
 
   //log this data to the DB
 
-  // debug("", repo_name + " | " + commit_timestamp + " | " + commit_hash + " | " + commit_msg + " | " + commit_url + " | " + JSON.stringify(author));
+   debug("all data in a row:", repo_name + " | " + commit_timestamp + " | " + commit_hash + " | " + commit_msg + " | " + commit_url + " | " + JSON.stringify(author));
 
   var change_data = {
     timestamp: commit_timestamp,
