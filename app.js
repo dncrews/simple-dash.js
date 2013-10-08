@@ -140,7 +140,7 @@ app.post('/change', function(req, res){
     return res.send(453); //deny access
   }
   //expire after 5 min? or just purge?
-  var github = req.body;
+  var github = req.body.payload;
 
   debug("github PAYLOAD", github);
 
