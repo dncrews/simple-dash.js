@@ -49,9 +49,9 @@
       </div>
       <div class="col-md-6 col-xs-12">
         <div class="legend">
-          <span class="item status-good"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good </span>
-          <span class="item status-slow"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow </span>
-          <span class="item status-down"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</span>
+          <span class="item status-good" title="Error rate < 50% AND Response time < thresholds"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good </span>
+          <span class="item status-slow" title="Response time > 5s (1s for APIs)"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow </span>
+          <span class="item status-down" title="5xx errors > 50% of total req"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</span>
           <span class="item status-unknown"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unknown </span>
         </div>
       </div>
