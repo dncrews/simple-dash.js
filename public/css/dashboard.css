@@ -11,8 +11,11 @@ body.api_type .hide-api {
 .page_title {
   font-weight: normal;
 }
-.app_link {
-  color: #3d3d3d;
+.app_link, .item {
+  display: inline-block;
+  padding: 1em;
+  background: #ccc;
+  text-decoration: none;
 }
 .history_timeline span {
   background-color: #000;
@@ -23,38 +26,22 @@ body.api_type .hide-api {
   margin-bottom: 10px;
   width: 10px;
 }
-.statuses a {
-  transition: background-color 1s ease;
-  display: inline-block;
-  padding: 1em;
-  background: #ccc;
-  text-decoration: none;
-}
-.statuses a:hover {
-  transition: background-color 0.2s ease;
-}
-.statuses a.status-good {
+.status-good {
   background-color: #1c8f2d;
   color: #fff;
 }
-.statuses a.status-good:hover {
-  background-color: #0ad529;
+.status-slow {
+  background-color: #e5df15;
 }
-.statuses a.status-slow {
-  background-color: #e97223;
+.status-down {
+  background-color: #bd1c1c;
+  color: #fff;
 }
-.statuses a.status-down {
-  background-color: #c95454;
-}
-.statuses a.status-unknown {
-  background-color: #a3a3a3;
+.status-unknown {
+  background-color: #ccc;
 }
 .home .legend {
-  /*margin-left: 500px;*/
   text-align: right;
-}
-.home .legend .item {
-  margin-right: 15px;
 }
 .home .status-table {
   margin-bottom: 20px;
@@ -147,4 +134,23 @@ body.api_type .hide-api {
  */
 .cf {
   *zoom: 1;
+}
+
+@media (min-width: 768px) {
+  .app_link {
+    -moz-transition: background-color 1s ease;
+    -webkit-transition: background-color 1s ease;
+    transition: background-color 1s ease;
+  }
+  .app_link:hover {
+    -moz-transition: background-color 0.2s ease;
+    -webkit-transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+    color: #fff;
+  }
+  .app_link.status-good:hover {
+    background-color: #0ad529;
+  }
+
 }
