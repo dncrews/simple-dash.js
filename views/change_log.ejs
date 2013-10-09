@@ -1,0 +1,80 @@
+<%
+
+%>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FamilySearch ChangeLog</title>
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <meta name="viewport" content="width=device-width">
+  <meta http-equiv="refresh" content="60">
+</head>
+
+
+<!--
+  TODO:
+  1) Make the Uptime history as part of the header part...
+
+
+ -->
+
+<body class="change_log">
+  <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+    <div class="container">
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="/">Home</a></li>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+  <div class="container">
+
+    <div class="mast_head section row">
+      <div class="col-md-6 col-xs-12">
+        <h1 class="page_title">FamilySearch Changelog </h1>
+      </div>
+      <div class="col-md-6 col-xs-12">
+
+      </div>
+    </div>
+
+
+    <!--  TODO: design it nicely, then fill in the fake stuff, then fill in the real stuff... -->
+    <div class="change_item_container">
+      <%
+        for (var i=0; i < change_data.length; i++) {
+
+        var currentdate = new Date(change_data[i].timestamp);
+        var datetime = "" + (currentdate.getMonth()+1)  + "/"
+                + currentdate.getDate() + "/"
+                + currentdate.getFullYear() + " @ "
+                + currentdate.getHours() + ":"
+                + currentdate.getMinutes() + ":"
+                + currentdate.getSeconds();
+
+      %>
+
+
+      <div class="item cf">
+
+        <span class="icon github">Github</span>
+
+        <div class="change_detail">
+          <span class="repo_name"><%- change_data[i].data.repo_name %></span><span class="commit_msg"><a target="_blank" class="commit_link" href="<%- change_data[i].data.commit.url %>"><%- change_data[i].data.commit.message %></a></span>
+        </div>
+        <div class="change_meta"><span><%- change_data[i].data.author.name %></span> @ <span><%- datetime %></span> | <span><%- change_data[i].data.commit.id %></span></div>
+
+      </div><!-- /.item -->
+
+      <% } %>
+
+    </div><!-- ./change_item_container -->
+
+  </div>
+  <script src="js/utils.js"></script>
+</body>
+</html>

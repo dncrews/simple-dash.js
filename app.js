@@ -125,6 +125,32 @@ app.post('/', function(req, res){
  *
  * Should alwasy return a responseCode
  */
+app.get('/change', function(req, res){
+
+  getChangeLog(function(err, docs) {
+    res.render("change_log", {
+      change_data: docs
+    });
+
+  });
+
+
+
+  function getChangeLog(cb) {
+    var db = require('./lib/mongoClient.js');
+    // console.log(db.mongo.change_log);
+    db.mongo.change_log.find({}).sort({ "timestamp" : -1}).limit(10, cb);
+
+  }
+
+});
+
+
+/**
+ * Adding items to the changelog
+ *
+ * Should alwasy return a responseCode
+ */
 app.post('/change', function(req, res){
   var debug = require('debug')('change');
 
