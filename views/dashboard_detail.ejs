@@ -147,9 +147,9 @@ if (page_type == "api") {
           <label
             class="label label-<%- STATUS_TO_DISPLAY[status_history[i].status] %>"
             data-day=""
-            data-status="<%- STATUS_TO_DISPLAY[status_history[i].status] %>"
+            data-status="<%- status_history[i].status %>"
             data-raw-time="<%- status_history[i].time.raw %>"
-            title="Status: <%- STATUS_TO_DISPLAY[status_history[i].status] %> @ <%- status_history[i].time.pretty %>"> </label>
+            title="Status: <%- status_history[i].status %> @ <%- status_history[i].time.pretty %>"> </label>
         <% } %>
       </div><!-- /.history_timeline -->
     </div><!-- /.history -->
