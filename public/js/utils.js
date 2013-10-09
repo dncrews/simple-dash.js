@@ -3,72 +3,62 @@
   'use strict';
 
   window.onload = function() {
-    function $(x) {
-      return document.querySelectorAll(x);
-    }
-    NodeList.prototype.each = function(fn) {
-      var self = this
-        , _rel;
-      for (var i=0, l=this.length; i<l; i++) {
-        _rel = self[i];
-        fn.call(_rel);
-      }
-    };
     var bucketLength = 300000; // 5 minutes
 
-    var $ts = $('#updatedTimestamp')[0];
-    if ($ts) {
-      $ts.innerHTML = getUXDate($ts.dataset.timestamp);
-    }
+    $('#updatedTimestamp').each(function() {
+      $(this).text(getUXDate($(this).data('timestamp')));
+    });
+
+    $('.refresh').on('click', function(evt) {
+      evt.preventDefault();
+      window.location = window.location;
+    });
 
     $('[data-raw-time]').each(function() {
-      var status = this.dataset.status
-        , time = getUXDate(this.dataset.rawTime);
-
-      // console.log(this.getAttribute('title'));
-      this.setAttribute('title', 'Status: ' + status + ' @ ' + time);
-      // console.log(this.getAttribute('title'));
+      var text = 'Status: ' + $(this).data('status') + ' @ ' + getUXDate($(this).data('rawTime'));
+      $(this).attr('title', text);
     });
+    $('[data-raw-time]').tooltip();
 
 
 
-    $('.graph').each(function() {
-      var data, mem, graph, x, y, line;
+    // $('.graph').each(function() {
+    //   var data, mem, graph, x, y, line;
 
-      data = JSON.parse(this.dataset.memoryStatus);
-      mem = [];
+    //   data = JSON.parse(this.dataset.memoryStatus);
+    //   mem = [];
 
-      for (var i=0, l=data.length; i<l; i++) {
-        if (data[i].memory) {
-          mem.push(parseInt(data[i].memory, 10));
-        }
-      }
+    //   for (var i=0, l=data.length; i<l; i++) {
+    //     if (data[i].memory) {
+    //       mem.push(parseInt(data[i].memory, 10));
+    //     }
+    //   }
 
-      // create an SVG element inside the .graph div that fills 100% of the div
-      graph = window.d3.select(this).append('svg:svg').attr('width', '100%').attr('height', '100%');
-      // X scale will fit values from 0-10 within pixels 0-100
-      x = window.d3.scale.linear().domain([0, 5]).range([0, 10]);
-      // Y scale will fit values from 0-10 within pixels 0-100
-      y = window.d3.scale.linear().domain([0, 10]).range([0, 10]);// create a line object that represents the SVN line we're creating
+    //   // create an SVG element inside the .graph div that fills 100% of the div
+    //   graph = window.d3.select(this).append('svg:svg').attr('width', '100%').attr('height', '100%');
+    //   // X scale will fit values from 0-10 within pixels 0-100
+    //   x = window.d3.scale.linear().domain([0, 5]).range([0, 10]);
+    //   // Y scale will fit values from 0-10 within pixels 0-100
+    //   y = window.d3.scale.linear().domain([0, 10]).range([0, 10]);// create a line object that represents the SVN line we're creating
 
-      // create a line object that represents the SVN line we're creating
-      line = window.d3.svg.line()
-        // assign the X function to plot our line as we wish
-        .x(function(d,i) {
-          // verbose logging to show what's actually being done
-          // console.log('Plotting X value for data point: ' + d + ' using index: ' + i + ' to be at: ' + x(i) + ' using our xScale.');
-          // return the X coordinate where we want to plot this datapoint
-          return x(i);
-        })
-        .y(function(d) {
-          // verbose logging to show what's actually being done
-          // console.log('Plotting Y value for data point: ' + d + ' to be at: ' + y(d) + " using our yScale.");
-          // return the Y coordinate where we want to plot this datapoint
-          return y(d);
-        });
-      // display the line by appending an svg:path element with the memory line we created above
-      graph.append("svg:path").attr("d", line(mem));
-    });
+    //   // create a line object that represents the SVN line we're creating
+    //   line = window.d3.svg.line()
+    //     // assign the X function to plot our line as we wish
+    //     .x(function(d,i) {
+    //       // verbose logging to show what's actually being done
+    //       // console.log('Plotting X value for data point: ' + d + ' using index: ' + i + ' to be at: ' + x(i) + ' using our xScale.');
+    //       // return the X coordinate where we want to plot this datapoint
+    //       return x(i);
+    //     })
+    //     .y(function(d) {
+    //       // verbose logging to show what's actually being done
+    //       // console.log('Plotting Y value for data point: ' + d + ' to be at: ' + y(d) + " using our yScale.");
+    //       // return the Y coordinate where we want to plot this datapoint
+    //       return y(d);
+    //     });
+    //   // display the line by appending an svg:path element with the memory line we created above
+    //   graph.append("svg:path").attr("d", line(mem));
+    // });
 
 
 

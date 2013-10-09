@@ -8,7 +8,12 @@
 
 
   var API_SLOW_RESPONSE = 1000
-    , API_DOWN_THRESHOLD = 50;
+    , API_DOWN_THRESHOLD = 50
+    , STATUS_TO_DISPLAY = {
+      'good' : 'success',
+      'slow' : 'warning',
+      'down' : 'danger'
+    };
 
 if (page_type == "api") {
   SLOW_RESPONSE = API_SLOW_RESPONSE;
@@ -63,26 +68,25 @@ if (page_type == "api") {
 
 <body class="detail <%- page_type %>_type">
 
-  <div class="container pull-left">
-    <p><a href="../">Home</a></p>
-    <p class="last_updated">Last updated at <span id="updatedTimestamp" data-timestamp="<%- updated %>"></span></p>
-    <div class="mast_head section">
-      <h1 class="page_title"><%- app_id %> </h1>
-
-
-
-      <div class="curr_status <%- status %>">
-        <span class="glyphicon <%- glyph %>" style="top: 4px;"></span>
-        <span style="text-transform: capitalize;"><%- status %></span>
-      </div>
-
-
-      <!-- <p>Home page</p> -->
-
+  <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+    <div class="container">
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="../">Home</a></li>
+          <li><a class="refresh" href="#"><span class="glyphicon glyphicon-refresh"></span> Last updated at <span id="updatedTimestamp" data-timestamp="<%- updated %>"></span></a></li>
+        </ul>
+      </div><!--/.nav-collapse -->
     </div>
+  </nav>
 
-
-
+  <div class="container">
+    <div class="mast_head section">
+      <h1 class="page_title"><%- app_id %> Status</h1>
+      <div class="curr_status <%- STATUS_TO_DISPLAY[status] %>">
+        <span class="glyphicon <%- glyph %>" style="top: 4px;"></span>
+        <span style="text-transform: capitalize;"><%- STATUS_TO_DISPLAY[status] %></span>
+      </div>
+    </div>
 
     <div class="health section cf">
       <h2 class="section_heading">Current Health</h2>
@@ -140,12 +144,12 @@ if (page_type == "api") {
       <!-- BUILD IT with fake data first... -->
       <div class="history_timeline cf">
         <% for (var i=0; i < status_history.length; i++) { %>
-          <span
-            class="status-<%- status_history[i].status %>"
+          <label
+            class="label label-<%- STATUS_TO_DISPLAY[status_history[i].status] %>"
             data-day=""
-            data-status="<%- status_history[i].status %>"
+            data-status="<%- STATUS_TO_DISPLAY[status_history[i].status] %>"
             data-raw-time="<%- status_history[i].time.raw %>"
-            title="Status: <%- status_history[i].status %> @ <%- status_history[i].time.pretty %>"></span>
+            title="Status: <%- STATUS_TO_DISPLAY[status_history[i].status] %> @ <%- status_history[i].time.pretty %>"> </label>
         <% } %>
       </div><!-- /.history_timeline -->
     </div><!-- /.history -->
@@ -157,7 +161,7 @@ if (page_type == "api") {
 
 
     <div class="other_apis section">
-      <div class="row status-table">
+      <div class="status-table">
         <h3 class="section_heading">Dependent APIs</h3>
       <%
         if(typeof api_data != "undefined") {
@@ -189,14 +193,16 @@ if (page_type == "api") {
             }[api_status] || "question-sign")
 
       %>
-        <div class="col-md-4 status-<%- api_status %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <a class="app_link" href="../api_detail/<%- dependent_apis[j].api %>"><%- dependent_apis[j].api %></a></div>
+        <a class="app_link btn btn-<%- STATUS_TO_DISPLAY[api_status] %>" href="../api_detail/<%- dependent_apis[j].api %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <%- dependent_apis[j].api %></a>
       <%
         }
       }
       %>
     </div>
   </div>
+  <script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
+  <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
   <script src="../js/utils.js"></script>
-  <script src="http://mbostock.github.com/d3/d3.v2.js"></script>
+  <!-- <script src="http://mbostock.github.com/d3/d3.v2.js"></script> -->
 </body>
 </html>
