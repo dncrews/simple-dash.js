@@ -23,7 +23,9 @@
     "stylus": "~0.38.0",
     "heroku.js": "~0.12.2",
     "sendgrid": "~0.3.1",
-    "debug": "~0.7.2"
+    "debug": "~0.7.2",
+    "moment-timezone": "0.0.2",
+    "moment": "~2.3.1"
   },
   "repository": "git://github.com/jamischarles/simple-dash.js",
   "main": "app.js",

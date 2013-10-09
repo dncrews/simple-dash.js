@@ -11,6 +11,8 @@ var request = require('superagent')
   , Q = require('q')
   , stylus = require('stylus');
 
+  var moment = require('moment-timezone');
+
 /**
  * Local Vars
  */
@@ -129,7 +131,8 @@ app.get('/change', function(req, res){
 
   getChangeLog(function(err, docs) {
     res.render("change_log", {
-      change_data: docs
+      change_data: docs,
+      moment: moment
     });
 
   });
