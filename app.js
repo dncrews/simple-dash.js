@@ -190,13 +190,13 @@ app.post('/change', function(req, res){
   debug("github.repository.name", github.repository.name);
   var repo_name = github.repository.name;
 
-  var commit_timestamp = github.commits[0].timestamp;
-  var commit_hash = github.commits[0].id;
-  var commit_msg = github.commits[0].message;
-  var commit_url = github.commits[0].url;
+  var commit_timestamp = github.head_commit.timestamp;
+  var commit_hash = github.head_commit.id;
+  var commit_msg = github.head_commit.message;
+  var commit_url = github.head_commit.url;
 
 
-  var author = github.commits[0].author;
+  var author = github.head_commit.author;
 
   //log this data to the DB
 
