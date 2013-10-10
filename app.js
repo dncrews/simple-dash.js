@@ -165,7 +165,7 @@ app.post('/change', function(req, res){
   debug("user-agent", ua);
 
   //check the user agent, to see if it's from github...
-  if (ua === "GitHub Hookshot efd2cd1") { //WHAT does does the hash imply?
+  if (ua.match("GitHub Hookshot")) { //WHAT does does the hash imply?
     res.send(200); //should we be sending this this early? seems like bad mojo...
   } else {
     return res.send(453); //deny access
