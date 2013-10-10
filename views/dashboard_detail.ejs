@@ -166,7 +166,7 @@ if (page_type == "api") {
             data-status="<%- status_history[i].status %>"
             data-raw-time="<%- status_history[i].time.raw %>"
             data-memory="<%- status_history[i].memory %>"
-            data-p95="<%- status_history[i].memory %>"
+            data-p95="<%- status_history[i].p95 %>"
             data-error-rate="<%- status_history[i].error_rate %>"
             data-heroku-errors="<%- status_history[i].heroku_errors %>"
             title="Status: <%- status_history[i].status %> @ <%- status_history[i].time.pretty %> | "> </label>
