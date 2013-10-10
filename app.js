@@ -181,6 +181,10 @@ app.post('/change', function(req, res){
 
   debug("github PAYLOAD", github);
 
+  //if the github push is agains a branch that is NOT master, exit.
+  if (ref !== 'refs/heads/master') return;
+
+
   //fetch all the github commit data
   debug("github.repository", github.repository);
   debug("github.repository.name", github.repository.name);
