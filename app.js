@@ -68,7 +68,7 @@ app.get('/', function(req, res, next){
      */
     'text/html': function() {
       dash.appAndApi(function(appData, apiData) {
-        res.render('dashboard_home', {appData : appData, apiData: apiData, updated : appData[0].timeBucket });
+        res.render('dashboard_home', {moment: moment, appData : appData, apiData: apiData, updated : appData[0].timestamp });
       });
     },
 
@@ -95,6 +95,7 @@ app.get('/', function(req, res, next){
  */
 app.get('/detail/:appName', function(req, res){
   details.app(req.params.appName, function(data) {
+    data["moment"] = moment;
     res.render('dashboard_detail', data);
   });
 });
@@ -105,6 +106,7 @@ app.get('/detail/:appName', function(req, res){
  // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
 app.get('/api_detail/:apiName', function(req, res){
   details.api(req.params.apiName, function(data) {
+    data["moment"] = moment;
     res.render('dashboard_detail', data);
   });
 });

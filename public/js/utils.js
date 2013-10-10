@@ -5,10 +5,6 @@
   window.onload = function() {
     var bucketLength = 300000; // 5 minutes
 
-    $('#updatedTimestamp').each(function() {
-      $(this).text(getUXDate($(this).data('timestamp')));
-    });
-
     $('.refresh').on('click', function(evt) {
       evt.preventDefault();
       window.location = window.location;

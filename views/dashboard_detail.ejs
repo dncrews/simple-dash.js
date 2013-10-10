@@ -1,4 +1,9 @@
 <%
+  // figure out the time
+  var last_updated = moment(updated).tz("America/Denver");
+  last_updated = last_updated.format('h:mm a');
+
+
   var SLOW_RESPONSE = 5000
     , FAST_RESPONSE = 300
     , DOWN_THRESHOLD = 50
@@ -74,7 +79,7 @@ if (page_type == "api") {
         <ul class="nav navbar-nav">
           <li><a href="../">Home</a></li>
           <li><a href="../change">Change</a></li>
-          <li><a class="refresh" href="#"><span class="glyphicon glyphicon-refresh"></span> Last updated at <span id="updatedTimestamp" data-timestamp="<%- updated %>"></span></a></li>
+          <li><a class="refresh" href="#"><span class="glyphicon glyphicon-refresh"></span> Last updated at <span id="updatedTimestamp" ><%- last_updated %></span></a></li>
         </ul>
       </div><!--/.nav-collapse -->
     </div>
@@ -89,8 +94,10 @@ if (page_type == "api") {
       </div>
     </div>
 
+
+
     <div class="health section cf">
-      <h2 class="section_heading">Current Health</h2>
+      <h2 class="section_heading">Health @ <%- last_updated %> (Current)</h2>
 
       <div class="item throughput">
         <span class="title">req / 5 min</span>
