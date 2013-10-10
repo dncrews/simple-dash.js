@@ -154,6 +154,7 @@ app.get('/change', function(req, res){
  * Should alwasy return a responseCode
  */
 app.post('/change', function(req, res){
+  var debug = require('debug')('changelog');
   //TODO: have a  lookup table or something that matches up repos to appName in heroku...
   var ua = req.headers['user-agent'];
   debug("headers", req.headers);
