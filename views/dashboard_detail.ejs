@@ -142,7 +142,7 @@ if (page_type == "api") {
 
     <div class="history section">
       <h2 class="section_heading">Uptime History</h2>
-      <!-- BUILD IT with fake data first... -->
+      <!-- FIXME: Generate this from markup, not in JS. Just use the title tag... -->
       <div class="history_timeline cf">
         <% for (var i=0; i < status_history.length; i++) { %>
           <label
@@ -150,7 +150,11 @@ if (page_type == "api") {
             data-day=""
             data-status="<%- status_history[i].status %>"
             data-raw-time="<%- status_history[i].time.raw %>"
-            title="Status: <%- status_history[i].status %> @ <%- status_history[i].time.pretty %>"> </label>
+            data-memory="<%- status_history[i].memory %>"
+            data-p95="<%- status_history[i].memory %>"
+            data-error-rate="<%- status_history[i].error_rate %>"
+            data-heroku-errors="<%- status_history[i].heroku_errors %>"
+            title="Status: <%- status_history[i].status %> @ <%- status_history[i].time.pretty %> | "> </label>
         <% } %>
       </div><!-- /.history_timeline -->
     </div><!-- /.history -->

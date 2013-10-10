@@ -15,7 +15,10 @@
     });
 
     $('[data-raw-time]').each(function() {
-      var text = 'Status: ' + $(this).data('status') + ' @ ' + getUXDate($(this).data('rawTime'));
+      //FIXME: This should really be generated from the markup
+      var text = 'Status: ' + $(this).data('status') + ' @ ' + getUXDate($(this).data('rawTime'))
+      + " | Mem: " + $(this).data('memory') + "MB | " + "P95: " + $(this).data('p95') + "ms | Err: " + $(this).data('error-rate') + "% | "
+      + $(this).data('heroku-errors').toString();
       $(this).attr('title', text);
     });
     $('[data-raw-time]').tooltip();
