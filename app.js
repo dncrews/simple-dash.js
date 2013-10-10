@@ -9,9 +9,9 @@ var request = require('superagent')
   , request = require('superagent')
   , url = require('url')
   , Q = require('q')
-  , stylus = require('stylus');
+  , stylus = require('stylus')
+  , moment = require('moment-timezone');
 
-  var moment = require('moment-timezone');
 
 /**
  * Local Vars
@@ -20,7 +20,8 @@ var app = module.exports = express()
   , config = require('./lib/config')
   , dash = require('./lib/dash')
   , details = require('./lib/details')
-  , logger = require('./lib/logger'); // 5 minutes
+  , logger = require('./lib/logger') // 5 minutes
+  , change_log = require('./lib/change_log');
 
 /**
  * Express Configuration
@@ -32,16 +33,12 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
 
-//BAD NEWS: SCRIPT ALERTS ONLY PASS PARAMETERS.
 
 /**
  * TODO:
- * 0) Send alerts from splunk to dashboard, and log them there... Right now just dump into logs?
-    - push the e-mail 5xx alert one and show what apps are affected...
-    - Store in DB (very simply), and show them there...
  * 1) Poll heroku status dashboard somehow & display info here... (using Heroku CLI)
  * 2)
- * 3) Poll Splunk API and get metrics from that (like how umpire does it with librato)
+ * 3) Poll Splunk API and get metrics from that (like how umpire does it with librato) (MAYBE)
 
  * consi
 
@@ -157,85 +154,23 @@ app.get('/change', function(req, res){
  * Should alwasy return a responseCode
  */
 app.post('/change', function(req, res){
-  var debug = require('debug')('change');
-
   //TODO: have a  lookup table or something that matches up repos to appName in heroku...
   var ua = req.headers['user-agent'];
   debug("headers", req.headers);
   debug("user-agent", ua);
 
-  //check the user agent, to see if it's from github...
-  if (ua.match("GitHub Hookshot")) { //WHAT does does the hash imply?
-    res.send(200); //should we be sending this this early? seems like bad mojo...
+  if (ua.match("GitHub Hookshot")) {
+    res.send(200);
   } else {
-    return res.send(453); //deny access
-  }
-  //expire after 5 min? or just purge?
-  try {
-    var github = JSON.parse(req.body.payload);
-  } catch(e) {
-    console.log('JSON.parse of payload FAILED');
-    return;
+    res.send(453);
   }
 
-
-  debug("github PAYLOAD", github);
-
-  //if the github push is agains a branch that is NOT master, exit.
-  if (github.ref !== 'refs/heads/master') return;
-
-
-  //fetch all the github commit data
-  debug("github.repository", github.repository);
-  debug("github.repository.name", github.repository.name);
-  var repo_name = github.repository.name;
-
-  var commit_timestamp = github.head_commit.timestamp;
-  var commit_hash = github.head_commit.id;
-  var commit_msg = github.head_commit.message;
-  var commit_url = github.head_commit.url;
-
-
-  var author = github.head_commit.author;
-
-  //log this data to the DB
-
-   debug("all data in a row:", repo_name + " | " + commit_timestamp + " | " + commit_hash + " | " + commit_msg + " | " + commit_url + " | " + JSON.stringify(author));
-
-  var change_data = {
-    timestamp: commit_timestamp,
-    data: {
-      repo_name: repo_name,
-      commit: {
-        timestamp: commit_timestamp,
-        id: commit_hash,
-        message: commit_msg,
-        url: commit_url
-      },
-      author: author
-    },
-    type: "github push",
-    src: "github" //TODO: pull this from the user agent
-  };
-
-  debug("change_data", change_data);
-
-  saveChange(change_data, function(err, stuff) {
+  //save the data
+  change_log.save(req.body, function(err, stuff) {
     if (err) return console.log('ERRROR Saving change data to DB');
     console.log('successfully saved change to DB');
     //console.log(stuff);
   });
-
-
-  function saveChange(data, cb) {
-    var db = require('./lib/mongoClient.js');
-    // console.log(db.mongo.change_log);
-    db.mongo.change_log.insert(data, cb);
-
-  }
-
-
-  //for commits, we want: timestamp, repo, who committed it, hash, commit message
 });
 
 /**
