@@ -61,6 +61,94 @@
 
 
 
+    //when you hover over a history timeline block on the history page, the stats of that block show up
+    function showHistoryStats() {
+
+    }
+
+    var current_stats = false; //yes, I know this is dirty
+    var status_classes = {
+        "good": "success",
+        "slow": "warning",
+        "down": "danger"
+      };
+    //FIXME: we need a central repo for this...
+    var glyph_classes = {
+      "good": "ok",
+      "slow": "warning",
+      "down": "minus"
+    };
+
+    //only needs to happen once
+    function storeCurrentStats() {
+      //take the innerhtml, and store it as a data attribute
+      $("#stats_uptime, #stats_req, #stats_p95, #stats_error_rate, #stats_2xx, #stats_3xx, #stats_4xx, #stats_5xx, #stats_total, #stats_last_updated, #stats_time_elapsed").each(function(el) {
+        $(this).data('current', $(this).html());
+        // console.log($(this).data('current'));
+      });
+
+      current_stats = true;
+    }
+
+
+    //add event listeners for historyStats
+    $(".history_timeline label").hover(function(e) {
+      $(this).addClass("active"); //hover indicator
+
+      //on first time, store initial stats (TODO: move this to page load?)
+      if (!current_stats) storeCurrentStats();
+
+      //get the history bucket values
+      $("#stats_uptime").html($(this).data('status'));
+      $("#status_current_cont").removeClass("success warning danger"); //class names warning, true, false...
+      $("#status_current_cont .glyphicon").removeClass("success warning danger glyphicon-ok-sign glyphicon-warning-sign glyphicon-minus-sign"); //class names warning, true, false...
+
+
+      //apply the appropriate class name to alter the color
+      var status_className = $(this).data('status');
+      $("#status_current_cont").addClass( status_classes[status_className] );
+      $("#status_current_cont .glyphicon").addClass( "glyphicon-" + glyph_classes[status_className] + "-sign" ); //change the icon
+
+
+      $("#stats_req").html($(this).data('status-total'));
+      $("#stats_p95").html($(this).data('p95'));
+      $("#stats_error_rate").html($(this).data('error-rate'));
+
+      $("#stats_2xx").html($(this).data('status-c2xx'));
+      $("#stats_3xx").html($(this).data('status-c3xx'));
+      $("#stats_4xx").html($(this).data('status-c4xx'));
+      $("#stats_5xx").html($(this).data('status-c5xx'));
+
+      //update time data
+      $("#stats_last_updated").html($(this).data('time'));
+      $("#stats_time_elapsed").html($(this).data('time-elapsed'));
+
+
+
+      //apply in main health fields
+
+      //
+
+
+    }, function() {
+      $(this).removeClass("active");
+      //restore the bucket values for current bucket
+      $("#stats_uptime, #stats_req, #stats_p95, #stats_error_rate, #stats_2xx, #stats_3xx, #stats_4xx, #stats_5xx, #stats_total, #stats_last_updated, #stats_time_elapsed").each(function(el) {
+        $(this).html($(this).data('current'));
+        // console.log($(this).data('current'));
+      });
+
+      //FIXME: Extract this and make it cleaner...
+      //apply the appropriate class name to alter the color
+      $("#status_current_cont").removeClass("success warning danger"); //class names warning, true, false...
+      $("#status_current_cont .glyphicon").removeClass("success warning danger glyphicon-ok-sign glyphicon-warning-sign glyphicon-minus-sign"); //class names warning, true, false...
+
+      //apply the appropriate class name to alter the color
+      var status_className = $("#stats_uptime").html();
+      $("#status_current_cont").addClass( status_classes[status_className] );
+      $("#status_current_cont .glyphicon").addClass( "glyphicon-" + glyph_classes[status_className] + "-sign" );
+
+    });
 
 
     function getUXDate(timestamp) {
