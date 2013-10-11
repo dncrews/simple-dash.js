@@ -45,8 +45,8 @@
       <%
         for (var i=0; i < change_data.length; i++) {
 
-        var currentdate = new Date(change_data[i].timestamp);
-        currentdate = moment(currentdate).tz("America/Denver");
+        //expect unix timestamp for all times
+        var currentdate = moment.unix(change_data[i].timestamp).tz("America/Denver");
 
         var formatted_time = currentdate.format('h:mm a [on] MMM Do YYYY');
 
