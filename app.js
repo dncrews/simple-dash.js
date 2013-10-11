@@ -141,7 +141,7 @@ app.get('/change', function(req, res){
   function getChangeLog(cb) {
     var db = require('./lib/mongoClient.js');
     // console.log(db.mongo.change_log);
-    db.mongo.change_log.find({}).sort({ "timestamp" : -1}).limit(10, cb);
+    db.mongo.change_log.find({}).sort({ "timestamp" : -1}).limit(20, cb);
 
   }
 
@@ -160,15 +160,17 @@ app.post('/change', function(req, res){
   debug("headers", req.headers);
   debug("user-agent", ua);
 
-  if (ua.match("GitHub Hookshot")) {
-    res.send(200);
-  } else {
-    res.send(453);
-  }
+  res.send(200);
+
+  // if (ua.match("GitHub Hookshot")) {
+  //   res.send(200);
+  // } else {
+  //   res.send(453);
+  // }
 
   //save the data
   change_log.save(req.body, function(err, stuff) {
-    if (err) return console.log('ERRROR Saving change data to DB');
+    if (err) return console.log(err);
     console.log('successfully saved change to DB');
     //console.log(stuff);
   });

@@ -1,7 +1,3 @@
-<%
-
-%>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -56,20 +52,34 @@
 
       %>
 
+      <%  if (change_data[i].src == "github") { %>
 
-      <div class="item cf">
+        <div class="item cf">
+          <span class="icon github">Github</span>
 
-        <span class="icon github">Github</span>
+          <div class="change_detail">
+            <span class="repo_name"><%- change_data[i].data.repo_name %></span><span class="commit_msg"><a target="_blank" class="commit_link" href="<%- change_data[i].data.commit.url %>"><%- change_data[i].data.commit.message %></a></span>
+          </div><!-- /.change_detail -->
+          <div class="change_meta"><span title="<%- formatted_time %>"><%- currentdate.fromNow() %></span> by <span><%- change_data[i].data.author.name %></span>  <!-- | <span><%- change_data[i].data.commit.id %></span> -->
+          </div><!-- /.change_meta -->
+        </div><!-- /.item -->
+        <%  } //if() %>
 
-        <div class="change_detail">
-          <span class="repo_name"><%- change_data[i].data.repo_name %></span><span class="commit_msg"><a target="_blank" class="commit_link" href="<%- change_data[i].data.commit.url %>"><%- change_data[i].data.commit.message %></a></span>
-        </div>
-        <div class="change_meta"><span title="<%- formatted_time %>"><%- currentdate.fromNow() %></span> by <span><%- change_data[i].data.author.name %></span>  <!-- | <span><%- change_data[i].data.commit.id %></span> -->
-        </div>
 
-      </div><!-- /.item -->
+        <%  if (change_data[i].src == "marrow") { %>
+        <div class="item cf">
+          <span class="icon immune">Marrow</span>
 
-      <% } %>
+          <div class="change_detail">
+            <span class="repo_name"><%- change_data[i].data.app_name %></span><span class="commit_msg">Restarted!</span>
+          </div><!-- /.change_detail -->
+          <div class="change_meta"><span title="<%- formatted_time %>"><%- currentdate.fromNow() %></span>
+          </div><!-- /.change_meta -->
+        </div><!-- /.item -->
+        <%  } //if() %>
+
+
+      <% }  //for() %>
 
     </div><!-- ./change_item_container -->
 
