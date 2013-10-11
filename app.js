@@ -154,6 +154,7 @@ app.get('/change', function(req, res){
  * Should alwasy return a responseCode
  */
 app.post('/change', function(req, res){
+  var src = false;
   var debug = require('debug')('changelog');
   //TODO: have a  lookup table or something that matches up repos to appName in heroku...
   var ua = req.headers['user-agent'];
@@ -162,18 +163,17 @@ app.post('/change', function(req, res){
 
   res.send(200);
 
-  // if (ua.match("GitHub Hookshot")) {
-  //   res.send(200);
-  // } else {
-  //   res.send(453);
-  // }
+  if (ua.match("GitHub Hookshot")) src = "github";
+
+  if (ua.match("Marrow")) src = "marrow";
+
 
   //save the data
   change_log.save(req.body, function(err, stuff) {
     if (err) return console.log(err);
     console.log('successfully saved change to DB');
     //console.log(stuff);
-  });
+  }, src);
 });
 
 /**
