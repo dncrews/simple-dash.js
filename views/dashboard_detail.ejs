@@ -123,6 +123,16 @@ if (page_type == "api") {
         </span>
       </div>
 
+      <div class="item memory hide-api">
+        <span class="title">Memory (AVG &amp; MAX)</span>
+        <span class="metric">
+          <span id="stats_mem_avg"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
+        </span>
+        <span class="metric">
+          <span id="stats_mem_max"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
+        </span>
+      </div>
+
 
       <div class="item error_rate">
         <span class="title">Error rate (5xx / total)</span>
@@ -173,8 +183,8 @@ if (page_type == "api") {
             data-raw-time="<%- app_history[i].timeBucket %>"
             data-time="<%- history_time_formatted %>"
             data-time-elapsed="<%- time_elapsed %>"
-            data-memory-avg="<%- app_history[i].stats.memory_avg %>"
-            data-memory-max="<%- app_history[i].stats.memory_max %>"
+            data-memory-avg="<%- Math.round(app_history[i].stats.memory_avg) %>"
+            data-memory-max="<%- Math.round(app_history[i].stats.memory_max) %>"
             data-p95="<%- app_history[i].stats.p95 %>"
             data-status-c2xx="<%- app_history[i].stats.status_2xx %>"
             data-status-c3xx="<%- app_history[i].stats.status_3xx %>"

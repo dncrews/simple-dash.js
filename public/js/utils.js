@@ -114,6 +114,9 @@
       $("#stats_p95").html($(this).data('p95'));
       $("#stats_error_rate").html($(this).data('error-rate'));
 
+      $("#stats_mem_avg").html($(this).data('memory-avg'));
+      $("#stats_mem_max").html($(this).data('memory-max'));
+
       $("#stats_2xx").html($(this).data('status-c2xx'));
       $("#stats_3xx").html($(this).data('status-c3xx'));
       $("#stats_4xx").html($(this).data('status-c4xx'));
