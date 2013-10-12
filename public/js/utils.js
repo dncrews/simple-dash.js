@@ -10,14 +10,13 @@
       window.location = window.location;
     });
 
-    $('[data-raw-time]').each(function() {
-      //FIXME: This should really be generated from the markup
-      var text = 'Status: ' + $(this).data('status') + ' @ ' + getUXDate($(this).data('rawTime'))
-      + " | Mem: " + $(this).data('memory') + "MB | " + "P95: " + $(this).data('p95') + "ms | Err: " + $(this).data('error-rate') + "% | "
-      + $(this).data('heroku-errors').toString();
-      $(this).attr('title', text);
-    });
-    $('[data-raw-time]').tooltip();
+    // $('[data-raw-time]').each(function() {
+    //   //FIXME: This should really be generated from the markup
+    //   var text = 'Status: ' + $(this).data('status') + ' @ ' + getUXDate($(this).data('rawTime'))
+    //   + " | Mem: " + $(this).data('memory') + "MB | " + "P95: " + $(this).data('p95') + "ms | Err: " + $(this).data('error-rate') + "%";
+    //   //$(this).attr('title', text);
+    // });
+    $('[title]').tooltip();
 
 
 
@@ -62,9 +61,7 @@
 
 
     //when you hover over a history timeline block on the history page, the stats of that block show up
-    function showHistoryStats() {
 
-    }
 
     var current_stats = false; //yes, I know this is dirty
     var status_classes = {
@@ -82,7 +79,7 @@
     //only needs to happen once
     function storeCurrentStats() {
       //take the innerhtml, and store it as a data attribute
-      $("#stats_uptime, #stats_req, #stats_p95, #stats_error_rate, #stats_2xx, #stats_3xx, #stats_4xx, #stats_5xx, #stats_total, #stats_last_updated, #stats_time_elapsed").each(function(el) {
+      $(".stats_fld").each(function(el) {
         $(this).data('current', $(this).html());
         // console.log($(this).data('current'));
       });
@@ -92,7 +89,11 @@
 
 
     //add event listeners for historyStats
-    $(".history_timeline label").hover(function(e) {
+    $(".history_timeline label").hover(showHistoryStats, restoreCurrentStats);
+    $(".history_timeline label").on("click", showHistoryStats); //FIXME: if click, freeze it better
+
+
+    function showHistoryStats() {
       $(this).addClass("active"); //hover indicator
 
       //on first time, store initial stats (TODO: move this to page load?)
@@ -127,16 +128,27 @@
       $("#stats_time_elapsed").html($(this).data('time-elapsed'));
 
 
+      //update heroku errors from history (since it's array, some parsing is needed).
+      var heroku_errors = $(this).data('heroku-errors-raw') || [];
 
-      //apply in main health fields
+      //wipe out what's currently there
+      $("#heroku_errors .item").remove();
 
-      //
+      for(var k=0; k < heroku_errors.length; k++ ) {
+        // FIXME: this is filthy!  - HTML should NOT be in here
+        var markup = '<span class="item" title="' + heroku_errors[k]['code'] + ':' + heroku_errors[k]['desc'] + '">' + heroku_errors[k]['code'] + ': ' + heroku_errors[k]['count'] + '</span>';
+        $("#heroku_errors").append(markup); //fixme: do 1 instead of on each line
+      }
 
+      // console.log("current", $("#heroku_errors").data('current'));
 
-    }, function() {
+    };
+
+    function restoreCurrentStats() {
       $(this).removeClass("active");
       //restore the bucket values for current bucket
-      $("#stats_uptime, #stats_req, #stats_p95, #stats_error_rate, #stats_2xx, #stats_3xx, #stats_4xx, #stats_5xx, #stats_total, #stats_last_updated, #stats_time_elapsed").each(function(el) {
+      //FIXME: use classnames instead of this insanity!!!
+      $(".stats_fld").each(function(el) {
         $(this).html($(this).data('current'));
         // console.log($(this).data('current'));
       });
@@ -151,7 +163,7 @@
       $("#status_current_cont").addClass( status_classes[status_className] );
       $("#status_current_cont .glyphicon").addClass( "glyphicon-" + glyph_classes[status_className] + "-sign" );
 
-    });
+    };
 
 
     function getUXDate(timestamp) {

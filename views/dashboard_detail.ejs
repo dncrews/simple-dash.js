@@ -99,26 +99,26 @@ if (page_type == "api") {
       <h1 class="page_title"><%- app_id %> Status</h1>
       <div id="status_current_cont" class="curr_status <%- STATUS_TO_DISPLAY[status] %>">
         <span class="glyphicon <%- glyph %>" style="top: 4px;"></span>
-        <span style="text-transform: capitalize;" id="stats_uptime"><%- status %></span>
+        <span style="text-transform: capitalize;" id="stats_uptime" class="stats_fld"><%- status %></span>
       </div>
     </div>
 
 
 
     <div class="health section cf">
-      <h2 class="section_heading">Health @ <span id="stats_last_updated"><%- last_updated %></span> (<span id="stats_time_elapsed"><%- last_updated_raw.fromNow() %></span>)</h2>
+      <h2 class="section_heading">Health @ <span id="stats_last_updated"><%- last_updated %></span> (<span id="stats_time_elapsed" class="stats_fld"><%- last_updated_raw.fromNow() %></span>)</h2>
 
       <div class="item throughput">
         <span class="title">req / 5 min</span>
-        <span class="metric"><span id="stats_req"><%- current['status:total'] %></span><span class="suffix">req</span></span>
+        <span class="metric"><span id="stats_req" class="stats_fld"><%- current['status:total'] %></span><span class="suffix">req</span></span>
       </div>
 
       <div class="item resp_time">
         <span class="title">p95 response time</span>
         <% if (parseInt(current['time:p95']) === 0) { %>
-        <span id="stats_p95" class="metric">n/a</span>
+        <span id="stats_p95" class="metric stats_fld">n/a</span>
         <% } else { %>
-        <span class="metric"><span id="stats_p95"><%- current['time:p95'] %></span><span class="suffix">ms</span>
+        <span class="metric"><span id="stats_p95" class="stats_fld"><%- current['time:p95'] %></span><span class="suffix">ms</span>
         <% } %>
         </span>
       </div>
@@ -126,38 +126,38 @@ if (page_type == "api") {
       <div class="item memory hide-api">
         <span class="title">Memory (AVG &amp; MAX)</span>
         <span class="metric">
-          <span id="stats_mem_avg"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
+          <span id="stats_mem_avg" class="stats_fld"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
         </span>
         <span class="metric">
-          <span id="stats_mem_max"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
+          <span id="stats_mem_max" class="stats_fld"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
         </span>
       </div>
 
 
       <div class="item error_rate">
         <span class="title">Error rate (5xx / total)</span>
-        <span class="metric"><span id="stats_error_rate"><%- error_rate %></span><span class="suffix">%</span></span>
+        <span class="metric"><span id="stats_error_rate" lass="stats_fld"><%- error_rate %></span><span class="suffix">%</span></span>
 
       </div>
 
       <div class="item status_count">
         <span class="title">Status codes</span>
         <div class="totals">
-          <span class="item">2xx: <span id="stats_2xx"><%- current['status:2xx'] %></span></span>
-          <span class="item">3xx: <span id="stats_3xx"><%- current['status:3xx'] %></span></span>
-          <span class="item">4xx: <span id="stats_4xx"><%- current['status:4xx'] %></span></span>
-          <span class="item">5xx: <span id="stats_5xx"><%- current['status:5xx'] %></span></span>
+          <span class="item">2xx: <span id="stats_2xx" class="stats_fld"><%- current['status:2xx'] %></span></span>
+          <span class="item">3xx: <span id="stats_3xx" class="stats_fld"><%- current['status:3xx'] %></span></span>
+          <span class="item">4xx: <span id="stats_4xx" class="stats_fld"><%- current['status:4xx'] %></span></span>
+          <span class="item">5xx: <span id="stats_5xx" class="stats_fld"><%- current['status:5xx'] %></span></span>
         </div>
 
       </div>
 
       <div class="item status_count hide-api">
         <span class="title">Heroku codes</span>
-        <div class="totals">
+        <div class="totals stats_fld" id="heroku_errors">
 
         <% if (typeof heroku_errors == "undefined") heroku_errors = []; %>
         <% for(var k=0; k < heroku_errors.length; k++ ) { %>
-          <span title="<%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['desc'] %>"><%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['count'] %>  </span>
+          <span class="item" title="<%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['desc'] %>"><%- heroku_errors[k]['code'] %>: <%- heroku_errors[k]['count'] %>  </span>
 
         <% } %>
         </div>
@@ -192,8 +192,23 @@ if (page_type == "api") {
             data-status-c5xx="<%- app_history[i].stats.status_5xx %>"
             data-status-total="<%- app_history[i].stats.status_total %>"
             data-error-rate="<%- app_history[i].stats.error_rate %>"
-            data-heroku-errors="<%- status_history[i].heroku_errors %>"
-            title="Status: <%- status_history[i].status %> @ <%- status_history[i].time.pretty %> | "> </label>
+            data-heroku-errors-raw='<%- JSON.stringify(app_history[i].stats.heroku_errors) %>'
+
+            <%
+              var history_heroku_errors = app_history[i].stats.heroku_errors;
+
+              if (typeof history_heroku_errors == "undefined") history_heroku_errors = [];
+              var pretty_string = "";
+              for(var k=0; k < history_heroku_errors.length; k++ ) {
+                pretty_string += history_heroku_errors[k]['code'] + ":" + history_heroku_errors[k]['count'] + " (" + history_heroku_errors[k]['desc'] + ") | ";
+
+              } //for()
+            %>
+
+
+            data-heroku-errors-pretty='<%- pretty_string %>'
+
+            title="<%- app_history[i].stats.uptime_status %> | <%- history_time.format('MM[/]D [@] h:mm a') %> "> </label>
         <% } %>
       </div><!-- /.history_timeline -->
     </div><!-- /.history -->
