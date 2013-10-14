@@ -161,11 +161,19 @@ app.post('/change', function(req, res){
   debug("headers", req.headers);
   debug("user-agent", ua);
 
-  res.send(200);
 
-  if (ua.match("GitHub Hookshot")) src = "github";
+
+  if (ua.match("GitHub Hookshot")) src = "github"; //TODO: add the IP Address
 
   if (ua.match("Marrow")) src = "marrow";
+
+  if (ua.match("Java")) src = "jenkins"; //TODO: add the IP Address
+
+  if (src) {
+    res.send(200);
+  } else {
+    return res.send(507); //not posted
+  };
 
 
   //save the data
