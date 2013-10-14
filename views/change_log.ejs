@@ -78,6 +78,18 @@
         </div><!-- /.item -->
         <%  } //if() %>
 
+        <%  if (change_data[i].src == "jenkins") { %>
+        <div class="item cf">
+          <span class="icon jenkins">Jenkins</span>
+
+          <div class="change_detail">
+            <span class="repo_name"><%- change_data[i].data.app_name %></span><span class="commit_msg">Successfully built and deployed.</span>
+          </div><!-- /.change_detail -->
+          <div class="change_meta"><span title="<%- formatted_time %>"><%- currentdate.fromNow() %></span>
+          </div><!-- /.change_meta -->
+        </div><!-- /.item -->
+        <%  } //if() %>
+
 
       <% }  //for() %>
 
