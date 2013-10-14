@@ -92,7 +92,7 @@ app.get('/', function(req, res, next){
  */
 app.get('/detail/:appName', function(req, res){
   details.app(req.params.appName, function(data) {
-    data["moment"] = moment;
+    data.moment = moment;
     res.render('dashboard_detail', data);
   });
 });
@@ -103,7 +103,7 @@ app.get('/detail/:appName', function(req, res){
  // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
 app.get('/api_detail/:apiName', function(req, res){
   details.api(req.params.apiName, function(data) {
-    data["moment"] = moment;
+    data.moment = moment;
     res.render('dashboard_detail', data);
   });
 });
@@ -117,7 +117,7 @@ app.get('/api_detail/:apiName', function(req, res){
 app.post('/', function(req, res){
   logger(req.body, function(code) {
     res.send(code);
-  })
+  });
 });
 
 
@@ -173,7 +173,7 @@ app.post('/change', function(req, res){
     res.send(200);
   } else {
     return res.send(507); //not posted
-  };
+  }
 
 
   //save the data
