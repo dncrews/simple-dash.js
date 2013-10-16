@@ -165,7 +165,9 @@ $(document).ready(function() {
     }
 
     function offClickHistory(evt) {
-      evt.stopPropagation();
+      if(evt) {
+        evt.stopPropagation();
+      }
       $(document).off('keydown click');
       $bindHistory();
       $current.trigger('mouseleave');
