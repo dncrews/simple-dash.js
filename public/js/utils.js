@@ -5,7 +5,8 @@
   window.onload = function() {
     var bucketLength = 300000 // 5 minutes
       , $now = $('.history_timeline .label').eq(0)
-      , current_stats = $now.data('stats');
+      , current_stats = $now.data('stats')
+      , historyTimeout;
 
     $('.refresh').on('click', function(evt) {
       evt.preventDefault();
@@ -87,6 +88,7 @@
     }
 
     function showHistoryStats(evt) {
+      window.clearTimeout(historyTimeout);
       var $el = $(evt.currentTarget);
 
       $el.addClass("active"); //hover indicator
@@ -97,7 +99,9 @@
       var $el = $(evt.currentTarget);
 
       $el.removeClass("active");
-      displayStats($('.history_timeline .label').eq(0).data('stats'));
+      historyTimeout = window.setTimeout(function() {
+        displayStats($('.history_timeline .label').eq(0).data('stats'));
+      }, 10);
     }
 
     function setStatusClasses() {
