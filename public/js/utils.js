@@ -132,9 +132,11 @@
     function clickHistory(evt) {
       var $el = $(evt.currentTarget)
         , $current = $el;
+      evt.stopPropagation();
       $(document)
         .off('keydown')
-        .on('keydown', moveHistory);
+        .on('keydown', moveHistory)
+        .on('click', ':not(label)', offClickHistory);
       $('.history_timeline')
         .off('mouseenter', 'label', showHistoryStats)
         .off('mouseleave', 'label', restoreCurrentStats)
@@ -159,11 +161,15 @@
         case 32: // space
         case 13: // enter
         case 27: // escape
-          $(document).off('keydown');
-          $bindHistory();
-          $current.trigger('mouseleave');
+          offClickHistory();
           break;
         }
+      }
+
+      function offClickHistory() {
+        $(document).off('keydown');
+        $bindHistory();
+        $current.trigger('mouseleave');
       }
     }
 
