@@ -207,7 +207,7 @@ if (page_type == "api") {
     </div> -->
 
 
-    <div class="other_apis section hide-api">
+    <div class="other_apis section hide-api cf">
       <div class="status-table">
         <h3 class="section_heading">Dependent APIs</h3>
       <%
@@ -246,7 +246,34 @@ if (page_type == "api") {
       }
       %>
     </div>
-  </div>
+  </div> <!-- /.other_apis -->
+
+  <div class="events section cf hide-api">
+    <h2 class="section_heading">Event History</h2>
+
+    <div class="change_item_container">
+      <%
+        if (typeof events == "undefined") events = [];
+        for(var z=0; z < events.length; z++) {
+
+          var currentdate = moment.unix(events[z].timestamp);
+          var formatted_time = currentdate.format('h:mm a [on] MMM Do YYYY');
+      %>
+
+      <div class="item cf">
+        <span class="icon jenkins">Jenkins</span>
+
+        <div class="change_detail">
+          <span class="commit_msg">Deploy <%- currentdate.fromNow() %> @ <%- formatted_time %></span>
+        </div><!-- /.change_detail -->
+        <!-- <div class="change_meta"><span title="<%  %>"><%- currentdate.fromNow() %></span>
+        </div> --><!-- /.change_meta -->
+      </div><!-- /.item -->
+       <% } %>
+    </div>
+  </div><!-- /.events -->
+
+
   <script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
   <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
   <script src="../js/utils.js"></script>

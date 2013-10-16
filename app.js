@@ -141,7 +141,8 @@ app.get('/change', function(req, res){
   function getChangeLog(cb) {
     var db = require('./lib/mongoClient.js');
     // console.log(db.mongo.change_log);
-    db.mongo.change_log.find({}).sort({ "timestamp" : -1}).limit(20, cb);
+    //TODO: this should be limited by date rather than count
+    db.mongo.change_log.find({}).sort({ "timestamp" : -1}).limit(20, cb); //FIXME: should this be somewhere else?
 
   }
 
