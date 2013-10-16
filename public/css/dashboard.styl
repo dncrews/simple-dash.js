@@ -19,12 +19,18 @@ body.api_type .hide-api { display: none; }
     border-radius: 0
     display: block;
     float: left;
-    height: 10px;
-    margin-bottom: 5px;
-    width: 10px;
+    font-size: 0;
+    height: 12px;
+    margin-bottom: 2px;
+    width: 12px;
 
     &.active
       opacity: .5
+      outline: 2px solid red;
+    &:hover
+      height: 11px;
+      width: 12px;
+      border: 1px solid white;
 
 .home
   .legend

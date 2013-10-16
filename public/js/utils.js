@@ -3,20 +3,15 @@
   'use strict';
 
   window.onload = function() {
-    var bucketLength = 300000; // 5 minutes
+    var bucketLength = 300000 // 5 minutes
+      , $now = $('.history_timeline .label').eq(0)
+      , current_stats = $now.data('stats');
 
     $('.refresh').on('click', function(evt) {
       evt.preventDefault();
       window.location = window.location;
     });
-
-    // $('[data-raw-time]').each(function() {
-    //   //FIXME: This should really be generated from the markup
-    //   var text = 'Status: ' + $(this).data('status') + ' @ ' + getUXDate($(this).data('rawTime'))
-    //   + " | Mem: " + $(this).data('memory') + "MB | " + "P95: " + $(this).data('p95') + "ms | Err: " + $(this).data('error-rate') + "%";
-    //   //$(this).attr('title', text);
-    // });
-    $('[title]').tooltip();
+    // $('[title]').tooltip();
 
 
 
@@ -60,110 +55,117 @@
 
 
 
-    //when you hover over a history timeline block on the history page, the stats of that block show up
-
-
-    var current_stats = false; //yes, I know this is dirty
-    var status_classes = {
-        "good": "success",
-        "slow": "warning",
-        "down": "danger"
-      };
-    //FIXME: we need a central repo for this...
-    var glyph_classes = {
-      "good": "ok",
-      "slow": "warning",
-      "down": "minus"
-    };
-
-    //only needs to happen once
-    function storeCurrentStats() {
-      //take the innerhtml, and store it as a data attribute
-      $(".stats_fld").each(function(el) {
-        $(this).data('current', $(this).html());
-        // console.log($(this).data('current'));
-      });
-
-      current_stats = true;
-    }
-
+    /**
+     * When you hover over a history timeline block on
+     * the history page, the stats of that block show up
+     */
 
     //add event listeners for historyStats
-    $(".history_timeline label").hover(showHistoryStats, restoreCurrentStats);
-    $(".history_timeline label").on("click", showHistoryStats); //FIXME: if click, freeze it better
+    $bindHistory().on('click', 'label', clickHistory); //FIXME: if click, freeze it better
 
+    function displayStats(stats) {
+      var $errorBucket = $()
+        , key, k, _rel, $item;
 
-    function showHistoryStats() {
-      $(this).addClass("active"); //hover indicator
-
-      //on first time, store initial stats (TODO: move this to page load?)
-      if (!current_stats) storeCurrentStats();
-
-      //get the history bucket values
-      $("#stats_uptime").html($(this).data('status'));
-      $("#status_current_cont").removeClass("success warning danger"); //class names warning, true, false...
-      $("#status_current_cont .glyphicon").removeClass("success warning danger glyphicon-ok-sign glyphicon-warning-sign glyphicon-minus-sign"); //class names warning, true, false...
-
-
-      //apply the appropriate class name to alter the color
-      var status_className = $(this).data('status');
-      $("#status_current_cont").addClass( status_classes[status_className] );
-      $("#status_current_cont .glyphicon").addClass( "glyphicon-" + glyph_classes[status_className] + "-sign" ); //change the icon
-
-
-      $("#stats_req").html($(this).data('status-total'));
-      $("#stats_p95").html($(this).data('p95'));
-      $("#stats_error_rate").html($(this).data('error-rate'));
-
-      $("#stats_mem_avg").html($(this).data('memory-avg'));
-      $("#stats_mem_max").html($(this).data('memory-max'));
-
-      $("#stats_2xx").html($(this).data('status-c2xx'));
-      $("#stats_3xx").html($(this).data('status-c3xx'));
-      $("#stats_4xx").html($(this).data('status-c4xx'));
-      $("#stats_5xx").html($(this).data('status-c5xx'));
-
-      //update time data
-      $("#stats_last_updated").html($(this).data('time'));
-      $("#stats_time_elapsed").html($(this).data('time-elapsed'));
-
+      // Set all of the values
+      for (key in stats) {
+        $('[data-target=' + key).html(stats[key]);
+      }
+      setStatusClasses(stats.uptime_status);
 
       //update heroku errors from history (since it's array, some parsing is needed).
-      var heroku_errors = $(this).data('heroku-errors-raw') || [];
+      for(k=0; k < stats.heroku_errors.length; k++ ) {
+        _rel = stats.heroku_errors[k];
+        $item = $('<span class="item"></span>'); // FIXME: this is filthy!  - HTML should NOT be in here
 
-      //wipe out what's currently there
-      $("#heroku_errors .item").remove();
-
-      for(var k=0; k < heroku_errors.length; k++ ) {
-        // FIXME: this is filthy!  - HTML should NOT be in here
-        var markup = '<span class="item" title="' + heroku_errors[k]['code'] + ':' + heroku_errors[k]['desc'] + '">' + heroku_errors[k]['code'] + ': ' + heroku_errors[k]['count'] + '</span>';
-        $("#heroku_errors").append(markup); //fixme: do 1 instead of on each line
+        $item
+          .attr('title', _rel.code + ':' + _rel.desc)
+          .html(_rel.code + ': ' + _rel.count);
+        $errorBucket = $errorBucket.add($item);
       }
+      $('#heroku_errors').empty().append($errorBucket);
+    }
 
-      // console.log("current", $("#heroku_errors").data('current'));
+    function showHistoryStats(evt) {
+      var $el = $(evt.currentTarget);
 
-    };
+      $el.addClass("active"); //hover indicator
+      displayStats($el.data('stats'));
+    }
 
-    function restoreCurrentStats() {
-      $(this).removeClass("active");
-      //restore the bucket values for current bucket
-      //FIXME: use classnames instead of this insanity!!!
-      $(".stats_fld").each(function(el) {
-        $(this).html($(this).data('current'));
-        // console.log($(this).data('current'));
-      });
+    function restoreCurrentStats(evt) {
+      var $el = $(evt.currentTarget);
 
-      //FIXME: Extract this and make it cleaner...
-      //apply the appropriate class name to alter the color
-      $("#status_current_cont").removeClass("success warning danger"); //class names warning, true, false...
-      $("#status_current_cont .glyphicon").removeClass("success warning danger glyphicon-ok-sign glyphicon-warning-sign glyphicon-minus-sign"); //class names warning, true, false...
+      $el.removeClass("active");
+      displayStats($('.history_timeline .label').eq(0).data('stats'));
+    }
 
-      //apply the appropriate class name to alter the color
-      var status_className = $("#stats_uptime").html();
-      $("#status_current_cont").addClass( status_classes[status_className] );
-      $("#status_current_cont .glyphicon").addClass( "glyphicon-" + glyph_classes[status_className] + "-sign" );
+    function setStatusClasses() {
+      var status_classes = {
+          "good": "success",
+          "slow": "warning",
+          "down": "danger"
+        }
+        , glyph_classes = {
+          "good": "ok",
+          "slow": "warning",
+          "down": "minus"
+        }
+        , status = $("#stats_uptime").html();
 
-    };
+      // Remove old status coloring and reset
+      $("#status_current_cont")
+        .removeClass("success warning danger")
+        .addClass( status_classes[status] );
+      // Remove old status icon and reset
+      $("#status_current_cont .glyphicon")
+        .removeClass("success warning danger glyphicon-ok-sign glyphicon-warning-sign glyphicon-minus-sign") //class names warning, true, false...
+        .addClass( "glyphicon-" + glyph_classes[status] + "-sign" ); //change the icon
+    }
+
+    function $bindHistory() {
+      return $('.history_timeline')
+        .on('mouseenter', 'label', showHistoryStats)
+        .on('mouseleave', 'label', restoreCurrentStats);
+    }
+
+    function clickHistory(evt) {
+      var $el = $(evt.currentTarget)
+        , $current = $el;
+      $(document)
+        .off('keydown')
+        .on('keydown', moveHistory);
+      $('.history_timeline')
+        .off('mouseenter', 'label', showHistoryStats)
+        .off('mouseleave', 'label', restoreCurrentStats)
+        .children('label').removeClass('active');
+      $el.addClass('active');
+      displayStats($el.data('stats'));
+
+      function moveHistory(evt) {
+        switch(evt.which) {
+        case 37: // left
+        case 38: // up
+          if (!!$current.prev().length) {
+            $current.prev().trigger('click');
+          }
+          break;
+        case 39: // right
+        case 40: // down
+          if (!!$current.next().length) {
+            $current.next().trigger('click');
+          }
+          break;
+        case 32: // space
+        case 13: // enter
+        case 27: // escape
+          $(document).off('keydown');
+          $bindHistory();
+          $current.trigger('mouseleave');
+          break;
+        }
+      }
+    }
 
 
     function getUXDate(timestamp) {

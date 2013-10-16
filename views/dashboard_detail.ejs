@@ -99,26 +99,26 @@ if (page_type == "api") {
       <h1 class="page_title"><%- app_id %> Status</h1>
       <div id="status_current_cont" class="curr_status <%- STATUS_TO_DISPLAY[status] %>">
         <span class="glyphicon <%- glyph %>" style="top: 4px;"></span>
-        <span style="text-transform: capitalize;" id="stats_uptime" class="stats_fld"><%- status %></span>
+        <span style="text-transform: capitalize;" id="stats_uptime" data-target="uptime_status" class="stats_fld"><%- status %></span>
       </div>
     </div>
 
 
 
     <div class="health section cf">
-      <h2 class="section_heading">Health @ <span id="stats_last_updated"><%- last_updated %></span> (<span id="stats_time_elapsed" class="stats_fld"><%- last_updated_raw.fromNow() %></span>)</h2>
+      <h2 class="section_heading">Health @ <span id="stats_last_updated" data-target="time"><%- last_updated %></span> (<span id="stats_time_elapsed" data-target="time_elapsed" class="stats_fld"><%- last_updated_raw.fromNow() %></span>)</h2>
 
       <div class="item throughput">
         <span class="title">req / 5 min</span>
-        <span class="metric"><span id="stats_req" class="stats_fld"><%- current['status:total'] %></span><span class="suffix">req</span></span>
+        <span class="metric"><span id="stats_req" data-target="status_total" class="stats_fld"><%- current['status:total'] %></span><span class="suffix">req</span></span>
       </div>
 
       <div class="item resp_time">
         <span class="title">p95 response time</span>
         <% if (parseInt(current['time:p95']) === 0) { %>
-        <span id="stats_p95" class="metric stats_fld">n/a</span>
+        <span id="stats_p95" data-target="p95" class="metric stats_fld">n/a</span>
         <% } else { %>
-        <span class="metric"><span id="stats_p95" class="stats_fld"><%- current['time:p95'] %></span><span class="suffix">ms</span>
+        <span class="metric"><span id="stats_p95" data-target="p95" class="stats_fld"><%- current['time:p95'] %></span><span class="suffix">ms</span>
         <% } %>
         </span>
       </div>
@@ -126,27 +126,27 @@ if (page_type == "api") {
       <div class="item memory hide-api">
         <span class="title">Memory (AVG &amp; MAX)</span>
         <span class="metric">
-          <span id="stats_mem_avg" class="stats_fld"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
+          <span id="stats_mem_avg" data-target="memory_avg" class="stats_fld"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
         </span>
         <span class="metric">
-          <span id="stats_mem_max" class="stats_fld"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
+          <span id="stats_mem_max" data-target="memory_max" class="stats_fld"><%- Math.round(current['mem:max']) %></span><span class="suffix">MB</span>
         </span>
       </div>
 
 
       <div class="item error_rate">
         <span class="title">Error rate (5xx / total)</span>
-        <span class="metric"><span id="stats_error_rate" lass="stats_fld"><%- error_rate %></span><span class="suffix">%</span></span>
+        <span class="metric"><span id="stats_error_rate" data-target="error_rate" lass="stats_fld"><%- error_rate %></span><span class="suffix">%</span></span>
 
       </div>
 
       <div class="item status_count">
         <span class="title">Status codes</span>
         <div class="totals">
-          <span class="item">2xx: <span id="stats_2xx" class="stats_fld"><%- current['status:2xx'] %></span></span>
-          <span class="item">3xx: <span id="stats_3xx" class="stats_fld"><%- current['status:3xx'] %></span></span>
-          <span class="item">4xx: <span id="stats_4xx" class="stats_fld"><%- current['status:4xx'] %></span></span>
-          <span class="item">5xx: <span id="stats_5xx" class="stats_fld"><%- current['status:5xx'] %></span></span>
+          <span class="item">2xx: <span id="stats_2xx" data-target="status_2xx" class="stats_fld"><%- current['status:2xx'] %></span></span>
+          <span class="item">3xx: <span id="stats_3xx" data-target="status_3xx" class="stats_fld"><%- current['status:3xx'] %></span></span>
+          <span class="item">4xx: <span id="stats_4xx" data-target="status_4xx" class="stats_fld"><%- current['status:4xx'] %></span></span>
+          <span class="item">5xx: <span id="stats_5xx" data-target="status_5xx" class="stats_fld"><%- current['status:5xx'] %></span></span>
         </div>
 
       </div>
@@ -173,27 +173,14 @@ if (page_type == "api") {
         <% for (var i=0; i < status_history.length; i++) { %>
         <%
           var history_time = moment.unix(app_history[i].stats.timestamp).tz("America/Denver");
-          var history_time_formatted = history_time.format('h:mm a');
-          var time_elapsed = history_time.fromNow();
+          app_history[i].stats.time = history_time.format('h:mm a');
+          app_history[i].stats.time_elapsed = history_time.fromNow();
+          app_history[i].stats.heroku_errors = app_history[i].stats.heroku_errors || [];
         %>
 
           <label
             class="label label-<%- STATUS_TO_DISPLAY[status_history[i].status] %>"
-            data-status="<%- app_history[i].stats.uptime_status %>"
-            data-raw-time="<%- app_history[i].timeBucket %>"
-            data-time="<%- history_time_formatted %>"
-            data-time-elapsed="<%- time_elapsed %>"
-            data-memory-avg="<%- Math.round(app_history[i].stats.memory_avg) %>"
-            data-memory-max="<%- Math.round(app_history[i].stats.memory_max) %>"
-            data-p95="<%- app_history[i].stats.p95 %>"
-            data-status-c2xx="<%- app_history[i].stats.status_2xx %>"
-            data-status-c3xx="<%- app_history[i].stats.status_3xx %>"
-            data-status-c4xx="<%- app_history[i].stats.status_4xx %>"
-            data-status-c5xx="<%- app_history[i].stats.status_5xx %>"
-            data-status-total="<%- app_history[i].stats.status_total %>"
-            data-error-rate="<%- app_history[i].stats.error_rate %>"
-            data-heroku-errors-raw='<%- JSON.stringify(app_history[i].stats.heroku_errors) %>'
-
+            data-stats='<%- JSON.stringify(app_history[i].stats) %>'
             <%
               var history_heroku_errors = app_history[i].stats.heroku_errors;
 
@@ -208,7 +195,8 @@ if (page_type == "api") {
 
             data-heroku-errors-pretty='<%- pretty_string %>'
 
-            title="<%- app_history[i].stats.uptime_status %> | <%- history_time.format('MM[/]D [@] h:mm a') %> "> </label>
+            title="<%- app_history[i].stats.uptime_status %> | <%- history_time.format('MM[/]D [@] h:mm a') %> ">
+          </label>
         <% } %>
       </div><!-- /.history_timeline -->
     </div><!-- /.history -->
