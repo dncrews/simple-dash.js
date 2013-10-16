@@ -95,7 +95,7 @@ $(document).ready(function() {
 
     $el.removeClass("active");
     historyTimeout = window.setTimeout(function() {
-      displayStats($('.history_timeline .label').eq(0).data('stats'));
+      displayStats(current_stats);
     }, 10);
   }
 
@@ -137,8 +137,7 @@ $(document).ready(function() {
       .on('keydown', moveHistory)
       .on('click', ':not(label)', offClickHistory);
     $('.history_timeline')
-      .off('mouseenter', 'label', showHistoryStats)
-      .off('mouseleave', 'label', restoreCurrentStats)
+      .off('mouseenter mouseleave')
       .children('label').removeClass('active');
     $el.addClass('active');
     displayStats($el.data('stats'));
@@ -165,8 +164,9 @@ $(document).ready(function() {
       }
     }
 
-    function offClickHistory() {
-      $(document).off('keydown');
+    function offClickHistory(evt) {
+      evt.stopPropagation();
+      $(document).off('keydown click');
       $bindHistory();
       $current.trigger('mouseleave');
     }
