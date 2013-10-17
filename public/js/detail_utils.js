@@ -7,7 +7,7 @@ $(document).ready(function() {
     , current_stats = $now.data('stats')
     , historyTimeout;
 
-  // $('[title]').tooltip();
+
 
 
 
@@ -65,7 +65,7 @@ $(document).ready(function() {
 
     // Set all of the values
     for (key in stats) {
-      $('[data-target=' + key).html(stats[key]);
+      $('[data-target=' + key + "]").html(stats[key]);
     }
     setStatusClasses(stats.uptime_status);
 
@@ -76,7 +76,8 @@ $(document).ready(function() {
 
       $item
         .attr('title', _rel.code + ':' + _rel.desc)
-        .html(_rel.code + ': ' + _rel.count);
+        .html(_rel.code + ': ' + _rel.count)
+        .tooltip();
       $errorBucket = $errorBucket.add($item);
     }
     $('#heroku_errors').empty().append($errorBucket);

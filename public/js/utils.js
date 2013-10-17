@@ -8,4 +8,7 @@ $(document).ready(function() {
     window.location = window.location;
   });
 
+  //turn on the tooltip
+  $('[title]').tooltip();
+
 });

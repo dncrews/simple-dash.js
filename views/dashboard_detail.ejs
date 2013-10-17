@@ -193,9 +193,7 @@ if (page_type == "api") {
             %>
 
 
-            data-heroku-errors-pretty='<%- pretty_string %>'
-
-            title="<%- app_history[i].stats.uptime_status %> | <%- history_time.format('MM[/]D [@] h:mm a') %> ">
+            data-heroku-errors-pretty='<%- pretty_string %>'>
           </label>
         <% } %>
       </div><!-- /.history_timeline -->
@@ -258,16 +256,31 @@ if (page_type == "api") {
 
           var currentdate = moment.unix(events[z].timestamp);
           var formatted_time = currentdate.format('h:mm a [on] MMM Do YYYY');
+
+          //personalize based on what source it is
+          var icon = events[z].src;
+
+          if (events[z].src === "github") {
+            var action = "Committed";
+            var name = events[z].data.repo_name;
+            var msg = events[z].data.commit.message;
+            var msg_url = events[z].data.commit.url;
+          } else if (events[z].src === "jenkins") {
+            var action = "Deployed";
+            var name = events[z].data.app_name;
+            var msg = "";
+          }
+
       %>
 
       <div class="item cf">
-        <span class="icon jenkins">Jenkins</span>
+          <span class="icon <%- icon %>"><%- icon %></span>
 
         <div class="change_detail">
-          <span class="commit_msg">Deploy <%- currentdate.fromNow() %> @ <%- formatted_time %></span>
+          <span class="commit_msg"><%- action %> <span class="" style="font-weight: bold"><%- name %></span> <%- msg %> <span class="change_meta"><%- currentdate.fromNow() %> @ <%- formatted_time %></span><!-- /.change_meta -->
+          </span><!-- /.commit_msg -->
         </div><!-- /.change_detail -->
-        <!-- <div class="change_meta"><span title="<%  %>"><%- currentdate.fromNow() %></span>
-        </div> --><!-- /.change_meta -->
+
       </div><!-- /.item -->
        <% } %>
     </div>
