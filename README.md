@@ -4,4 +4,4 @@ Ordered by date of first contribution.
 
 - [Jamis Charles aka `jamischarles`](https://github.com/jamischarles)
 - [Dan Crews aka `DannyCrews`](https://github.com/DannyCrews)
-- [Nic Johnson aka `nick19930528`](https://github.com/nick19930528)
+- [Nic Johnson aka `nicjohnson`](https://github.com/nicjohnson)
