@@ -78,6 +78,18 @@
         </div><!-- /.item -->
         <%  } //if() %>
 
+        <%  if (change_data[i].src == "marrow" && change_data[i].type == "marrow info:statusChange") { %>
+        <div class="item cf">
+          <span class="icon immune">Marrow</span>
+
+          <div class="change_detail">
+            <span class="repo_name"><%- change_data[i].data.app_name %></span><span class="commit_msg">Status changed from <strong><%- change_data[i].data.uptime_status_prev %> </strong> to <strong><%- change_data[i].data.uptime_status %></strong></span>
+          </div><!-- /.change_detail -->
+          <div class="change_meta"><span title="<%- formatted_time %>"><%- currentdate.fromNow() %></span>
+          </div><!-- /.change_meta -->
+        </div><!-- /.item -->
+        <%  } //if() %>
+
         <%  if (change_data[i].src == "jenkins") { %>
         <div class="item cf">
           <span class="icon jenkins">Jenkins</span>
