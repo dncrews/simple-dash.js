@@ -170,7 +170,7 @@ if (page_type == "api") {
       <h2 class="section_heading">Uptime History</h2>
       <!-- FIXME: Generate this from markup, not in JS. Just use the title tag... -->
       <div class="history_timeline cf">
-        <% for (var i=0; i < status_history.length; i++) { %>
+        <% for (var i=0; i < app_history.length; i++) { %>
         <%
           var history_time = moment.unix(app_history[i].stats.timestamp).tz("America/Denver");
           app_history[i].stats.time = history_time.format('h:mm a');
@@ -179,7 +179,7 @@ if (page_type == "api") {
         %>
 
           <label
-            class="label label-<%- STATUS_TO_DISPLAY[status_history[i].status] %>"
+            class="label label-<%- STATUS_TO_DISPLAY[app_history[i].stats.uptime_status] %>"
             data-stats='<%- JSON.stringify(app_history[i].stats) %>'
             <%
               var history_heroku_errors = app_history[i].stats.heroku_errors;
@@ -199,10 +199,7 @@ if (page_type == "api") {
       </div><!-- /.history_timeline -->
     </div><!-- /.history -->
 
-  <!--   <div class="memory section">
-      <h2 class="section_heading">Memory History</h2>
-      <div class="graph" data-memory-status='<%- JSON.stringify(status_history) %>'></div>
-    </div> -->
+
 
 
     <div class="other_apis section hide-api cf">
