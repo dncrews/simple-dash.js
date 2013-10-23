@@ -25,8 +25,7 @@
     "sendgrid": "~0.3.1",
     "debug": "~0.7.2",
     "moment-timezone": "0.0.2",
-    "moment": "~2.3.1",
-    "bson": "~0.2.3"
+    "moment": "~2.3.1"
   },
   "repository": "git://github.com/jamischarles/simple-dash.js",
   "main": "app.js",
