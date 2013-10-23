@@ -12,8 +12,8 @@
 
 
   var API_SLOW_RESPONSE = 1000
-    , API_DOWN_THRESHOLD = 50
-    , STATUS_TO_DISPLAY = {
+    , API_DOWN_THRESHOLD = 50;
+  var STATUS_TO_DISPLAY = {
       'good' : 'success',
       'slow' : 'warning',
       'down' : 'danger'
@@ -78,37 +78,21 @@
     <h2>Frontier</h2>
     <div class="section statuses">
       <%
-        // TODO: CLEAN UP THIS CODE & THESE RULES. SHOULD THESE EVEN BE HANDLED HERE? A: NO
-        var _rel, _data, _errors, appName, memAvg, codeTotal, codeErr, codeAvg, respTime, status, glyph;
-        for (var i=0, l=appData.length; i < l; i++) {
-          _rel = appData[i];
-          _data = _rel[DATA_KEY];
-          _errors = _rel[ERROR_KEY];
-          appName = _rel.appName;
-          memAvg = parseInt(_data['mem:avg']) || 0;
-          codeTotal = parseInt(_data['status:total']) || 0;
-          codeErr = parseInt(_data['status:5xx']) || 0;
-          codeAvg = (codeTotal && codeErr ? Math.round(10000 * codeErr / codeTotal) / 100 : 0);
-          respTime = _data['time:p95'] || 0;
 
-          switch (true) {
-            case (codeAvg >= DOWN_THRESHOLD):
-              status = 'down';
-              break;
-            case (respTime >= SLOW_RESPONSE):
-              status = 'slow';
-              break;
-            default:
-              status = 'good';
-              break
-          }
+      for (var i=0, l=appData.length; i < l; i++) {
 
+          var status = appData[i].stats.uptime_status;
+          var appName = appData[i].appName;
+
+          //CSS rules for uptime_status
           glyph = "glyphicon-" + ({
             "good" : "ok-sign",
             "slow" : "warning-sign",
             "down" : "minus-sign"
           }[status] || "question-sign");
-      %><a class="app_link btn btn-<%- STATUS_TO_DISPLAY[status] %>" href="detail/<%- encodeURIComponent(appName) %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <%- appName %></a><% } %>
+      %>
+        <a class="app_link btn btn-<%- STATUS_TO_DISPLAY[status] %>" href="detail/<%- encodeURIComponent(appName) %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <%- appName %></a>
+      <% } %>
     </div>
 
     <h2>APIs</h2>
@@ -116,22 +100,9 @@
       <%
         for(var j=0; j < apiData.length; j++){
 
-          var api_error_rate = apiData[j]['status:5xx'] / apiData[j]['status:total'];
-          api_error_rate = Math.round(api_error_rate * 100);
+          var api_status = apiData[j].stats.uptime_status;
 
-
-          switch (true) {
-            case (api_error_rate >= API_DOWN_THRESHOLD):
-              api_status = 'down';
-              break;
-            case (apiData[j]['time:p95'] >= API_SLOW_RESPONSE):
-              api_status = 'slow';
-              break;
-            default:
-              api_status = 'good';
-              break
-          }
-
+          //CSS classes for uptime_status. FIXME: move this to partial? or fn? We use this everywhere...
           api_glyph = "glyphicon-" + ({
             "good" : "ok-sign",
             "slow" : "warning-sign",

@@ -1,54 +1,22 @@
 <%
-
   // figure out the time
   var last_updated_raw = moment(updated).tz("America/Denver");
   var last_updated = last_updated_raw.format('h:mm a');
 
 
-  var SLOW_RESPONSE = 5000
-    , FAST_RESPONSE = 300
-    , DOWN_THRESHOLD = 50
-    , WARN_MEMORY = 400
-    , DATA_KEY = 'status:dashboard:frontier:mem_response'
-    , ERROR_KEY = 'status:dashboard:frontier:heroku_errors';
-
-
-  var API_SLOW_RESPONSE = 1000
-    , API_DOWN_THRESHOLD = 50
-    , STATUS_TO_DISPLAY = {
+  //figure out CSS classes for uptime_status
+  var STATUS_TO_DISPLAY = {
       'good' : 'success',
       'slow' : 'warning',
       'down' : 'danger'
     };
 
-if (page_type == "api") {
-  SLOW_RESPONSE = API_SLOW_RESPONSE;
-  DOWN_THRESHOLD = API_DOWN_THRESHOLD;
-};
 
-  var error_rate = 0;
-  if (current['status:total'] !== '0') {
-    error_rate = Math.round(current['status:5xx'] / current['status:total'] * 100);
-  }
-
-  switch (true) {
-      case (error_rate >= DOWN_THRESHOLD):
-        status = 'down';
-        break;
-      case (current['time:p95'] >= SLOW_RESPONSE):
-        status = 'slow';
-        break;
-      default:
-        status = "good"
-    }
-
-    glyph = "glyphicon-" + ({
-      "good" : "ok-sign",
-      "slow" : "warning-sign",
-      "down" : "minus-sign"
-    }[status] || "question-sign");
-
-
+  glyph = "glyphicon-" + ({
+    "good" : "ok-sign",
+    "slow" : "warning-sign",
+    "down" : "minus-sign"
+  }[current.uptime_status] || "question-sign");
 
 %>
 
@@ -65,12 +33,6 @@ if (page_type == "api") {
 </head>
 
 
-<!--
-  TODO:
-  1) Make the Uptime history as part of the header part...
-
-
- -->
 
 <body class="detail <%- page_type %>_type">
 
@@ -97,9 +59,10 @@ if (page_type == "api") {
   <div class="container">
     <div class="mast_head section">
       <h1 class="page_title"><%- app_id %> Status</h1>
-      <div id="status_current_cont" class="curr_status <%- STATUS_TO_DISPLAY[status] %>">
+      <div id="status_current_cont" class="curr_status <%- STATUS_TO_DISPLAY[current.uptime_status] %>">
         <span class="glyphicon <%- glyph %>" style="top: 4px;"></span>
-        <span style="text-transform: capitalize;" id="stats_uptime" data-target="uptime_status" class="stats_fld"><%- status %></span>
+        <span style="text-transform: capitalize;" id="stats_uptime" data-target="uptime_status" class="stats_fld">
+          <%- current.uptime_status %></span>
       </div>
     </div>
 
@@ -110,15 +73,15 @@ if (page_type == "api") {
 
       <div class="item throughput">
         <span class="title">req / 5 min</span>
-        <span class="metric"><span id="stats_req" data-target="status_total" class="stats_fld"><%- current['status:total'] %></span><span class="suffix">req</span></span>
+        <span class="metric"><span id="stats_req" data-target="status_total" class="stats_fld"><%- current['status_total'] %></span><span class="suffix">req</span></span>
       </div>
 
       <div class="item resp_time">
         <span class="title">p95 response time</span>
-        <% if (parseInt(current['time:p95']) === 0) { %>
+        <% if (parseInt(current['p95']) === 0) { %>
         <span id="stats_p95" data-target="p95" class="metric stats_fld">n/a</span>
         <% } else { %>
-        <span class="metric"><span id="stats_p95" data-target="p95" class="stats_fld"><%- current['time:p95'] %></span><span class="suffix">ms</span>
+        <span class="metric"><span id="stats_p95" data-target="p95" class="stats_fld"><%- current['p95'] %></span><span class="suffix">ms</span>
         <% } %>
         </span>
       </div>
@@ -126,27 +89,27 @@ if (page_type == "api") {
       <div class="item memory hide-api">
         <span class="title">Memory (AVG &amp; MAX)</span>
         <span class="metric">
-          <span id="stats_mem_avg" data-target="memory_avg" class="stats_fld"><%- Math.round(current['mem:avg']) %></span><span class="suffix">MB</span>
+          <span id="stats_mem_avg" data-target="memory_avg" class="stats_fld"><%- Math.round(current['memory_avg']) %></span><span class="suffix">MB</span>
         </span>
         <span class="metric">
-          <span id="stats_mem_max" data-target="memory_max" class="stats_fld"><%- Math.round(current['mem:max']) %></span><span class="suffix">MB</span>
+          <span id="stats_mem_max" data-target="memory_max" class="stats_fld"><%- Math.round(current['memory_max']) %></span><span class="suffix">MB</span>
         </span>
       </div>
 
 
       <div class="item error_rate">
         <span class="title">Error rate (5xx / total)</span>
-        <span class="metric"><span id="stats_error_rate" data-target="error_rate" lass="stats_fld"><%- error_rate %></span><span class="suffix">%</span></span>
+        <span class="metric"><span id="stats_error_rate" data-target="error_rate" lass="stats_fld"><%- current.error_rate %></span><span class="suffix">%</span></span>
 
       </div>
 
       <div class="item status_count">
         <span class="title">Status codes</span>
         <div class="totals">
-          <span class="item">2xx: <span id="stats_2xx" data-target="status_2xx" class="stats_fld"><%- current['status:2xx'] %></span></span>
-          <span class="item">3xx: <span id="stats_3xx" data-target="status_3xx" class="stats_fld"><%- current['status:3xx'] %></span></span>
-          <span class="item">4xx: <span id="stats_4xx" data-target="status_4xx" class="stats_fld"><%- current['status:4xx'] %></span></span>
-          <span class="item">5xx: <span id="stats_5xx" data-target="status_5xx" class="stats_fld"><%- current['status:5xx'] %></span></span>
+          <span class="item">2xx: <span id="stats_2xx" data-target="status_2xx" class="stats_fld"><%- current['status_2xx'] %></span></span>
+          <span class="item">3xx: <span id="stats_3xx" data-target="status_3xx" class="stats_fld"><%- current['status_3xx'] %></span></span>
+          <span class="item">4xx: <span id="stats_4xx" data-target="status_4xx" class="stats_fld"><%- current['status_4xx'] %></span></span>
+          <span class="item">5xx: <span id="stats_5xx" data-target="status_5xx" class="stats_fld"><%- current['status_5xx'] %></span></span>
         </div>
 
       </div>
@@ -210,24 +173,12 @@ if (page_type == "api") {
 
           var dependent_apis = api_data;
 
+          // console.log("api_data", api_data);
           for(var j=0; j < dependent_apis.length; j++) {
 
-            var api_error_rate = dependent_apis["5xx"] / dependent_apis.total;
-            api_error_rate = Math.round(api_error_rate * 100);
+            var api_status = dependent_apis[j].stats.uptime_status;
 
-
-            switch (true) {
-              case (api_error_rate >= API_DOWN_THRESHOLD):
-                api_status = 'down';
-                break;
-              case (dependent_apis.p95 >= API_SLOW_RESPONSE):
-                api_status = 'slow';
-                break;
-              default:
-                api_status = "good"
-                break
-            }
-
+            //figure out CSS classes for uptime_status
             api_glyph = "glyphicon-" + ({
               "good" : "ok-sign",
               "slow" : "warning-sign",
