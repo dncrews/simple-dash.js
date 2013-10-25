@@ -68,7 +68,7 @@
 
 
 
-    <div class="health section cf">
+    <div class="health section cf hide-upstream">
       <h2 class="section_heading">Health @ <span id="stats_last_updated" data-target="time"><%- last_updated %></span> (<span id="stats_time_elapsed" data-target="time_elapsed" class="stats_fld"><%- last_updated_raw.fromNow() %></span>)</h2>
 
       <div class="item throughput">
@@ -79,7 +79,7 @@
       <div class="item resp_time">
         <span class="title">p95 response time</span>
         <% if (parseInt(current['p95']) === 0) { %>
-        <span id="stats_p95" data-target="p95" class="metric stats_fld">n/a</span>
+        <span id="stats_p95" data-target="p95" class="metric stats_fld">n/a</span><span class="suffix">ms</span>
         <% } else { %>
         <span class="metric"><span id="stats_p95" data-target="p95" class="stats_fld"><%- current['p95'] %></span><span class="suffix">ms</span>
         <% } %>
@@ -165,7 +165,7 @@
 
 
 
-    <div class="other_apis section hide-api cf">
+    <div class="other_apis section hide-api hide-upstream cf">
       <div class="status-table">
         <h3 class="section_heading">Dependent APIs</h3>
       <%
@@ -194,7 +194,7 @@
     </div>
   </div> <!-- /.other_apis -->
 
-  <div class="events section cf hide-api">
+  <div class="events section cf hide-api hide-upstream">
     <h2 class="section_heading">Event History</h2>
 
     <div class="change_item_container">
