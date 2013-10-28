@@ -1,6 +1,6 @@
 #!/app/bin/node
 
-/*global console,exit */
+/*global console,process */
 'use strict';
 
 function sayHello() {
@@ -8,3 +8,5 @@ function sayHello() {
 }
 
 sayHello();
+
+process.exit();
