@@ -219,9 +219,13 @@ app.get('/home', function(req, res, next){
   });
 });
 
-app.get('/cron', function(req, res, next) {
+app.post('/cron', function(req, res, next) {
   console.log('cronned!');
   res.send(200);
+
+  // This is where we will set up buckets
+  // This is where we will do any "reaching out".
+  // We should probably send the 200 before we do any of that, so we can do things that are "tedious".
 });
 
 
