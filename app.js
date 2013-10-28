@@ -219,6 +219,11 @@ app.get('/home', function(req, res, next){
   });
 });
 
+app.get('/cron', function(req, res, next) {
+  console.log('cronned!');
+  res.send(200);
+});
+
 
 app.listen(config.port, function() {
   console.info("Listening on " + config.port);
