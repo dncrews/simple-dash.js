@@ -6,7 +6,6 @@
  */
 var request = require('superagent')
   , express = require('express')
-  , request = require('superagent')
   , url = require('url')
   , Q = require('q')
   , stylus = require('stylus')
@@ -21,7 +20,8 @@ var app = module.exports = express()
   , dash = require('./lib/dash')
   , details = require('./lib/details')
   , logger = require('./lib/logger') // 5 minutes
-  , change_log = require('./lib/change_log');
+  , change_log = require('./lib/change_log')
+  , db = require('./lib/db');
 
 /**
  * Express Configuration
@@ -66,6 +66,9 @@ app.get('/', function(req, res, next){
     'text/html': function() {
       dash.appAndApi(function(appData, apiData) {
         res.render('dashboard_home', {moment: moment, appData : appData, apiData: apiData, updated : appData[0].timestamp });
+      }, function(err) {
+        console.error(err);
+        res.send(500);
       });
     },
 
@@ -82,6 +85,9 @@ app.get('/', function(req, res, next){
           appData : appData,
           apiData : apiData
         });
+      }, function(err) {
+        console.error(err);
+        res.send(500);
       });
     }
   });
@@ -128,23 +134,12 @@ app.post('/', function(req, res){
  */
 app.get('/change', function(req, res){
 
-  getChangeLog(function(err, docs) {
+  db.change.history().then(function(docs) {
     res.render("change_log", {
       change_data: docs,
       moment: moment
     });
-
   });
-
-
-
-  function getChangeLog(cb) {
-    var db = require('./lib/mongoClient.js');
-    // console.log(db.mongo.change_log);
-    //TODO: this should be limited by date rather than count
-    db.mongo.change_log.find({}).sort({ "timestamp" : -1}).limit(20, cb); //FIXME: should this be somewhere else?
-
-  }
 
 });
 
@@ -156,7 +151,7 @@ app.get('/change', function(req, res){
  */
 app.post('/change', function(req, res){
   var src = false;
-  var debug = require('debug')('changelog');
+  var debug = require('debug')('app:changelog');
   //TODO: have a  lookup table or something that matches up repos to appName in heroku...
   var ua = req.headers['user-agent'];
   debug("headers", req.headers);
@@ -178,11 +173,12 @@ app.post('/change', function(req, res){
 
 
   //save the data
-  change_log.save(req.body, function(err, stuff) {
-    if (err) return console.log(err);
-    console.log('successfully saved change to DB');
-    //console.log(stuff);
-  }, src);
+  change_log.save(req.body, src).then(function success(stuff) {
+    debug('successfully saved change to DB');
+  }, function fail(err) {
+    debug('change post failure: ', err);
+    return res.send(500);
+  });
 });
 
 /**
@@ -219,14 +215,28 @@ app.get('/home', function(req, res, next){
   });
 });
 
-app.post('/cron', function(req, res, next) {
+function populateCronData(req, res, next) {
+  // Expect to be run every 1-5 minutes.
+  // Less than 5 may not be necessary
   console.log('cronned!');
-  res.send(200);
 
-  // This is where we will set up buckets
-  // This is where we will do any "reaching out".
+  // Create next 2 buckets
+
+  // Get Heroku status and save that somewheres
+  request
+    .get('https://status.heroku.com/api/v3/current-status')
+    .set('accept', 'application/json')
+    .end(function(err, resp) {
+      console.log(resp.body);
+      // console.log(arguments);
+    });
+
   // We should probably send the 200 before we do any of that, so we can do things that are "tedious".
-});
+  res.send(200);
+}
+
+app.post('/cron', populateCronData);
+app.get('/cron', populateCronData);
 
 
 app.listen(config.port, function() {
