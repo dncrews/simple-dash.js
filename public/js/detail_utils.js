@@ -61,17 +61,18 @@ $(document).ready(function() {
 
   function displayStats(stats) {
     var $errorBucket = $()
-      , key, k, _rel, $item;
+      , codes, key, k, _rel, $item;
 
     // Set all of the values
     for (key in stats) {
       $('[data-target=' + key + "]").html(stats[key]);
     }
     setStatusClasses(stats.uptime_status);
+    codes = stats.heroku_errors.codes || [];
 
     //update heroku errors from history (since it's array, some parsing is needed).
-    for(k=0; k < stats.heroku_errors.length; k++ ) {
-      _rel = stats.heroku_errors[k];
+    for(k=0; k < codes.length; k++ ) {
+      _rel = codes[k];
       $item = $('<span class="item"></span>'); // FIXME: this is filthy!  - HTML should NOT be in here
 
       $item

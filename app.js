@@ -27,7 +27,8 @@ var app = module.exports = express()
 /**
  * Express Configuration
  */
-app.use(express.bodyParser());
+app.use(express.json());
+app.use(express.urlencoded());
 app.use(stylus.middleware(__dirname + '/public'));
 app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
