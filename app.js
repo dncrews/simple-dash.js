@@ -185,6 +185,7 @@ app.post('/change', function(req, res){
   //save the data
   change_log.save(req.body, src).then(function success(stuff) {
     debug('successfully saved change to DB');
+    res.send(201);
   }, function fail(err) {
     debug('change post failure: ', err);
     res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
