@@ -67,8 +67,8 @@ app.get('/', function(req, res, next){
      */
     'text/html': function() {
       debug('GET /');
-      dash(function(appData, apiData) {
-        res.render('dashboard_home', {moment: moment, appData : appData, apiData: apiData, updated : appData[0].timestamp });
+      dash(function(appData, apiData, upstreamData) {
+        res.render('dashboard_home', {moment: moment, upstreamData: upstreamData, appData : appData, apiData: apiData, updated : appData[0].timestamp });
       }, function(err) {
         debug('get HTML failure: ', err);
         res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
@@ -100,8 +100,8 @@ app.get('/', function(req, res, next){
 /**
  * Detail dashboard page
  */
-app.get('/detail/:appName', function(req, res){
-  debug('GET /detail/' + req.params.appName);
+app.get('/detail/app/:appName', function(req, res){
+  debug('GET /detail/app/' + req.params.appName);
   details.app(req.params.appName, function(data) {
     data.moment = moment;
     res.render('dashboard_detail', data);
@@ -112,11 +112,23 @@ app.get('/detail/:appName', function(req, res){
  * API DETAIL dashboard page
  */
  // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
-app.get('/api_detail/:apiName', function(req, res){
-  debug('GET /api_detail/' + req.params.apiName);
+app.get('/detail/api/:appName', function(req, res){
+  debug('GET /detail/api/' + req.params.apiName);
   details.api(req.params.apiName, function(data) {
     data.moment = moment;
     res.render('dashboard_detail', data);
+  });
+});
+
+/**
+ * API DETAIL dashboard page
+ */
+ // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
+app.get('/detail/upstream/:upstreamName', function(req, res){
+  debug('GET /detail/upstream/' + req.params.upstreamName);
+  details.upstream(req.params.upstreamName, function(data) {
+    data.moment = moment;
+    res.render('detail_upstream', data);
   });
 });
 
@@ -141,7 +153,7 @@ app.post('/', function(req, res){
  */
 app.get('/change', function(req, res){
   debug('GET /change');
-  db.change.history().then(function(docs) {
+  db.change_log.history().then(function(docs) {
     res.render("change_log", {
       change_data: docs,
       moment: moment
