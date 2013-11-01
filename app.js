@@ -70,8 +70,8 @@ app.get('/', function(req, res, next){
       dash(function(appData, apiData) {
         res.render('dashboard_home', {moment: moment, appData : appData, apiData: apiData, updated : appData[0].timestamp });
       }, function(err) {
-        console.error(err);
-        res.send(500);
+        debug('get HTML failure: ', err);
+        res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
       });
     },
 
@@ -90,8 +90,8 @@ app.get('/', function(req, res, next){
           apiData : apiData
         });
       }, function(err) {
-        console.error(err);
-        res.send(500);
+        debug('get JSON failure: ', err);
+        res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
       });
     }
   });
@@ -146,6 +146,9 @@ app.get('/change', function(req, res){
       change_data: docs,
       moment: moment
     });
+  }, function(err) {
+    debug('change get failure: ', err);
+    res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
   });
 
 });
@@ -184,7 +187,7 @@ app.post('/change', function(req, res){
     debug('successfully saved change to DB');
   }, function fail(err) {
     debug('change post failure: ', err);
-    return res.send(500);
+    res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
   });
 });
 
