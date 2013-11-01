@@ -9,7 +9,8 @@ var request = require('superagent')
   , url = require('url')
   , Q = require('q')
   , stylus = require('stylus')
-  , moment = require('moment-timezone');
+  , moment = require('moment-timezone')
+  , debug = require('debug')('app:routing');
 
 
 /**
@@ -64,7 +65,8 @@ app.get('/', function(req, res, next){
      * Dashboard View
      */
     'text/html': function() {
-      dash.appAndApi(function(appData, apiData) {
+      debug('GET /');
+      dash(function(appData, apiData) {
         res.render('dashboard_home', {moment: moment, appData : appData, apiData: apiData, updated : appData[0].timestamp });
       }, function(err) {
         console.error(err);
@@ -80,7 +82,8 @@ app.get('/', function(req, res, next){
      * A: YES. MUCH BETTER.
      */
     'application/json': function() {
-      dash.appAndApi(function(appData, apiData) {
+      debug('GET / JSON');
+      dash(function(appData, apiData) {
         res.send({
           appData : appData,
           apiData : apiData
@@ -97,6 +100,7 @@ app.get('/', function(req, res, next){
  * Detail dashboard page
  */
 app.get('/detail/:appName', function(req, res){
+  debug('GET /detail/' + req.params.appName);
   details.app(req.params.appName, function(data) {
     data.moment = moment;
     res.render('dashboard_detail', data);
@@ -108,6 +112,7 @@ app.get('/detail/:appName', function(req, res){
  */
  // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
 app.get('/api_detail/:apiName', function(req, res){
+  debug('GET /api_detail/' + req.params.apiName);
   details.api(req.params.apiName, function(data) {
     data.moment = moment;
     res.render('dashboard_detail', data);
@@ -121,6 +126,7 @@ app.get('/api_detail/:apiName', function(req, res){
  * Should alwasy return a responeCode
  */
 app.post('/', function(req, res){
+  debug('POST /: ' + req);
   logger(req.body, function(code) {
     res.send(code);
   });
@@ -130,10 +136,10 @@ app.post('/', function(req, res){
 /**
  * Adding items to the changelog
  *
- * Should alwasy return a responseCode
+ * Should always return a responseCode
  */
 app.get('/change', function(req, res){
-
+  debug('GET /change');
   db.change.history().then(function(docs) {
     res.render("change_log", {
       change_data: docs,
@@ -150,8 +156,8 @@ app.get('/change', function(req, res){
  * Should alwasy return a responseCode
  */
 app.post('/change', function(req, res){
+  debug('POST /change: ', req);
   var src = false;
-  var debug = require('debug')('app:changelog');
   //TODO: have a  lookup table or something that matches up repos to appName in heroku...
   var ua = req.headers['user-agent'];
   debug("headers", req.headers);
@@ -187,33 +193,6 @@ app.post('/change', function(req, res){
 // app.get('/js/superagent.js', function(req, res, next) {
 //   res.sendfile(__dirname + '/node_modules/superagent/superagent.js');
 // });
-
-// OLD Home page...
-app.get('/home', function(req, res, next){
-  res.format({
-    /**
-     * Dashboard View
-     */
-    'text/html': function() {
-      dash.appOnly(function(appData) {
-        res.render('dashboard_old', {appData : appData});
-      });
-    },
-
-    /**
-     * JSON View
-     * It seems like this might be consumed, so
-     * I assume we could just rely on the accept header.
-     * Would a separate "API" be better?
-     * A: YES. MUCH BETTER.
-     */
-    'application/json': function() {
-      dash.appOnly(function(appData) {
-        res.send(appData);
-      });
-    }
-  });
-});
 
 function populateCronData(req, res, next) {
   // Expect to be run every 1-5 minutes.
