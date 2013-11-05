@@ -185,7 +185,7 @@
               "down" : "minus-sign"
             }[api_status] || "question-sign")
 
-      %><a class="app_link btn btn-<%- STATUS_TO_DISPLAY[api_status] %>" href="../../api_detail/<%- encodeURIComponent(dependent_apis[j].api) %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <%- dependent_apis[j].api %></a><% } } %>
+      %><a class="app_link btn btn-<%- STATUS_TO_DISPLAY[api_status] %>" href="../../detail/api/<%- encodeURIComponent(dependent_apis[j].api) %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <%- dependent_apis[j].api %></a><% } } %>
     </div>
   </div> <!-- /.other_apis -->
 
