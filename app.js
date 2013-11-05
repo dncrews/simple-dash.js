@@ -112,7 +112,7 @@ app.get('/detail/app/:appName', function(req, res){
  * API DETAIL dashboard page
  */
  // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
-app.get('/detail/api/:appName', function(req, res){
+app.get('/detail/api/:apiName', function(req, res){
   debug('GET /detail/api/' + req.params.apiName);
   details.api(req.params.apiName, function(data) {
     data.moment = moment;
