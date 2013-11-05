@@ -140,7 +140,7 @@
 
           stats.time = history_time.format('h:mm a');
           stats.time_elapsed = history_time.fromNow();
-          stats.heroku_errors = app_history[i].stats.heroku_errors && app_history[i].stats.heroku_errors.codes || [];
+          stats.heroku_errors = app_history[i]['status:dashboard:frontier:heroku_errors'] && app_history[i]['status:dashboard:frontier:heroku_errors'].codes || [];
         %>
 
           <label
