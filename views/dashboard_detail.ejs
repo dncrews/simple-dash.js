@@ -136,16 +136,18 @@
         <% for (var i=0; i < app_history.length; i++) { %>
         <%
           var history_time = moment.unix(app_history[i].stats.timestamp).tz("America/Denver");
-          app_history[i].stats.time = history_time.format('h:mm a');
-          app_history[i].stats.time_elapsed = history_time.fromNow();
-          app_history[i].stats.heroku_errors = app_history[i].stats.heroku_errors || [];
+          var stats = app_history[i].stats;
+
+          stats.time = history_time.format('h:mm a');
+          stats.time_elapsed = history_time.fromNow();
+          stats.heroku_errors = app_history[i].stats.heroku_errors && app_history[i].stats.heroku_errors.codes || [];
         %>
 
           <label
             class="label label-<%- STATUS_TO_DISPLAY[app_history[i].stats.uptime_status] %>"
             data-stats='<%- JSON.stringify(app_history[i].stats) %>'
             <%
-              var history_heroku_errors = app_history[i].stats.heroku_errors && app_history[i].stats.heroku_errors.codes || [];
+              var history_heroku_errors = stats.heroku_errors;
               var pretty_string = "";
               for(var k=0; k < history_heroku_errors.length; k++ ) {
                 pretty_string += history_heroku_errors[k]['code'] + ":" + history_heroku_errors[k]['count'] + " (" + history_heroku_errors[k]['desc'] + ") | ";

@@ -69,7 +69,7 @@ $(document).ready(function() {
       $('[data-target=' + key + "]").html(stats[key]);
     }
     setStatusClasses(stats.uptime_status);
-    codes = stats.heroku_errors && stats.heroku_errors.codes || [];
+    codes = stats.heroku_errors || [];
 
     //update heroku errors from history (since it's array, some parsing is needed).
     for(k=0; k < codes.length; k++ ) {
