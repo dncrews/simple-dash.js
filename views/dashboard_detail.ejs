@@ -147,7 +147,6 @@
             <%
               var history_heroku_errors = app_history[i].stats.heroku_errors && app_history[i].stats.heroku_errors.codes || [];
               var pretty_string = "";
-              console.log(history_heroku_errors);
               for(var k=0; k < history_heroku_errors.length; k++ ) {
                 pretty_string += history_heroku_errors[k]['code'] + ":" + history_heroku_errors[k]['count'] + " (" + history_heroku_errors[k]['desc'] + ") | ";
 
