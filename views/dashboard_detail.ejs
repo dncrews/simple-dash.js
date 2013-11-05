@@ -141,6 +141,8 @@
           stats.time = history_time.format('h:mm a');
           stats.time_elapsed = history_time.fromNow();
           stats.heroku_errors = app_history[i]['status:dashboard:frontier:heroku_errors'] && app_history[i]['status:dashboard:frontier:heroku_errors'].codes || [];
+          // The following is how we did this previously, but there is currently an issue with how the stats are being saved.
+          // stats.heroku_errors = app_history[i].stats.heroku_errors && app_history[i].stats.heroku_errors.codes || [];
         %>
 
           <label
