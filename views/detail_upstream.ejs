@@ -70,6 +70,23 @@
 
     <div class="health section cf hide-upstream">
       <h2 class="section_heading">Health @ <span id="stats_last_updated" data-target="time"><%- last_updated %></span> (<span id="stats_time_elapsed" data-target="time_elapsed" class="stats_fld"><%- last_updated_raw.fromNow() %></span>)</h2>
+
+      <div class="item error_rate">
+        <span class="title">Error rate (5xx / total)</span>
+        <span class="metric"><span id="stats_error_rate" data-target="error_rate" lass="stats_fld"><%- current.error_rate %></span><span class="suffix">%</span></span>
+
+      </div>
+
+      <div class="item status_count">
+        <span class="title">Status codes</span>
+        <div class="totals">
+          <span class="item">2xx: <span id="stats_2xx" data-target="status_2xx" class="stats_fld"><%- current.stats['status_2xx'] %></span></span>
+          <span class="item">3xx: <span id="stats_3xx" data-target="status_3xx" class="stats_fld"><%- current.stats['status_3xx'] %></span></span>
+          <span class="item">4xx: <span id="stats_4xx" data-target="status_4xx" class="stats_fld"><%- current.stats['status_4xx'] %></span></span>
+          <span class="item">5xx: <span id="stats_5xx" data-target="status_5xx" class="stats_fld"><%- current.stats['status_5xx'] %></span></span>
+        </div>
+
+      </div>
     </div><!-- /.health-->
 
     <div class="history section">
@@ -81,7 +98,9 @@
           var history_time = moment(history[i].created_at).tz("America/Denver");
           history[i].stats.time = history_time.format('h:mm a');
           history[i].stats.time_elapsed = history_time.fromNow();
-          issues = issues.concat(history[i]._raw.issues);
+          if (history[i]._raw && history[i]._raw.issues) {
+            issues = issues.concat(history[i]._raw.issues);
+          }
         %>
 
           <label

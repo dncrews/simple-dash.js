@@ -20,7 +20,7 @@ var app = module.exports = express()
   , config = require('./lib/config')
   , dash = require('./lib/dash')
   , details = require('./lib/details')
-  , logger = require('./lib/logger') // 5 minutes
+  , Logger = require('./lib/logger')
   , change_log = require('./lib/change_log')
   , db = require('./lib/db');
 
@@ -140,7 +140,8 @@ app.get('/detail/upstream/:upstreamName', function(req, res){
  */
 app.post('/', function(req, res){
   debug('POST /: ' + req);
-  logger(req.body, function(code) {
+  new Logger(req.body).log(function(code) {
+    debug('Logger code: ' + code);
     res.send(code);
   });
 });
