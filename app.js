@@ -276,3 +276,5 @@ app.get('/partials/:partial', function(req, res) {
     }
   });
 });
+
+app.use('/api', require('./api'));

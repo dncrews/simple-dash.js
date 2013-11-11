@@ -12,7 +12,7 @@
       $routeProvider
         .when('/', {
           templateUrl: '/partials/dashboard',
-          controller: 'DashboardCtrl'
+          controller: 'IndexCtrl'
         })
         .when('/app/:name', {
           templateUrl: '/partials/details',

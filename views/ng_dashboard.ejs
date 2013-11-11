@@ -6,7 +6,6 @@
   <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap-theme.min.css">
   <link rel="stylesheet" href="../css/dashboard.css">
   <meta name="viewport" content="width=device-width">
-  <base href="/ng/">
 </head>
 
 <body>
@@ -22,8 +21,8 @@
       </div>
       <div class="collapse navbar-collapse">
         <ul class="nav navbar-nav">
-          <li><a class="fs-rel" href="/">Home</a></li>
-          <li><a class="fs-rel" href="/change">Change</a></li>
+          <li><a href="#/">Home</a></li>
+          <li><a href="#/change">Change</a></li>
           <li><a class="refresh" href="#"><span class="glyphicon glyphicon-refresh"></span> Last updated at <span data-ng-model="last_updated"></span></a></li>
         </ul>
       </div><!--/.nav-collapse -->
@@ -38,7 +37,6 @@
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
   <script src="../js/ng/routes.js"></script>
   <script src="../js/ng/controllers.js"></script>
-  <script src="../js/ng/directives.js"></script>
   <script src="../js/ng/services.js"></script>
 </body>
 </html>

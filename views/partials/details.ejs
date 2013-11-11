@@ -1,0 +1,13 @@
+<div class="details" data-ng-class="page_type + '_type'">
+  <div class="mast_head section">
+    <h1 class="page_title" data-ng-bind="pageTitle"></h1>
+    <div id="status_current_cont" class="curr_status" data-ng-class="headerClass(current.stats.uptime_status)">
+      <span class="glyphicon" data-ng-class="getGlyph(current.stats.status)" style="top: 4px;"></span>
+      <span style="text-transform: capitalize;" data-ng-bind="current.stats.uptime_status" class="stats_fld"></span>
+    </div>
+  </div>
+
+  <div class="health section cf hide-upstream">
+    <h2 class="section_heading">Health @ <span id="stats_last_updated" data-target="time" data-ng-bind="last_updated"></span> (<span id="stats_time_elapsed" data-target="time_elapsed" class="stats_fld" data-ng-bind="updated_from_now"></span>)</h2>
+  </div>
+</div>
