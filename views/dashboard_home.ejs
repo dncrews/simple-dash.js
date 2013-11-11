@@ -91,7 +91,7 @@
             "slow" : "warning-sign",
             "down" : "minus-sign"
           }[status] || "question-sign");
-      %><a class="app_link btn btn-<%- STATUS_TO_DISPLAY[status] %>" href="upstream/<%- encodeURIComponent(upstreamName) %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <%- upstreamName %></a><% } %>
+      %><a class="app_link btn btn-<%- STATUS_TO_DISPLAY[status] %>" href="detail/upstream/<%- encodeURIComponent(upstreamName) %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <%- upstreamName %></a><% } %>
     </div>
 
     <h2>Frontier</h2>
@@ -109,7 +109,7 @@
             "slow" : "warning-sign",
             "down" : "minus-sign"
           }[status] || "question-sign");
-      %><a class="app_link btn btn-<%- STATUS_TO_DISPLAY[status] %>" href="app/<%- encodeURIComponent(appName) %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <%- appName %></a><% } %>
+      %><a class="app_link btn btn-<%- STATUS_TO_DISPLAY[status] %>" href="detail/app/<%- encodeURIComponent(appName) %>"><span class="glyphicon <%- glyph %>" style="top: 2px;"></span> <%- appName %></a><% } %>
     </div>
 
     <h2>APIs</h2>
@@ -126,7 +126,7 @@
             "down" : "minus-sign"
           }[api_status] || "question-sign")
 
-      %><a class="app_link btn btn-<%- STATUS_TO_DISPLAY[api_status] %>" href="api/<%- encodeURIComponent(apiData[j].api) %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <%- apiData[j].api %></a><% } %>
+      %><a class="app_link btn btn-<%- STATUS_TO_DISPLAY[api_status] %>" href="detail/api/<%- encodeURIComponent(apiData[j].api) %>"><span class="glyphicon <%- api_glyph %>" style="top: 2px;"></span> <%- apiData[j].api %></a><% } %>
     </div>
 
   </div>

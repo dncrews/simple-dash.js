@@ -1,13 +1,99 @@
-<div class="details" data-ng-class="page_type + '_type'">
+<div class="loading" data-ng-show="loading.main">
+  <h1 class="page_title" data-ng-bind="pageTitle"></h1>
+</div>
+<div class="detail" data-ng-class="page_type + '_type'" data-ng-hide="loading.main">
+
   <div class="mast_head section">
     <h1 class="page_title" data-ng-bind="pageTitle"></h1>
-    <div id="status_current_cont" class="curr_status" data-ng-class="headerClass(current.stats.uptime_status)">
-      <span class="glyphicon" data-ng-class="getGlyph(current.stats.status)" style="top: 4px;"></span>
-      <span style="text-transform: capitalize;" data-ng-bind="current.stats.uptime_status" class="stats_fld"></span>
+    <div class="curr_status" data-ng-class="statusClass">
+      <span class="glyphicon" data-ng-class="glyph" style="top: 4px;"></span>
+      <span style="text-transform: capitalize;" data-ng-bind="status" class="stats_fld"></span>
     </div>
   </div>
 
   <div class="health section cf hide-upstream">
-    <h2 class="section_heading">Health @ <span id="stats_last_updated" data-target="time" data-ng-bind="last_updated"></span> (<span id="stats_time_elapsed" data-target="time_elapsed" class="stats_fld" data-ng-bind="updated_from_now"></span>)</h2>
-  </div>
-</div>
+    <h2 class="section_heading">Health @ <span data-ng-bind="updated.formatted"></span> (<span class="stats_fld" data-ng-bind="updated.delta"></span>)</h2>
+
+    <div class="item throughput" data-ng-show="hasThroughput">
+      <span class="title">req / 5 min</span>
+      <span class="metric">
+        <span class="stats_fld" data-ng-bind="current.status_total"></span>
+        <span class="suffix">req</span>
+      </span>
+    </div>
+
+    <div class="item resp_time" data-ng-show="hasRespTime">
+      <span class="title">p95 response time</span>
+      <span class="metric">
+        <span class="metric stats_fld" data-ng-bind="current.p95 || 'n/a'"></span>
+        <span class="suffix">ms</span>
+      </span>
+    </div>
+
+    <div class="item memory" data-ng-show="hasMemory">
+      <span class="title">Memory (AVG &amp; MAX)</span>
+      <span class="metric">
+        <span class="stats_fld">{{ current.memory_avg | number:0 }}</span>
+        <span class="suffix">MB</span>
+      </span>
+      <span class="metric">
+        <span class="stats_fld">{{ current.memory_max | number:0 }}</span>
+        <span class="suffix">MB</span>
+      </span>
+    </div>
+
+    <div class="item error_rate" data-ng-show="hasErrorRate">
+      <span class="title">Error rate (5xx / total)</span>
+      <span class="metric">
+        <span class="stats_fld" data-ng-bind="current.error_rate"></span>
+        <span class="suffix">%</span>
+      </span>
+    </div>
+
+    <div class="item status_count" data-ng-show="hasStatus">
+      <span class="title">Status codes</span>
+      <div class="totals">
+        <span class="item">2xx:
+          <span class="stats_fld" data-ng-bind="current.status_2xx"></span>
+        </span>
+        <span class="item">3xx:
+          <span class="stats_fld" data-ng-bind="current.status_3xx"></span>
+        </span>
+        <span class="item">4xx:
+          <span class="stats_fld" data-ng-bind="current.status_4xx"></span>
+        </span>
+        <span class="item">5xx:
+          <span class="stats_fld" data-ng-bind="current.status_5xx"></span>
+        </span>
+      </div>
+    </div>
+
+    <div class="item status_count" data-ng-show="isHeroku">
+      <span class="title">Heroku codes</span>
+      <div class="totals stats_fld">
+        <span
+          data-ng-repeat="error in heroku_errors"
+          class="item"
+          data-ng-title="error.code + ': ' + error.desc"
+          data-ng-bind="error.code + ': ' + error.count"></span>
+      </div>
+    </div>
+
+  </div> <!-- /.health.section.cf -->
+
+  <div class="history section">
+
+    <h2 class="section_heading">Uptime History</h2>
+    <div class="history_timeline cf">
+      <label
+        class="label"
+        data-ng-repeat="item in history"
+        data-history-item="{{ item }}"
+        data-ng-class="labelStatus(item)">
+      </label>
+    </div><!-- /.history_timeline -->
+
+  </div> <!-- /.history.section -->
+
+
+</div> <!-- /.detail -->

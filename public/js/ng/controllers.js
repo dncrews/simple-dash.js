@@ -1,4 +1,4 @@
-(function(angular) {
+(function(angular, jQuery) {
 
   'use strict';
 
@@ -71,13 +71,15 @@
   ]);
 
   app.controller('UpstreamDetailsCtrl', [
+    '$rootScope',
     '$scope',
     '$routeParams',
     'dashService',
 
-    function UpstreamDetailsCtrl($scope, $routeParams, service) {
+    function UpstreamDetailsCtrl($rootScope, $scope, $routeParams, service) {
       $scope.pageType = 'upstream';
       $scope.pageTitle = $routeParams.name + ' Status';
+      window.$bindHistory($scope);
 
       console.log('upstreamed');
 
@@ -85,10 +87,34 @@
         'main' : true
       };
 
+      $scope.labelStatus = function(item) {
+        return 'label-' + statusToBS(item.stats.status);
+      };
+
+      $scope.setCurrent = function(current) {
+        var updated = moment(current.created_at)
+          , status = current.stats.status;
+        $scope.current = current;
+        $scope.updated = {
+          formatted: updated.format('h:mm a'),
+          delta: updated.fromNow()
+        };
+
+        $scope.status = status;
+        $scope.statusClass = statusToBS(status);
+        $scope.glyph = getGlyph(status);
+      };
+
       service.upstream.details($routeParams.name).then(function(upstreamList) {
-        console.log(upstreamList);
+        var current = upstreamList[0];
+        $scope.setCurrent(current);
+        $rootScope.updated = {
+          formatted: moment(current.created_at).format('h:mm a')
+        };
+        $scope.history = upstreamList;
+        $scope.loading.main = false;
       });
     }
   ]);
 
-})(window.angular);
+})(window.angular, window.jQuery);
