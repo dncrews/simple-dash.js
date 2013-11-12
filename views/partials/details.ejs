@@ -94,18 +94,11 @@
   <div class="other_apis section cf" data-ng-show="hasApis">
     <div class="status-table" data-ng-hide="loading.apis">
       <h3 class="section_heading">Dependent APIs</h3>
-
-      <a
-        class="app_link btn"
-        data-ng-repeat="api in apis"
-        data-ng-class="apiBtnClass(api.stats.uptime_status)"
-        data-ng-click="goToApi(api.api)">
-        <span
-          class="glyph-icon"
-          data-ng-class="apiGlyph()"
-          style="top: 2px;"></span>
-        <span data-ng-bind="api.api"></span>
-      </a>
+      <span
+        data-ng-repeat="item in apis"
+        data-status-btn="{{ item }}"
+        data-status-type="api">
+      </span>
     </div>
   </div> <!-- /.other_apis -->
 
@@ -114,18 +107,8 @@
 
     <div class="change_item_container">
       <div
-        class="item cf"
         data-ng-repeat="event in events"
-        data-event-item="{{ event }}">
-        <span class="icon" data-ng-class="event.src" data-ng-bind="event.src"></span>
-        <div class="change_detail">
-          <span class="commit_msg">
-            <span data-ng-bind="action"></span>
-            <span style="font-weight: bold;" data-ng-bind="name"></span>
-            <span data-ng-bind="msg"></span>
-            <span class="change_meta" data-ng-bind="time"></span>
-        </div>
-      </div>
+        data-event-item="{{ event }}"></div>
     </div>
   </div><!-- /.events -->
 

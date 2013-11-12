@@ -25,6 +25,10 @@
         .when('/upstream/:name', {
           templateUrl: '/partials/details',
           controller: 'UpstreamDetailsCtrl'
+        })
+        .when('/change', {
+          templateUrl: '/partials/change_log',
+          controller: 'ChangeLogCtrl'
         });
 
       // $locationProvider.html5Mode(true);

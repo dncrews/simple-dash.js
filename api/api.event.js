@@ -15,7 +15,7 @@ var app = module.exports = express()
   , db = require('../lib/db');
 
 app.get('/', function (req, res) {
-  db.change_log.current().then(function success(docs) {
+  db.change_log.history().then(function success(docs) {
     debug('Index docs retrieved: ' + docs.length);
     res.send(docs);
   }, function fail(err) {
@@ -24,23 +24,22 @@ app.get('/', function (req, res) {
   });
 });
 
-app.get('/:api_name', function (req, res) {
-  db.change_log.history(req.params.api_name).then(function success(docs) {
-    debug('Api history retrieved: ' + docs.length);
+app.get('/more/:id', function (req, res) {
+  db.change_log.more(req.params.id).then(function success(docs) {
+    debug('More docs retrieved: ' + docs.length);
     res.send(docs);
   }, function fail(err) {
-    debug('Api history failure: ', err);
+    debug('More docs failure: ', err);
     res.send(500, err);
   });
 });
 
 app.get('/app/:app_name', function (req, res) {
   db.change_log.appHistory(req.params.app_name).then(function success(docs) {
-    debug('Api app index retrieved: ' + docs.length);
-    console.log(docs[0]);
+    debug('Event app index retrieved: ' + docs.length);
     res.send(docs);
   }, function fail(err) {
-    debug('Api app index failure: ', err);
+    debug('Event app index failure: ', err);
     res.send(500, err);
   });
 });
