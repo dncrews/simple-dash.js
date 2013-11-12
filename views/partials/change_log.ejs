@@ -1,0 +1,18 @@
+<div>
+
+  <div class="mast_head section row">
+    <div class="col-md-6 col-xs-12">
+      <h1 class="page_title">FamilySearch Changelog </h1>
+    </div>
+  </div>
+
+  <div class="change_item_container">
+
+    <div
+      data-ng-repeat="event in events"
+      data-event-item="{{ event }}"></div>
+    <btn data-ng-hide="loading.more" class="btn btn-danger" data-ng-click="checkMore()">Check for more</btn>
+  </div> <!-- ./change_item_container -->
+
+
+</div> <!-- /.change_log -->

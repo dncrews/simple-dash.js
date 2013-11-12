@@ -1,45 +1,56 @@
 body
-  color: #3d3d3d;
-  padding: 0;
+  color: #3d3d3d
+  padding: 0
 
 h1
-  margin-top: 0;
+  margin-top: 0
 
-body.api_type .hide-api { display: none; }
+body.api_type .hide-api { display: none }
 
 .page_title
-  font-weight: normal;
+  font-weight: normal
 
 .app_link, .legend .item
-  border-radius: 0;
+  border-radius: 0
 
 .history_timeline
   label
-    border-right: 1px solid #38963F;
+    border-right: 1px solid #38963F
     border-radius: 0
-    float: left;
-    font-size: 0;
-    height: 12px;
-    margin-bottom: 2px;
-    width: 12px;
+    float: left
+    font-size: 0
+    height: 12px
+    margin-bottom: 2px
+    width: 12px
 
     &.active
       opacity: .5
-      outline: 2px solid red;
+      outline: 2px solid red
     &:hover
-      border: 1px solid white;
+      border: 1px solid white
 
 .home
   .legend
-    text-align: right;
+    text-align: right
   .status-table
-    margin-bottom: 20px;
+    margin-bottom: 20px
     td
-      padding: 4px 1px;
-      width: 210px;
+      padding: 4px 1px
+      width: 210px
 
 .section
-  margin-bottom: 20px;
+  margin-bottom: 20px
+
+  .progress
+    display: none
+    width: 50%;
+    .progress-bar
+      width: 100%;
+
+  &.loading
+    .progress
+      display: block
+
   &.memory
     .aGraph
        width:300px
@@ -49,36 +60,36 @@ body.api_type .hide-api { display: none; }
       stroke-width: 1
       fill: none
   .section_heading
-    font-weight: normal;
+    font-weight: normal
 
 .detail
   .curr_status
-    font-size: 40px;
+    font-size: 40px
     &.success
-      color: #5CB85C;
+      color: #5CB85C
     &.warning
-      color: #F0AD4E;
+      color: #F0AD4E
     &.danger
-      color: #D9534F;
+      color: #D9534F
   .health
     .item
-      float: left;
-      width: 300px;
+      float: left
+      width: 300px
       .metric
-        display: block;
-        font-size: 45px;
-        margin-top: -13px;
+        display: block
+        font-size: 45px
+        margin-top: -13px
         .suffix
-          opacity: 0.6;
+          opacity: 0.6
     .title
-      display: block;
-      font-size: 12px;
-      text-transform: uppercase;
-      opacity: 0.9;
+      display: block
+      font-size: 12px
+      text-transform: uppercase
+      opacity: 0.9
     .error_rate
-      width: 200px;
+      width: 200px
     .status_count
-      width: 100px;
+      width: 100px
     .status_count
       .totals
         .item
@@ -90,7 +101,7 @@ body.api_type .hide-api { display: none; }
         font-size: 32px
         margin-top: -9px
       .suffix
-        font-size: 24px;
+        font-size: 24px
 
   .events
     .item
@@ -108,7 +119,7 @@ body.api_type .hide-api { display: none; }
         height: 41px
         width: 53px
       .icon
-        &.immune
+        &.marrow
           background: url("../img/immune_icon.png") top left no-repeat
         &.jenkins
           background: url("../img/jenkins_icon.png") 0px -2px no-repeat
@@ -127,45 +138,45 @@ body.api_type .hide-api { display: none; }
   .page_title
     color: #eee
 
-  .change_item_container
+.change_item_container
 
-    .item
-      background-color: #FAFAFA
-      margin-bottom: 20px
-      padding: 15px
-      .icon
-        background: url("../img/github_icon.png") top left no-repeat
-        // border: 1px solid #666
-        float: left
-        margin-right: 15px
-        // padding: 15px
-        text-indent: -500px
-        height: 55px
-        width: 53px
-      .icon
-        &.immune
-          background: url("../img/immune_icon.png") top left no-repeat
-        &.jenkins
-          background: url("../img/jenkins_icon.png") 0px -2px no-repeat
+  .item
+    background-color: #FAFAFA
+    margin-bottom: 20px
+    padding: 15px
+    .icon
+      background: url("../img/github_icon.png") top left no-repeat
+      // border: 1px solid #666
+      float: left
+      margin-right: 15px
+      // padding: 15px
+      text-indent: -500px
+      height: 55px
+      width: 53px
+    .icon
+      &.marrow
+        background: url("../img/immune_icon.png") top left no-repeat
+      &.jenkins
+        background: url("../img/jenkins_icon.png") 0px -2px no-repeat
 
-      .repo_name
-        background-color: #54B7DD
-        border-radius: 4px
-        color: white
-        font-size: 11px
-        font-weight: normal
-        float: left
-        text-transform: capitalize
-        margin-right: 10px
-        padding: 2px 6px
+    .repo_name
+      background-color: #54B7DD
+      border-radius: 4px
+      color: white
+      font-size: 11px
+      font-weight: normal
+      float: left
+      text-transform: capitalize
+      margin-right: 10px
+      padding: 2px 6px
 
-      .change_meta
-        font-size: 11px
-        margin-top: 11px
+    .change_meta
+      font-size: 11px
+      margin-top: 11px
 
-      .commit_link
-        color: #3D3D3D
-        // text-decoration: underline
+    .commit_link
+      color: #3D3D3D
+      // text-decoration: underline
 
 
 
@@ -181,18 +192,18 @@ body.api_type .hide-api { display: none; }
  */
 .cf:before,
 .cf:after {
-  content: " ";
+  content: " "
 /* 1 */
-  display: table;
+  display: table
 /* 2 */
 }
 .cf:after {
-  clear: both;
+  clear: both
 }
 /**
  * For IE 6/7 only
  * Include this rule to trigger hasLayout and contain floats.
  */
 .cf {
-  *zoom: 1;
+  *zoom: 1
 }

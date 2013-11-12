@@ -1,0 +1,115 @@
+<div class="detail" data-ng-class="page_type + '_type'">
+
+  <div class="mast_head section">
+    <h1 class="page_title" data-ng-bind="pageTitle"></h1>
+    <div class="curr_status" data-ng-class="statusClass">
+      <span class="glyphicon" data-ng-class="glyph" style="top: 4px;"></span>
+      <span style="text-transform: capitalize;" data-ng-bind="status" class="stats_fld"></span>
+    </div>
+  </div>
+
+  <div class="health section cf">
+    <h2 class="section_heading">Health @ <span data-ng-bind="updated.formatted"></span> (<span class="stats_fld" data-ng-bind="updated.delta"></span>)</h2>
+
+    <div class="item throughput" data-ng-show="hasThroughput">
+      <span class="title">req / 5 min</span>
+      <span class="metric">
+        <span class="stats_fld" data-ng-bind="current.stats.status_total">
+        </span><span class="suffix">req</span>
+      </span>
+    </div>
+
+    <div class="item resp_time" data-ng-show="hasRespTime">
+      <span class="title">p95 response time</span>
+      <span class="metric">
+        <span class="stats_fld" data-ng-bind="current.stats.p95 || 'n/a'">
+        </span><span class="suffix">ms</span>
+      </span>
+    </div>
+
+    <div class="item memory" data-ng-show="hasMemory">
+      <span class="title">Memory (AVG &amp; MAX)</span>
+      <span class="metric">
+        <span class="stats_fld">{{ current.stats.memory_avg | number:0 }}</span><span class="suffix">MB</span>
+      </span>
+      <span class="metric">
+        <span class="stats_fld">{{ current.stats.memory_max | number:0 }}</span><span class="suffix">MB</span>
+      </span>
+    </div>
+
+    <div class="item error_rate" data-ng-show="hasErrorRate">
+      <span class="title">Error rate (5xx / total)</span>
+      <span class="metric">
+        <span class="stats_fld" data-ng-bind="current.stats.error_rate">
+        </span><span class="suffix">%</span>
+      </span>
+    </div>
+
+    <div class="item status_count" data-ng-show="hasStatus">
+      <span class="title">Status codes</span>
+      <div class="totals">
+        <span class="item">2xx:
+          <span class="stats_fld" data-ng-bind="current.stats.status_2xx"></span>
+        </span>
+        <span class="item">3xx:
+          <span class="stats_fld" data-ng-bind="current.stats.status_3xx"></span>
+        </span>
+        <span class="item">4xx:
+          <span class="stats_fld" data-ng-bind="current.stats.status_4xx"></span>
+        </span>
+        <span class="item">5xx:
+          <span class="stats_fld" data-ng-bind="current.stats.status_5xx"></span>
+        </span>
+      </div>
+    </div>
+
+    <div class="item status_count" data-ng-show="isHeroku">
+      <span class="title">Heroku codes</span>
+      <div class="totals stats_fld">
+        <span
+          data-ng-repeat="error in current.stats.heroku_errors.codes"
+          class="item"
+          data-ng-title="error.code + ': ' + error.desc"
+          data-ng-bind="error.code + ': ' + error.count"
+          data-ng-value="error"></span>
+      </div>
+    </div>
+
+  </div> <!-- /.health.section.cf -->
+
+  <div class="history section">
+
+    <h2 class="section_heading">Uptime History</h2>
+    <div class="history_timeline cf">
+      <label
+        class="label"
+        data-ng-repeat="item in history"
+        data-history-item="{{ item }}"
+        data-ng-class="labelStatus(item)">
+      </label>
+    </div><!-- /.history_timeline -->
+
+  </div> <!-- /.history.section -->
+
+  <div class="other_apis section cf" data-ng-show="hasApis">
+    <div class="status-table" data-ng-hide="loading.apis">
+      <h3 class="section_heading">Dependent APIs</h3>
+      <span
+        data-ng-repeat="item in apis"
+        data-status-btn="{{ item }}"
+        data-status-type="api">
+      </span>
+    </div>
+  </div> <!-- /.other_apis -->
+
+  <div class="events section cf" data-ng-show="hasEvents">
+    <h2 class="section_heading">Event History</h2>
+
+    <div class="change_item_container">
+      <div
+        data-ng-repeat="event in events"
+        data-event-item="{{ event }}"></div>
+    </div>
+  </div><!-- /.events -->
+
+</div> <!-- /.detail -->
