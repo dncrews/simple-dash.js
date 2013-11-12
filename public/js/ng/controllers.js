@@ -128,11 +128,12 @@
       var name = $routeParams.name;
       $scope.pageType = 'app';
       $scope.pageTitle = name + ' Status';
-      setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasApis']);
+      setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasApis', 'hasEvents']);
       window.$bindHistory($scope);
       $scope.loading = {
         'main' : true,
-        'apis' : true
+        'apis' : true,
+        'events' : true
       };
 
       $scope.labelStatus = function(item) {
@@ -165,6 +166,11 @@
       service.api.app(name).then(function(apiList) {
         $scope.apis = apiList;
         $scope.loading.apis = false;
+      });
+
+      service.event.app(name).then(function(eventList) {
+        $scope.events = eventList;
+        $scope.loading.events = false;
       });
 
       function setCurrent(current) {

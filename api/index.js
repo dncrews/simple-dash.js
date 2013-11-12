@@ -15,3 +15,4 @@ app.use('/app', require('./api.app.js'));
 app.use('/api', require('./api.api.js'));
 app.use('/upstream', require('./api.upstream.js'));
 app.use('/change', require('./api.change.js'));
+app.use('/event', require('./api.event.js'));

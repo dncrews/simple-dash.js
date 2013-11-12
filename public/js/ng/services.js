@@ -11,35 +11,34 @@
 
     function($http,$q) {
 
-      var app = restify('app')
-        , api = restify('api')
-        , upstream = restify('upstream');
-
-      api.app = function(appName) {
-        var dfd = $q.defer();
-
-        $http
-          .get('/api/api/app/' + appName)
-          .success(dfd.resolve)
-          .error(dfd.reject);
-
-        return dfd.promise;
-      };
+      var app = restify('app', ['index','details'])
+        , api = restify('api', ['index','details','app'])
+        , upstream = restify('upstream', ['index','details'])
+        , event = restify('event', ['index','app']);
 
       return {
         app: app,
         api: api,
-        upstream: upstream
+        upstream: upstream,
+        event: event
       };
 
-      function restify(type) {
-        var _type = type;
-        return {
-          index: index,
-          details: details
-        };
+      function restify(type, list) {
+        var _type = type
+          , getters = {
+            index : getIndex,
+            details : getDetails,
+            app : getAppSpecific
+          }
+          , i, l, obj = {};
 
-        function index() {
+        for (i=0, l=list.length; i<l; i++) {
+          obj[list[i]] = getters[list[i]];
+        }
+
+        return obj;
+
+        function getIndex() {
           var dfd = $q.defer();
           $http
             .get('/api/' + _type)
@@ -49,10 +48,21 @@
           return dfd.promise;
         }
 
-        function details(name) {
+        function getDetails(name) {
           var dfd = $q.defer();
           $http
             .get('/api/' + _type + '/' + name)
+            .success(dfd.resolve)
+            .error(dfd.reject);
+
+          return dfd.promise;
+        }
+
+        function getAppSpecific(name) {
+          var dfd = $q.defer();
+          var url = '/api/' + _type + '/app/' + name;
+          $http
+            .get('/api/' + _type + '/app/' + name)
             .success(dfd.resolve)
             .error(dfd.reject);
 

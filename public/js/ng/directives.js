@@ -1,4 +1,4 @@
-(function(angular) {
+(function(angular, moment) {
 
   'use strict';
 
@@ -32,4 +32,43 @@
     };
   });
 
-})(window.angular);
+  app.directive('eventItem', function() {
+    return {
+      restrict: 'A',
+      link: function(scope, element, attrs) {
+        var event = scope.event
+          , type = event.src
+          , actions = {
+            'github' : 'Committed to',
+            'jenkins' : 'Deployed'
+          }
+          , date = moment.unix(event.timestamp);
+
+        scope.action = actions[type];
+        scope.name = setName();
+        scope.msg = setMsg();
+        scope.time = date.fromNow() + ' @ ' + date.format('h:mm a [on] MMM Do YYYY');
+
+
+        function setName() {
+          if (type === 'github') return event.data.repo_name;
+          if (type === 'jenkins') return event.data.app_name;
+        }
+
+        function setMsg() {
+          if (type === 'github') return event.data.commit.message;
+          if (type === 'jenkins') return '';
+        }
+
+        scope.actions = {
+          'github' : 'Committed to',
+          'jenkins' : 'Deployed'
+        };
+
+
+
+      }
+    };
+  });
+
+})(window.angular, window.moment);
