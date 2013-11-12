@@ -149,11 +149,6 @@
         $location.path('/api/' + escape(name));
       };
 
-      $scope.getApiUrl = function(name) {
-        if (! name) return;
-        return escape(name);
-      };
-
       $scope.clean = function(name) {
         if (! name) return;
         return escape(name);
@@ -170,6 +165,56 @@
       service.api.app(name).then(function(apiList) {
         $scope.apis = apiList;
         $scope.loading.apis = false;
+      });
+
+      function setCurrent(current) {
+        var status = current.stats.uptime_status;
+        $scope.current = current;
+        $scope.updated = getTime(current.stats.timestamp);
+
+        $scope.status = status;
+        $scope.statusClass = statusToBS(status);
+        $scope.glyph = getGlyph(status);
+      }
+
+      function getTime(timestamp) {
+        var updated = moment.unix(timestamp);
+        return {
+          formatted: updated.format('h:mm a'),
+          delta: updated.fromNow()
+        };
+      }
+    }
+  ]);
+
+  app.controller('ApiDetailsCtrl', [
+    '$rootScope',
+    '$scope',
+    '$routeParams',
+    'dashService',
+
+    function ApiDetailsCtrl($rootScope, $scope, $routeParams, service) {
+      var name = $routeParams.name;
+      $scope.pageType = 'app';
+      $scope.pageTitle = name + ' Status';
+      setFeatures($scope, ['hasThroughput','hasRespTime','hasErrorRate','hasStatus']);
+      window.$bindHistory($scope);
+      $scope.loading = {
+        'main' : true
+      };
+
+      $scope.labelStatus = function(item) {
+        return 'label-' + statusToBS(item.stats.uptime_status);
+      };
+
+      $scope.setCurrent = setCurrent;
+
+      service.api.details(name).then(function(apiList) {
+        var current = apiList[0];
+        setCurrent(current);
+        $rootScope.updated = getTime(current.stats.timestamp);
+        $scope.history = apiList;
+        $scope.loading.main = false;
       });
 
       function setCurrent(current) {
