@@ -9,7 +9,6 @@
     return {
       restrict: 'A',
       link: function(scope, element, attrs) {
-        var intent;
         scope.$parent.$watch('current', function() {
           if (angular.equals(scope.item, scope.$parent.current)) {
             element.addClass('active');

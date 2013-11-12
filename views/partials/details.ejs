@@ -1,5 +1,5 @@
 <div class="loading" data-ng-show="loading.main">
-  <h1 class="page_title" data-ng-bind="pageTitle"></h1>
+  <h1 class="page_title" data-ng-bind="'Loading: ' + pageTitle"></h1>
 </div>
 <div class="detail" data-ng-class="page_type + '_type'" data-ng-hide="loading.main">
 
@@ -11,42 +11,40 @@
     </div>
   </div>
 
-  <div class="health section cf hide-upstream">
+  <div class="health section cf">
     <h2 class="section_heading">Health @ <span data-ng-bind="updated.formatted"></span> (<span class="stats_fld" data-ng-bind="updated.delta"></span>)</h2>
 
     <div class="item throughput" data-ng-show="hasThroughput">
       <span class="title">req / 5 min</span>
       <span class="metric">
-        <span class="stats_fld" data-ng-bind="current.status_total"></span>
-        <span class="suffix">req</span>
+        <span class="stats_fld" data-ng-bind="current.stats.status_total">
+        </span><span class="suffix">req</span>
       </span>
     </div>
 
     <div class="item resp_time" data-ng-show="hasRespTime">
       <span class="title">p95 response time</span>
       <span class="metric">
-        <span class="metric stats_fld" data-ng-bind="current.p95 || 'n/a'"></span>
-        <span class="suffix">ms</span>
+        <span class="stats_fld" data-ng-bind="current.stats.p95 || 'n/a'">
+        </span><span class="suffix">ms</span>
       </span>
     </div>
 
     <div class="item memory" data-ng-show="hasMemory">
       <span class="title">Memory (AVG &amp; MAX)</span>
       <span class="metric">
-        <span class="stats_fld">{{ current.memory_avg | number:0 }}</span>
-        <span class="suffix">MB</span>
+        <span class="stats_fld">{{ current.stats.memory_avg | number:0 }}</span><span class="suffix">MB</span>
       </span>
       <span class="metric">
-        <span class="stats_fld">{{ current.memory_max | number:0 }}</span>
-        <span class="suffix">MB</span>
+        <span class="stats_fld">{{ current.stats.memory_max | number:0 }}</span><span class="suffix">MB</span>
       </span>
     </div>
 
     <div class="item error_rate" data-ng-show="hasErrorRate">
       <span class="title">Error rate (5xx / total)</span>
       <span class="metric">
-        <span class="stats_fld" data-ng-bind="current.error_rate"></span>
-        <span class="suffix">%</span>
+        <span class="stats_fld" data-ng-bind="current.stats.error_rate">
+        </span><span class="suffix">%</span>
       </span>
     </div>
 
@@ -54,16 +52,16 @@
       <span class="title">Status codes</span>
       <div class="totals">
         <span class="item">2xx:
-          <span class="stats_fld" data-ng-bind="current.status_2xx"></span>
+          <span class="stats_fld" data-ng-bind="current.stats.status_2xx"></span>
         </span>
         <span class="item">3xx:
-          <span class="stats_fld" data-ng-bind="current.status_3xx"></span>
+          <span class="stats_fld" data-ng-bind="current.stats.status_3xx"></span>
         </span>
         <span class="item">4xx:
-          <span class="stats_fld" data-ng-bind="current.status_4xx"></span>
+          <span class="stats_fld" data-ng-bind="current.stats.status_4xx"></span>
         </span>
         <span class="item">5xx:
-          <span class="stats_fld" data-ng-bind="current.status_5xx"></span>
+          <span class="stats_fld" data-ng-bind="current.stats.status_5xx"></span>
         </span>
       </div>
     </div>
@@ -72,10 +70,11 @@
       <span class="title">Heroku codes</span>
       <div class="totals stats_fld">
         <span
-          data-ng-repeat="error in heroku_errors"
+          data-ng-repeat="error in current.stats.heroku_errors.codes"
           class="item"
           data-ng-title="error.code + ': ' + error.desc"
-          data-ng-bind="error.code + ': ' + error.count"></span>
+          data-ng-bind="error.code + ': ' + error.count"
+          data-ng-value="error"></span>
       </div>
     </div>
 
@@ -94,6 +93,24 @@
     </div><!-- /.history_timeline -->
 
   </div> <!-- /.history.section -->
+
+<div class="other_apis section cf" data-ng-show="hasApis">
+  <div class="status-table" data-ng-hide="loading.apis">
+    <h3 class="section_heading">Dependent APIs</h3>
+
+    <a
+      class="app_link btn"
+      data-ng-repeat="api in apis"
+      data-ng-class="apiBtnClass(api.stats.uptime_status)"
+      data-ng-click="goToApi(api.api)">
+      <span
+        class="glyph-icon"
+        data-ng-class="apiGlyph()"
+        style="top: 2px;"></span>
+      <span data-ng-bind="api.api"></span>
+    </a>
+  </div>
+</div> <!-- /.other_apis -->
 
 
 </div> <!-- /.detail -->

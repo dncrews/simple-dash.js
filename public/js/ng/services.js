@@ -15,6 +15,17 @@
         , api = restify('api')
         , upstream = restify('upstream');
 
+      api.app = function(appName) {
+        var dfd = $q.defer();
+
+        $http
+          .get('/api/api/app/' + appName)
+          .success(dfd.resolve)
+          .error(dfd.reject);
+
+        return dfd.promise;
+      };
+
       return {
         app: app,
         api: api,

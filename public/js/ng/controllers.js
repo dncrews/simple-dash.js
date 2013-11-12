@@ -77,12 +77,10 @@
     'dashService',
 
     function UpstreamDetailsCtrl($rootScope, $scope, $routeParams, service) {
+      var name = $routeParams.name;
       $scope.pageType = 'upstream';
-      $scope.pageTitle = $routeParams.name + ' Status';
+      $scope.pageTitle = name + ' Status';
       window.$bindHistory($scope);
-
-      console.log('upstreamed');
-
       $scope.loading = {
         'main' : true
       };
@@ -91,7 +89,19 @@
         return 'label-' + statusToBS(item.stats.status);
       };
 
-      $scope.setCurrent = function(current) {
+      $scope.setCurrent = setCurrent;
+
+      service.upstream.details(name).then(function(upstreamList) {
+        var current = upstreamList[0];
+        setCurrent(current);
+        $rootScope.updated = {
+          formatted: moment(current.created_at).format('h:mm a')
+        };
+        $scope.history = upstreamList;
+        $scope.loading.main = false;
+      });
+
+      function setCurrent(current) {
         var updated = moment(current.created_at)
           , status = current.stats.status;
         $scope.current = current;
@@ -103,18 +113,90 @@
         $scope.status = status;
         $scope.statusClass = statusToBS(status);
         $scope.glyph = getGlyph(status);
-      };
-
-      service.upstream.details($routeParams.name).then(function(upstreamList) {
-        var current = upstreamList[0];
-        $scope.setCurrent(current);
-        $rootScope.updated = {
-          formatted: moment(current.created_at).format('h:mm a')
-        };
-        $scope.history = upstreamList;
-        $scope.loading.main = false;
-      });
+      }
     }
   ]);
+
+  app.controller('AppDetailsCtrl', [
+    '$rootScope',
+    '$scope',
+    '$routeParams',
+    '$location',
+    'dashService',
+
+    function AppDetailsCtrl($rootScope, $scope, $routeParams, $location, service) {
+      var name = $routeParams.name;
+      $scope.pageType = 'app';
+      $scope.pageTitle = name + ' Status';
+      setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasApis']);
+      window.$bindHistory($scope);
+      $scope.loading = {
+        'main' : true,
+        'apis' : true
+      };
+
+      $scope.labelStatus = function(item) {
+        return 'label-' + statusToBS(item.stats.uptime_status);
+      };
+
+      $scope.setCurrent = setCurrent;
+
+      $scope.apiBtnClass = function(status) {
+        return 'btn-' + statusToBS(status);
+      };
+
+      $scope.goToApi = function(name) {
+        $location.path('/api/' + escape(name));
+      };
+
+      $scope.getApiUrl = function(name) {
+        if (! name) return;
+        return escape(name);
+      };
+
+      $scope.clean = function(name) {
+        if (! name) return;
+        return escape(name);
+      };
+
+      service.app.details(name).then(function(appList) {
+        var current = appList[0];
+        setCurrent(current);
+        $rootScope.updated = getTime(current.stats.timestamp);
+        $scope.history = appList;
+        $scope.loading.main = false;
+      });
+
+      service.api.app(name).then(function(apiList) {
+        $scope.apis = apiList;
+        $scope.loading.apis = false;
+      });
+
+      function setCurrent(current) {
+        var status = current.stats.uptime_status;
+        $scope.current = current;
+        $scope.updated = getTime(current.stats.timestamp);
+
+        $scope.status = status;
+        $scope.statusClass = statusToBS(status);
+        $scope.glyph = getGlyph(status);
+      }
+
+      function getTime(timestamp) {
+        var updated = moment.unix(timestamp);
+        return {
+          formatted: updated.format('h:mm a'),
+          delta: updated.fromNow()
+        };
+      }
+    }
+  ]);
+
+  function setFeatures($scope, list) {
+    var i, l;
+    for (i=0, l=list.length; i<l; i++) {
+      $scope[list[i]] = true;
+    }
+  }
 
 })(window.angular, window.jQuery);

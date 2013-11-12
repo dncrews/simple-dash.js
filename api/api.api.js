@@ -26,10 +26,21 @@ app.get('/', function (req, res) {
 
 app.get('/:api_name', function (req, res) {
   db.api.history(req.params.api_name).then(function success(docs) {
-    debug('App history retrieved: ' + docs.length);
+    debug('Api history retrieved: ' + docs.length);
     res.send(docs);
   }, function fail(err) {
-    debug('App history failure: ', err);
+    debug('Api history failure: ', err);
+    res.send(500, err);
+  });
+});
+
+app.get('/app/:app_name', function (req, res) {
+  db.api.appCurrent(req.params.app_name).then(function success(docs) {
+    debug('Api app index retrieved: ' + docs.length);
+    console.log(docs[0]);
+    res.send(docs);
+  }, function fail(err) {
+    debug('Api app index failure: ', err);
     res.send(500, err);
   });
 });
