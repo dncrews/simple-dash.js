@@ -69,6 +69,9 @@
         dfds[0].then(function(upstreamList) {
           $scope.upstreamList = upstreamList;
           $scope.loading.upstream = false;
+          $rootScope.updated = {
+            formatted: moment(upstreamList[0].created_at).format('h:mm a')
+          };
         });
 
         // Load all app data
@@ -329,6 +332,9 @@
           $scope.loading.events = false;
           last_id = eventList[eventList.length - 1]._id;
           reload = window.setTimeout(load, 60000);
+          $rootScope.updated = {
+            formatted: moment(eventList[0].created_at).format('h:mm a')
+          };
         });
       }
 
