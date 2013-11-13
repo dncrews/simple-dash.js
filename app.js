@@ -30,29 +30,6 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
 
-
-/**
- * TODO:
- * 1) Poll heroku status dashboard somehow & display info here... (using Heroku CLI)
- * 2)
- * 3) Poll Splunk API and get metrics from that (like how umpire does it with librato) (MAYBE)
-
- * consi
-
-MVP1
- * we should be able to get the user-agent or source to see how we can distinguish between the different sources (Librato vs Papertrail vs Logentries, etc)
-
-
- LATER
- * 3) Add persistent API status (mongo)
- * consider having Stathat as an outlet (for beyond simple graphs)
-
- * https://www.webscript.io/
-
- *
- */
-
-
 /**
  * Angular Dashboard
  */
