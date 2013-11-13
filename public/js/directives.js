@@ -73,7 +73,12 @@
 
 
         function setName() {
-          if (type === 'github') return event.data.repo_name;
+          if (type === 'github') {
+            if (event.data.organization) {
+              return event.data.organization + '/' + event.data.repo_name;
+            }
+            return event.data.repo_name;
+          }
           if (type === 'jenkins') return event.data.app_name;
           if (type === 'marrow') return event.data.app_name;
         }
