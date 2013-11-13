@@ -7,9 +7,7 @@
 var request = require('superagent')
   , express = require('express')
   , url = require('url')
-  , Q = require('q')
   , stylus = require('stylus')
-  , moment = require('moment-timezone')
   , debug = require('debug')('app:routing');
 
 
@@ -17,12 +15,9 @@ var request = require('superagent')
  * Local Vars
  */
 var app = module.exports = express()
-  , config = require('./lib/config')
-  , dash = require('./lib/dash')
-  , details = require('./lib/details')
   , Logger = require('./lib/logger')
   , change_log = require('./lib/change_log')
-  , db = require('./lib/db');
+  , PORT = process.env.PORT || 5000;
 
 /**
  * Express Configuration
@@ -62,98 +57,26 @@ MVP1
  * Angular Dashboard
  */
 app.get('/', function(req, res) {
-  res.render('ng_dashboard');
+  debug('Loading angular page');
+  res.render('layout');
 });
 
 
 app.get('/partials/:partial', function(req, res) {
-  res.render('partials/' + req.params.partial, function(err, html) {
+  var partial = req.params.partial;
+  res.render('partials/' + partial, function(err, html) {
+    debug('Attempting partial load: ' + partial);
     if (err) {
+      debug('partial failed');
       res.send(404);
     } else {
+      debug('sending partial');
       res.end(html);
     }
   });
 });
 
-app.use('/api', require('./api'));
-
-
-/**
- * Old Main dashboard page
- */
-app.get('/old/', function(req, res, next){
-  res.format({
-    /**
-     * Dashboard View
-     */
-    'text/html': function() {
-      debug('GET /');
-      dash(function(appData, apiData, upstreamData) {
-        res.render('dashboard_home', {moment: moment, upstreamData: upstreamData, appData : appData, apiData: apiData, updated : appData[0].timestamp });
-      }, function(err) {
-        debug('get HTML failure: ', err);
-        res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
-      });
-    },
-
-    /**
-     * JSON View
-     * It seems like this might be consumed, so
-     * I assume we could just rely on the accept header.
-     * Would a separate "API" be better?
-     * A: YES. MUCH BETTER.
-     */
-    'application/json': function() {
-      debug('GET / JSON');
-      dash(function(appData, apiData) {
-        res.send({
-          appData : appData,
-          apiData : apiData
-        });
-      }, function(err) {
-        debug('get JSON failure: ', err);
-        res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
-      });
-    }
-  });
-});
-
-/**
- * Detail dashboard page
- */
-app.get('/detail/app/:appName', function(req, res){
-  debug('GET /detail/app/' + req.params.appName);
-  details.app(req.params.appName, function(data) {
-    data.moment = moment;
-    res.render('dashboard_detail', data);
-  });
-});
-
-/**
- * API DETAIL dashboard page
- */
- // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
-app.get('/detail/api/:apiName', function(req, res){
-  debug('GET /detail/api/' + req.params.apiName);
-  details.api(req.params.apiName, function(data) {
-    data.moment = moment;
-    res.render('dashboard_detail', data);
-  });
-});
-
-/**
- * API DETAIL dashboard page
- */
- // FIXME: combine detail with API_detail routes...? YES. Move this logic up to a controller...
-app.get('/detail/upstream/:upstreamName', function(req, res){
-  debug('GET /detail/upstream/' + req.params.upstreamName);
-  details.upstream(req.params.upstreamName, function(data) {
-    data.moment = moment;
-    res.render('detail_upstream', data);
-  });
-});
-
+app.use('/api', require('./lib/api'));
 
 /**
  * Adding statuses to the log
@@ -167,27 +90,6 @@ app.post('/', function(req, res){
     res.send(code);
   });
 });
-
-
-/**
- * Adding items to the changelog
- *
- * Should always return a responseCode
- */
-app.get('/change', function(req, res){
-  debug('GET /change');
-  db.change_log.history().then(function(docs) {
-    res.render("change_log", {
-      change_data: docs,
-      moment: moment
-    });
-  }, function(err) {
-    debug('change get failure: ', err);
-    res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
-  });
-
-});
-
 
 /**
  * Adding items to the changelog
@@ -211,6 +113,7 @@ app.post('/change', function(req, res){
   if (ua.match("Java")) src = "jenkins"; //TODO: add the IP Address
 
   if (src) {
+    // Not returning. We want to parse after sending response
     res.send(200);
   } else {
     return res.send(507); //not posted
@@ -227,39 +130,8 @@ app.post('/change', function(req, res){
   });
 });
 
-/**
- * Serve superagent to the browser, when necessary
- */
-// app.get('/js/superagent.js', function(req, res, next) {
-//   res.sendfile(__dirname + '/node_modules/superagent/superagent.js');
-// });
-
-function populateCronData(req, res, next) {
-  // Expect to be run every 1-5 minutes.
-  // Less than 5 may not be necessary
-  console.log('cronned!');
-
-  // Create next 2 buckets
-
-  // Get Heroku status and save that somewheres
-  request
-    .get('https://status.heroku.com/api/v3/current-status')
-    .set('accept', 'application/json')
-    .end(function(err, resp) {
-      console.log(resp.body);
-      // console.log(arguments);
-    });
-
-  // We should probably send the 200 before we do any of that, so we can do things that are "tedious".
-  res.send(200);
-}
-
-app.post('/cron', populateCronData);
-app.get('/cron', populateCronData);
-
-
-app.listen(config.port, function() {
-  console.info("Listening on " + config.port);
+app.listen(PORT, function() {
+  console.info("Listening on " + PORT);
 });
 
 
