@@ -23,7 +23,7 @@
         <ul class="nav navbar-nav">
           <li><a href="#/">Home</a></li>
           <li><a href="#/change">Change</a></li>
-          <li><a class="refresh" href="#"><span class="glyphicon glyphicon-refresh"></span> Last updated at <span data-ng-bind="updated.formatted"></span></a></li>
+          <li data-ng-show="updated.formatted"><a class="refresh" data-ng-click="refresh()"><span class="glyphicon glyphicon-refresh"></span> Last updated at <span data-ng-bind="updated.formatted"></span></a></li>
         </ul>
       </div><!--/.nav-collapse -->
     </div>

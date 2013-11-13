@@ -34,6 +34,7 @@
     function IndexCtrl($rootScope, $scope, $q, service) {
       window.clearTimeout(reload);
       $rootScope.bodyClass = '';
+      $rootScope.refresh = load;
       $scope.loading = {
         'upstream': true,
         'app': true,
@@ -64,6 +65,7 @@
           service.app.index(),
           service.api.index()
         ];
+        $rootScope.updated = {};
 
         // Load all Upstream data
         dfds[0].then(function(upstreamList) {
@@ -107,6 +109,7 @@
       window.clearTimeout(reload);
       window.$bindHistory($scope);
       $rootScope.bodyClass = '';
+      $rootScope.refresh = load;
       $scope.pageType = 'upstream';
       $scope.pageTitle = name + ' Status';
       $scope.loading = {
@@ -120,6 +123,7 @@
       $scope.setCurrent = setCurrent;
 
       function load() {
+        $rootScope.updated = {};
         service.upstream.details(name).then(function(upstreamList) {
           var current = upstreamList[0];
           setCurrent(current);
@@ -162,6 +166,7 @@
       window.clearTimeout(reload);
       window.$bindHistory($scope);
       $rootScope.bodyClass = '';
+      $rootScope.refresh = load;
       $scope.pageType = 'app';
       $scope.pageTitle = name + ' Status';
       setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasApis', 'hasEvents']);
@@ -197,6 +202,7 @@
           service.api.app(name),
           service.event.app(name)
         ];
+        $rootScope.updated = {};
 
         // Load all of the app data
         dfds[0].then(function(appList) {
@@ -258,6 +264,7 @@
       window.clearTimeout(reload);
       window.$bindHistory($scope);
       $rootScope.bodyClass = '';
+      $rootScope.refresh = load;
       $scope.pageType = 'app';
       $scope.pageTitle = name + ' Status';
       setFeatures($scope, ['hasThroughput','hasRespTime','hasErrorRate','hasStatus']);
@@ -272,6 +279,7 @@
       $scope.setCurrent = setCurrent;
 
       function load() {
+        $rootScope.updated = {};
         service.api.details(name).then(function(apiList) {
           var current = apiList[0];
           setCurrent(current);
@@ -311,6 +319,7 @@
     function ChangeLogCtrl($rootScope, $scope, service) {
       window.clearTimeout(reload);
       $rootScope.bodyClass = 'change_log';
+      $rootScope.refresh = load;
       $scope.loading = {
         'main' : true,
         'more' : false
@@ -327,6 +336,7 @@
       };
 
       function load() {
+        $rootScope.updated = {};
         service.event.index().then(function(eventList) {
           $scope.events = eventList;
           $scope.loading.events = false;
