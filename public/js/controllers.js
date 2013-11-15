@@ -112,6 +112,7 @@
       $rootScope.refresh = load;
       $scope.pageType = 'upstream';
       $scope.pageTitle = name + ' Status';
+      if (name === 'HA Proxy') setFeatures($scope, [ 'hasThroughput', 'hasErrorRate', 'hasStatus']);
       $scope.loading = {
         'main' : true
       };
