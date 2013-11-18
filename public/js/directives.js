@@ -9,8 +9,12 @@
     return {
       restrict: 'A',
       link: function(scope, element, attrs) {
+        var item = scope.item
+          , type = scope.$parent.pageType;
+
         scope.$parent.$watch('current', function() {
           if (! scope.$parent) return;
+
           if (angular.equals(scope.item, scope.$parent.current)) {
             element.addClass('active');
           } else {
@@ -25,10 +29,31 @@
           scope.$apply(function() {
             scope.$parent.setCurrent(scope.item);
           });
-          // scope.$parent.setCurrent(scope.item);
-          // scope.$parent.$digest();
         }
 
+        scope.className = 'label-' + setClassName();
+
+        function setClassName() {
+          if (type === 'upstream') {
+            return {
+              'green' : 'success',
+              'yellow' : 'warning',
+              'red' : 'danger'
+            }[item.stats.status] || 'default';
+            console.log(item.stats);
+            return {
+              'good' : 'success',
+              'slow' : 'warning',
+              'down' : 'danger'
+            }[item.stats.status] || 'default';
+          }
+          console.log(item.stats);
+          return {
+            'good' : 'success',
+            'slow' : 'warning',
+            'down' : 'danger'
+          }[item.stats.uptime_status] || 'default';
+        }
       }
     };
   });
@@ -143,7 +168,16 @@
           function getStatus() {
             if (type === 'api') return item.stats.uptime_status;
             if (type === 'app') return item.stats.uptime_status;
-            if (type === 'upstream') return item.stats.status;
+            if (type === 'upstream') {
+              if (item.src === 'heroku_status_api') {
+                return {
+                  "green" : "good",
+                  "yellow" : "slow",
+                  "red" : "down"
+                }[item.stats.status];
+              }
+              return item.stats.status;
+            }
           }
 
           function goTo() {

@@ -44,11 +44,6 @@
       $scope.appList = [];
       $scope.apiList = [];
 
-      $scope.btnClass = function(status) {
-        if (! status) return;
-        return 'btn-' + statusToBS(status);
-      };
-
       $scope.clean = function(appName) {
         if (! appName) return;
         return escape(appName);
@@ -113,11 +108,13 @@
       $scope.pageType = 'upstream';
       $scope.pageTitle = name + ' Status';
       if (name === 'HA Proxy') setFeatures($scope, [ 'hasThroughput', 'hasErrorRate', 'hasStatus']);
+      if (name.match('Heroku')) setFeatures($scope, [ 'hasIssues' ]);
       $scope.loading = {
         'main' : true
       };
 
       $scope.labelStatus = function(item) {
+        console.log(item);
         return 'label-' + statusToBS(item.stats.status);
       };
 
@@ -140,7 +137,16 @@
 
       function setCurrent(current) {
         var updated = moment(current.created_at)
-          , status = current.stats.status;
+          , status = current.stats.status
+          , statusClass = status;
+
+        if (current.src === 'heroku_status_api') {
+          statusClass = {
+            "green" : "good",
+            "yellow" : "slow",
+            "red" : "down"
+          }[status];
+        }
         $scope.current = current;
         $scope.updated = {
           formatted: updated.format('h:mm a'),
@@ -148,8 +154,10 @@
         };
 
         $scope.status = status;
-        $scope.statusClass = statusToBS(status);
-        $scope.glyph = getGlyph(status);
+        $scope.statusClass = statusToBS(statusClass);
+        $scope.glyph = getGlyph(statusClass);
+        $scope.issues = current.stats.issues;
+        console.log(current.stats.issues);
       }
     }
   ]);
@@ -182,10 +190,6 @@
       };
 
       $scope.setCurrent = setCurrent;
-
-      $scope.apiBtnClass = function(status) {
-        return 'btn-' + statusToBS(status);
-      };
 
       $scope.goToApi = function(name) {
         $location.path('/api/' + escape(name));

@@ -63,7 +63,7 @@
       </div>
     </div>
 
-    <div class="item status_count" data-ng-show="isHeroku">
+    <div class="item heroku_errors" data-ng-show="isHeroku">
       <span class="title">Heroku codes</span>
       <div class="totals stats_fld">
         <span
@@ -72,6 +72,21 @@
           data-ng-title="error.code + ': ' + error.desc"
           data-ng-bind="error.code + ': ' + error.count"
           data-ng-value="error"></span>
+      </div>
+    </div>
+
+    <div class="item heroku_issues" data-ng-show="hasIssues">
+      <span class="title">Heroku Issues</span>
+      <div class="totals stats_fld">
+        <span
+          data-ng-repeat="issue in issues"
+          class="item">
+          <a
+            target="_blank"
+            data-ng-href="https://status.heroku.com/incidents/{{ issue.id }}"
+            data-ng-title="issue.title"
+            data-ng-bind="issue.title"></a>
+        </span>
       </div>
     </div>
 
@@ -85,7 +100,7 @@
         class="label"
         data-ng-repeat="item in history"
         data-history-item="{{ item }}"
-        data-ng-class="labelStatus(item)">
+        data-ng-class="className">
       </label>
     </div><!-- /.history_timeline -->
 
