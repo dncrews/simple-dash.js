@@ -35,19 +35,19 @@
 
         function setClassName() {
           if (type === 'upstream') {
-            return {
-              'green' : 'success',
-              'yellow' : 'warning',
-              'red' : 'danger'
-            }[item.stats.status] || 'default';
-            console.log(item.stats);
+            if (item.name.match('Heroku')) {
+              return {
+                'green' : 'success',
+                'yellow' : 'warning',
+                'red' : 'danger'
+              }[item.stats.status] || 'default';
+            }
             return {
               'good' : 'success',
               'slow' : 'warning',
               'down' : 'danger'
             }[item.stats.status] || 'default';
           }
-          console.log(item.stats);
           return {
             'good' : 'success',
             'slow' : 'warning',
