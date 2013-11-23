@@ -1,0 +1,58 @@
+GITHUB
+
+{
+  "timestamp": 1384898216,
+  "data": {
+    "repo_name": "home",
+    "organization": "org_name",
+    "commit": {
+      "timestamp": 1384898216,
+      "id": "b20845bd3eeac1e3fd49a00583673aaa87232a37",
+      "message": "Merge pull request #807 from mikecazier/master\n\n \tFixing Photo selection so that it will only bring back photos, and not anything marked as a document but is a .jpg or .png file.",
+      "url": "https://github.com/fs-webdev/home/commit/b20845bd3eeac1e3fd49a00583673aaa87232a37"
+    },
+    "author": {
+      "name": "Matt Misbach",
+      "email": "matt@misbach.org",
+      "username": "misbach"
+    }
+  },
+  "type": "github push",
+  "src": "github",
+  "created_at": ISODate("2013-11-19T21:56:58.924Z"),
+  "_id": ObjectId("528bdeaa31156302000006aa")
+}
+
+
+
+JENKINS
+// TODO: Strip fs- off the app_name
+
+{
+  "timestamp": 1384884094.075,
+  "data": {
+    "app_name": "fs-home",
+    "phase": "FINISHED",
+    "outcome": "SUCCESS"
+  },
+  "type": "jenkins build",
+  "src": "jenkins",
+  "created_at": ISODate("2013-11-19T18:01:34.075Z"),
+  "_id": ObjectId("528ba77e1d0b7d0200002eda")
+}
+
+
+
+MARROW
+// TODO: Strip fs- and -prod/-test off the app_name
+
+{
+  "timestamp": 1384853719.126,
+  "data": {
+    "app_name": "fs-indexing-prod"
+  },
+  "type": "marrow restart",
+  "src": "marrow",
+  "created_at": ISODate("2013-11-19T09:35:19.126Z"),
+  "_id": ObjectId("528b30d71d0b7d0200001ecf")
+}

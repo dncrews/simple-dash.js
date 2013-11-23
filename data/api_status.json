@@ -1,0 +1,30 @@
+// TODO: make a separate collection for "Current"
+
+
+{
+  "api": "api_name",
+  "time:p50": "58",
+  "time:p90": "129",
+  "time:p95": "170",
+  "time:max": "3088",
+  "status:2xx": "3211",
+  "status:3xx": "0",
+  "status:4xx": "0",
+  "status:5xx": "0",
+  "status:total": "3211",
+  "alertTitle": "status:dashboard:frontier:api:flat_response_data",
+  "timestamp": 1384541416475,
+  "created_at": ISODate("2013-11-15T18:50:16.475Z"),
+  "stats": {
+    "uptime_status": "good",
+    "p95": "170",
+    "status_2xx": "3211",
+    "status_3xx": "0",
+    "status_4xx": "0",
+    "status_5xx": "0",
+    "status_total": "3211",
+    "error_rate": 0,
+    "timestamp": 1384541416.475
+  },
+  "_id": ObjectId("52866ce8e60d0f0200002271")
+}

@@ -1,0 +1,46 @@
+{
+  "timeBucket": 4616332,
+  "appName": "home",
+  "status:dashboard:frontier:mem_response": {
+    "fs_host": "home",
+    "mem:avg": "NULL",
+    "mem:max": "NULL",
+    "status:2xx": "48",
+    "status:3xx": "0",
+    "status:4xx": "0",
+    "status:5xx": "1",
+    "status:total": "49",
+    "time:max": "30000",
+    "time:p50": "5640",
+    "time:p75": "14259",
+    "time:p90": "21114",
+    "time:p95": "22360"
+  },
+  "status:dashboard:frontier:heroku_errors": {
+    "fs_host": "home",
+    "codes": [
+      {
+        "code": "H12",
+        "desc": "Request timeout",
+        "count": "1"
+      }
+    ]
+  },
+  "created_at": ISODate("2013-11-19T22:20:13.219Z"),
+  "uptime_status_prev": null,
+  "stats": {
+    "uptime_status": "slow",
+    "memory_avg": 0,
+    "memory_max": 0,
+    "p95": "22360",
+    "status_2xx": "48",
+    "status_3xx": "0",
+    "status_4xx": "0",
+    "status_5xx": "1",
+    "status_total": "49",
+    "error_rate": 2,
+    "timestamp": 1384899600,
+    "heroku_errors": {}
+  },
+  "_id": ObjectId("528be41d18b429020000001c")
+}

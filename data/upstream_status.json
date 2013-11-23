@@ -1,0 +1,105 @@
+HEROKU
+
+{
+  "name": "Heroku Production",
+  "src": "heroku_status_api",
+  "created_at": ISODate("2013-11-13T18:31:16.019Z"),
+  "stats": {
+    "status": "green",
+    "issues": [
+      {
+        "created_at": "2013-11-13T18:17:11Z",
+        "id": 566,
+        "resolved": false,
+        "status_dev": "yellow",
+        "status_prod": "green",
+        "title": "Unstable Node.js deploys due to intermittent npmjs.org failure",
+        "upcoming": false,
+        "updated_at": "2013-11-13T18:17:11Z",
+        "href": "https://status.heroku.com/api/v3/issues/566",
+        "updates": [
+          {
+            "contents": "The npmjs.org registry is intermittently down, effectively breaking deploys for any Node.js apps that don't have their node_modules checked into source control.\r\n\r\nNode.js apps already running on Heroku are NOT affected by this outage.",
+            "created_at": "2013-11-13T18:17:11Z",
+            "id": 1824,
+            "incident_id": 566,
+            "status_dev": "yellow",
+            "status_prod": "green",
+            "title": "Unstable Node.js deploys due to intermittent npmjs.org failure",
+            "update_type": "issue",
+            "updated_at": "2013-11-13T18:17:12Z"
+          }
+        ]
+      }
+    ]
+  },
+  "_raw": {
+    "status": {
+      "Production": "green",
+      "Development": "yellow"
+    },
+    "issues": [
+      {
+        "created_at": "2013-11-13T18:17:11Z",
+        "id": 566,
+        "resolved": false,
+        "status_dev": "yellow",
+        "status_prod": "green",
+        "title": "Unstable Node.js deploys due to intermittent npmjs.org failure",
+        "upcoming": false,
+        "updated_at": "2013-11-13T18:17:11Z",
+        "href": "https://status.heroku.com/api/v3/issues/566",
+        "updates": [
+          {
+            "contents": "The npmjs.org registry is intermittently down, effectively breaking deploys for any Node.js apps that don't have their node_modules checked into source control.\r\n\r\nNode.js apps already running on Heroku are NOT affected by this outage.",
+            "created_at": "2013-11-13T18:17:11Z",
+            "id": 1824,
+            "incident_id": 566,
+            "status_dev": "yellow",
+            "status_prod": "green",
+            "title": "Unstable Node.js deploys due to intermittent npmjs.org failure",
+            "update_type": "issue",
+            "updated_at": "2013-11-13T18:17:12Z"
+          }
+        ]
+      }
+    ]
+  },
+  "_id": ObjectId("5283c57482c22b0200002242")
+}
+
+
+
+
+HA PROXY
+
+
+{
+  "name": "HA Proxy",
+  "src": "splunk",
+  "created_at": ISODate("2013-11-06T23:15:31.765Z"),
+  "error_rate": 0,
+  "_raw": {
+    "src": "splunk",
+    "alert_title": "status.dashboard.frontier.ha_proxy_status_codes",
+    "data": [
+      {
+        "status:2xx": "28460",
+        "status:3xx": "7516",
+        "status:4xx": "80",
+        "status:5xx": "79",
+        "status:total": "36135"
+      }
+    ]
+  },
+  "stats": {
+    "error_rate": 0,
+    "status": "good",
+    "status_2xx": "28460",
+    "status_3xx": "7516",
+    "status_4xx": "80",
+    "status_5xx": "79",
+    "status_total": "36135"
+  },
+  "_id": ObjectId("527acd9383ea8d0200000032")
+}
