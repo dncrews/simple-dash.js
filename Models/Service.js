@@ -10,8 +10,8 @@ var SLOW = 1000 // 1s response from an API is SLOOOOW
 
 
 var ServiceSchema = new Schema({
-  name : String,
   created_at : { type: Date, default: Date.now },
+  name : String,
   time : {
     p95 : Number
   },

@@ -11,9 +11,9 @@ var SLOW = 5000 // 1s response from an app is SLOOOOW
 
 
 var AppSchema = new Schema({
+  created_at : { type: Date, default: Date.now },
   name : String,
   repo_name : String,
-  created_at : { type: Date, default: Date.now },
   memory: {
     avg: Number,
     max: Number
@@ -36,7 +36,7 @@ var AppSchema = new Schema({
 
 AppSchema.statics.fromSplunk = function(data) {
   if (! data) return new Error('No Splunk data supplied');
-  if (! data.fs_host) return new Error('No api name given');
+  if (! data.fs_host) return new Error('No app name given');
   var App = this
     , config = {
       _raw : data,

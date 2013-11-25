@@ -2,14 +2,14 @@
 'use strict';
 
 var expect = require('expect.js')
-  , App = require('../../../Models/App.js');
+  , Model = require('../../../Models/App.js');
 
 describe('Apps interface:', function() {
 
   describe('Given a "good" sample splunk mem_response, fromSplunk', function() {
 
     var mockData = getMockData('good')
-      , sut = App.fromSplunk(mockData);
+      , sut = Model.fromSplunk(mockData);
 
     it('should save the raw data as _raw', function() {
       expect(sut._raw).to.be.an(Object);
@@ -30,6 +30,11 @@ describe('Apps interface:', function() {
       expect(sut.time.p95).to.be(380);
     });
 
+    it('should create a memory object', function() {
+      expect(sut.memory.avg).to.be(272);
+      expect(sut.memory.max).to.be(300);
+    });
+
     it('should create a codes object', function() {
       expect(sut.codes.s2xx).to.be(1000);
       expect(sut.codes.s3xx).to.be(3);
@@ -48,6 +53,55 @@ describe('Apps interface:', function() {
 
   });
 
+  describe('Given no data, fromSplunk', function() {
+    it('should return as an error', function() {
+      var sut = Model.fromSplunk();
+      expect(sut).to.be.an(Error);
+    });
+  });
+
+  describe('Given no "fs_host" name, fromSplunk', function() {
+    it('should return as an error', function() {
+      var sut = Model.fromSplunk(getMockData('noName'));
+      expect(sut).to.be.an(Error);
+    });
+  });
+
+  describe('Given an almost-"slow" sample, fromSplunk', function() {
+    it('should calculate a "good" status', function() {
+      var sut = Model.fromSplunk(getMockData('almostSlow'));
+      expect(sut.status).to.be('good');
+    });
+  });
+
+  describe('Given a "slow" sample, fromSplunk', function() {
+    it('should calculate a "slow" status', function() {
+      var sut = Model.fromSplunk(getMockData('slow'));
+      expect(sut.status).to.be('slow');
+    });
+  });
+
+  describe('Given an almost-"down" sample, fromSplunk', function() {
+    it('should calculate a "good" status', function() {
+      var sut = Model.fromSplunk(getMockData('almostDown'));
+      expect(sut.status).to.be('good');
+    });
+  });
+
+  describe('Given a "down" sample, fromSplunk', function() {
+    it('should calculate a "down" status', function() {
+      var sut = Model.fromSplunk(getMockData('down'));
+      expect(sut.status).to.be('down');
+    });
+  });
+
+  describe('Given a "slow" and "down", fromSplunk', function() {
+    it('should calculate a "down" status', function() {
+      var sut = Model.fromSplunk(getMockData('slowAndDown'));
+      expect(sut.status).to.be('down');
+    });
+  });
+
 });
 
 
@@ -57,7 +111,7 @@ function getMockData(type) {
     good : {
       "fs_host":"fs-appName-prod",
       "mem:avg":"272.120000",
-      "mem:max":"272.12",
+      "mem:max":"300.3456",
       "status:2xx":"1000",
       "status:3xx":"3",
       "status:4xx":"4",
@@ -70,21 +124,26 @@ function getMockData(type) {
       "time:p95":"380"
     },
     almostSlow : {
+      "fs_host": "fs-appName-prod",
       "time:p95": "4999"
     },
     slow : {
+      "fs_host": "fs-appName-prod",
       "time:p95": "5000"
     },
     almostDown : {
+      "fs_host": "fs-appName-prod",
       "status:5xx": "490",
       "status:total": "1000",
     },
     down : {
+      "fs_host": "fs-appName-prod",
       "status:5xx": "491",
       "status:total": "1000",
     },
     slowAndDown : {
-      "time:p95": "1000",
+      "fs_host": "fs-appName-prod",
+      "time:p95": "5000",
       "status:5xx": "491",
       "status:total": "1000",
     }
