@@ -83,12 +83,4 @@ AppSchema.virtual('status').get(function() {
   return status;
 });
 
-/**
- * This will be to get the current status of all
- * Apps
- */
-AppSchema.statics.findCurrent = function(cb) {
-  // Group by name, select unique? or just filter them out?
-};
-
-module.exports = mongoose.model('App', AppSchema);
+module.exports = mongoose.model('App_Status', AppSchema);
