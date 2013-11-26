@@ -7,21 +7,22 @@ var mongoose = require('mongoose')
   , debug = require('debug')('marrow:models:app-bucket')
   , verbose = require('debug')('marrow:models:app-bucket-verbose');
 
-var BUCKET_LENGTH = 30000;
+var BUCKET_LENGTH = 300000;
 
-function createBucket() {
+function calculateBucket() {
   var now = Date.now()
-    , bucket = Math.floor(now / BUCKET_LENGTH);
+    , bucket = Math.floor(now / BUCKET_LENGTH)
+    , time = bucket * BUCKET_LENGTH;
 
-  verbose('Bucket time generated: ' + bucket);
-  return bucket;
+  verbose('Bucket time generated: ' + time);
+  return time;
 }
 
 var BucketSchema = new Schema({
-  created_at : { type: Date, default: createBucket },
+  created_at : { type: Date, default: calculateBucket },
   repo_name : String,
-  app_id : Schema.Types.ObjectId,
-  errors_id : Schema.Types.ObjectId
+  app_id : { type: Schema.Types.ObjectId, default: null },
+  error_id : { type: Schema.Types.ObjectId, default: null }
 });
 
 BucketSchema.index({ created_at : -1, repo_name : 1}, { unique: true });
@@ -78,7 +79,7 @@ BucketSchema.statics._getBucket = function(repo_name) {
   verbose('Finding current bucket: ' + repo_name);
 
   this.findOne({
-    created_at : createBucket(),
+    created_at : calculateBucket(),
     repo_name : repo_name
   }, function(err, doc) {
     if (err) {
