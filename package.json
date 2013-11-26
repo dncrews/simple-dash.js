@@ -35,7 +35,7 @@
   "repository": "git://github.com/jamischarles/simple-dash.js",
   "main": "app.js",
   "scripts": {
-    "test": " foreman run sh ./bin/tests"
+    "test": "NODE_ENV=test `pwd`/node_modules/.bin/mocha --recursive --reporter spec --globals page,assets,showingChat test/server/"
   },
   "engines": {
     "node": "0.10.x",

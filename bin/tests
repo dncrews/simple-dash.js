@@ -1,4 +1,0 @@
-#/usr/bin/env sh
-
-# set env to test. Run mocha tests at test/server. This file will be invoked by npm test locally.
-NODE_ENV=test `pwd`/node_modules/.bin/mocha --recursive --reporter spec --globals page,assets,showingChat test/server/
