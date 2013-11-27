@@ -19,8 +19,4 @@ after(function(done) {
   return connection.close(done);
 });
 
-module.exports = function() {
-  return afterEach(function(done) {
-    return connection.db.dropDatabase(done);
-  });
-};
+module.exports = connection.db;
