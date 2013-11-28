@@ -9,6 +9,10 @@ var expect = require('expect.js')
 
 describe('App_Bucket interface:', function() {
 
+  after(function(done) {
+    db.dropDatabase(done);
+  });
+
   describe('When creating a new bucket, App_Bucket', function() {
 
     it('should generate a bucket_time that is rounded down to the nearest 5-minute interval', function() {
@@ -27,7 +31,7 @@ describe('App_Bucket interface:', function() {
   describe('If attempting to create a duplicate, App_Bucket', function() {
 
     after(function(done) {
-      db.dropDatabase(done);
+      Model.remove(done);
     });
 
     it('should throw a duplicate key error', function(done) {
@@ -53,9 +57,13 @@ describe('App_Bucket interface:', function() {
 
   describe('generateBuckets:', function(){
     afterEach(function(done) {
-      db.dropDatabase(done);
+      Model.remove(done);
     });
     describe('Given no arguments, generateBuckets', function() {
+
+      after(function(done) {
+        Status.remove(done);
+      });
 
       it('should create 3 buckets for all unique App_Status repo_names', function(done) {
         var apps = [ 'status1', 'status2' ]
