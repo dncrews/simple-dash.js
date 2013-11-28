@@ -2,7 +2,7 @@
 'use strict';
 
 var expect = require('expect.js')
-  , Model = require('../../../Models/Service.js');
+  , Model = require('../../../Models/Service');
 
 describe('Services interface:', function() {
 

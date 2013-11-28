@@ -2,7 +2,7 @@
 'use strict';
 
 var expect = require('expect.js')
-  , Model = require('../../../Models/App_Status.js');
+  , Model = require('../../../Models/App_Status');
 
 describe('Apps interface:', function() {
 
