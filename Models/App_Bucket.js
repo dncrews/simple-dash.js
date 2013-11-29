@@ -1,4 +1,4 @@
-/* globals require,module,console */
+/* globals require,module,process,console */
 'use strict';
 
 var mongoose = require('mongoose')
@@ -112,16 +112,6 @@ function getBucket(repo_name) {
 
   return dfd.promise;
 }
-
-
-BucketSchema.methods.safeSave = function() {
-  var dfd = Q.defer();
-
-  console.log(this);
-  dfd.resolve();
-
-  return dfd.promise;
-};
 
 BucketSchema.statics.generateBuckets = function(count, list) {
   var bucket = calculateBucket()

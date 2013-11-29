@@ -1,4 +1,4 @@
-/* global require,describe,it,console,after,afterEach,before,setTimeout */
+/* global require,describe,it,console,before,beforeEach,after,afterEach,setTimeout */
 'use strict';
 
 var expect = require('expect.js')
@@ -119,29 +119,94 @@ describe('App_Bucket interface:', function() {
 
   });
 
-  describe('Adding to a bucket', function() {
+  describe('adding to buckets:', function() {
 
-    describe('Given an objectId, addApp', function() {
+    var id, app_name = 'appName';
 
-      it('should add and save.');
+    before(function(done) {
+      Status.create({
+        repo_name : app_name
+      }, function(err, doc) {
+        id = doc._id;
+        done();
+      });
+    });
+
+    after(function(done) {
+      Status.remove(done);
+    });
+
+    afterEach(function(done) {
+      Model.remove(done);
+    });
+
+    describe('Given an ObjectId, addApp', function() {
+
+      before(function(done) {
+        Model.generateBuckets(1, [app_name]).then(function() {
+          done();
+        });
+      });
+
+      it('should add and save', function(done) {
+
+        Model.addApp('appName', id).then(function() {
+          Model.find({ repo_name : 'appName', app_id : id }, function(err, docs) {
+            expect(docs.length).to.be(1);
+            expect(docs[0].error_id).to.be(null);
+            done();
+          });
+        });
+
+      });
 
     });
 
-    describe('Given an objectId, addError', function() {
+    describe('Given an ObjectId, addError', function() {
 
-      it('should add and save.');
+      before(function(done) {
+        Model.generateBuckets(1, [app_name]).then(function() {
+          done();
+        });
+      });
+
+      it('should add and save', function(done) {
+
+        Model.addError('appName', id).then(function() {
+          Model.find({ repo_name : 'appName', error_id : id }, function(err, docs) {
+            expect(docs.length).to.be(1);
+            expect(docs[0].app_id).to.be(null);
+            done();
+          });
+        });
+
+      });
 
     });
 
     describe('Given no bucket exists, addApp', function() {
 
-      it('should generate new buckets');
+      it('should generate buckets', function(done) {
+        Model.addApp('appName', id).then(function() {
+          Model.find({ repo_name : 'appName' }, function(err, docs) {
+            expect(docs.length).to.be(3);
+            done();
+          });
+        });
+      });
 
     });
 
     describe('Given no bucket exists, addError', function() {
 
-      it('should generate new buckets');
+      it('should generate buckets', function(done) {
+        Model.addError('appName', id).then(function() {
+          Model.find({ repo_name : 'appName' }, function(err, docs) {
+            expect(docs.length).to.be(3);
+            done();
+          });
+        });
+      });
 
     });
 
