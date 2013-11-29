@@ -119,6 +119,34 @@ describe('App_Bucket interface:', function() {
 
   });
 
+  describe('Adding to a bucket', function() {
+
+    describe('Given an objectId, addApp', function() {
+
+      it('should add and save.');
+
+    });
+
+    describe('Given an objectId, addError', function() {
+
+      it('should add and save.');
+
+    });
+
+    describe('Given no bucket exists, addApp', function() {
+
+      it('should generate new buckets');
+
+    });
+
+    describe('Given no bucket exists, addError', function() {
+
+      it('should generate new buckets');
+
+    });
+
+  });
+
   // describe('Given')
 
 });

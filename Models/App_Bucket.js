@@ -97,14 +97,17 @@ function getBucket(repo_name) {
       return dfd.reject(err);
     }
 
-    if (! doc) {
-      debug('Current not found. Creating new.');
-      return new Bucket();
+    if (doc) {
+      debug('Current found: ' + repo_name);
+      verbose('Current: ', doc);
+      dfd.resolve(doc);
+    } else {
+      debug('Current not found. Generating new.');
+      Bucket.generateBuckets().then(function() {
+        getBucket(repo_name).then(dfd.resolve);
+      });
     }
 
-    debug('Current found: ' + repo_name);
-    verbose('Current: ', doc);
-    dfd.resolve(doc);
   });
 
   return dfd.promise;
@@ -147,6 +150,7 @@ BucketSchema.statics.generateBuckets = function(count, list) {
 
   function useList(list, d) {
     var repo_name, _dfd, time, i, l, ii, ll;
+    debug('Generating ' + buckets.length + ' buckets for ' + list.length + ' apps.');
     for (i=0, l=list.length; i<l; i++) {
       repo_name = list[i];
       for (ii=0, ll=buckets.length; ii<ll; ii++) {
