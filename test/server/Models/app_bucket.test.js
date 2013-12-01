@@ -21,8 +21,8 @@ describe('App_Bucket interface:', function() {
         , sut = new Model();
 
       expect(sut.bucket_time).to.eql(bucket);
-      expect(sut.app_id).to.be(null);
-      expect(sut.error_id).to.be(null);
+      expect(sut.app).to.be(null);
+      expect(sut.error).to.be(null);
 
     });
 
@@ -68,7 +68,7 @@ describe('App_Bucket interface:', function() {
       it('should create 3 buckets for all unique App_Status repo_names', function(done) {
         var apps = [ 'status1', 'status2' ]
           , items = []
-          , dfd, buckets;
+          , buckets;
 
         for (var i=0, l=apps.length; i<l; i++) {
           // Generate 3 apps
@@ -151,9 +151,9 @@ describe('App_Bucket interface:', function() {
       it('should add and save', function(done) {
 
         Model.addApp('appName', id).then(function() {
-          Model.find({ repo_name : 'appName', app_id : id }, function(err, docs) {
+          Model.find({ repo_name : 'appName', app : id }, function(err, docs) {
             expect(docs.length).to.be(1);
-            expect(docs[0].error_id).to.be(null);
+            expect(docs[0].error).to.be(null);
             done();
           });
         });
@@ -173,9 +173,9 @@ describe('App_Bucket interface:', function() {
       it('should add and save', function(done) {
 
         Model.addError('appName', id).then(function() {
-          Model.find({ repo_name : 'appName', error_id : id }, function(err, docs) {
+          Model.find({ repo_name : 'appName', error : id }, function(err, docs) {
             expect(docs.length).to.be(1);
-            expect(docs[0].app_id).to.be(null);
+            expect(docs[0].app).to.be(null);
             done();
           });
         });
@@ -212,37 +212,124 @@ describe('App_Bucket interface:', function() {
 
   });
 
-  // describe('Given')
+  describe('When getting a list of all current buckets, findCurrent', function() {
+
+    this.timeout(10000);
+
+    var appNames = [
+      'app1',
+      'app2',
+      'app3',
+      'app4'
+    ], times, current;
+
+    var made;
+
+    before(function(done) {
+      var i=0
+        , oldDate = Date.now() - 36000000; // 10 hours ago
+
+      function addOlder() {
+        var appName = appNames[i++];
+
+        if (! appName) {
+          return Model.findCurrent(function(err, docs) {
+            current = docs;
+            done();
+          });
+        }
+
+        Model.create({
+          repo_name : appName,
+          bucket_time : oldDate
+        }, addOlder);
+      }
+
+      (function createApp() {
+        var appName = appNames[i++];
+
+        if (! appName) {
+          return Model.generateBuckets().then(function(buckets) {
+            times = buckets;
+            i = 0;
+            addOlder();
+          });
+        }
+
+        Status.create({
+          repo_name : appName
+        }, function(err, doc) {
+          Model.addApp(doc.repo_name, doc._id).then(createApp);
+        });
+      })();
+    });
+
+    after(function(done) {
+      Model.remove(done);
+    });
+
+    it('should fetch as many buckets as there are apps (only)', function() {
+      expect(current.length).to.be(4);
+    });
+
+    it('should fetch (only) one bucket for each app', function() {
+      expect(current.length).to.be(4);
+      var used = []
+        , docs = current.filter(function(el) {
+        if (used.indexOf(el._id) === -1) {
+          used.push(el._id);
+          return false;
+        }
+        return true;
+      });
+      expect(docs.length).to.be(0);
+    });
+
+    it('should fetch the most recent bucket for each app', function() {
+      expect(current.length).to.be(4);
+      for(var i=0, l=current.length; i<l; i++) {
+        expect(current[i].bucket_time).to.eql(times[0]);
+      }
+    });
+
+    it('should populate the app data for each bucket', function() {
+      var bucket;
+      expect(current.length).to.be(4);
+      for(var i=0, l=current.length; i<l; i++) {
+        bucket = current[i];
+        expect(bucket.app).to.not.be(null);
+        expect(bucket.app.repo_name).to.be(bucket.repo_name);
+      }
+    });
+
+    it('should populate the error data for each bucket');
+
+  });
 
 });
 
 function verifyApps(apps, buckets, total, done) {
-  var dfd = Q.defer()
-    , dfds = [ dfd ];
+  var appInc=0, timeInc=0;
 
-  function verifyOne(app, time) {
-    var dfd = Q.defer();
+  function verifyEach() {
+    var app = apps[appInc]
+      , time = buckets[timeInc++];
 
-    Model.find({repo_name : app, bucket_time : time}, function(err, docs) {
-      expect(docs.length).to.be(1);
-      dfd.resolve();
-    });
-
-    return dfd.promise;
-  }
-  for (var i=0, l=apps.length; i<l; i++) {
-    for (var ii=0, ll=buckets.length; ii<ll; ii++) {
-      dfds.push(verifyOne(apps[i], buckets[ii]));
+    if (! app) return done();
+    if (! time) {
+      timeInc = 0; // Start over the time list
+      appInc++;
+      return verifyEach(); // On to the next app
     }
+
+    Model.find({ repo_name : app, bucket_time : time }, function(err, docs) {
+      expect(docs.length).to.be(1);
+      verifyEach();
+    });
   }
+
   Model.find(function(err, docs) {
     expect(docs.length).to.be(total);
-    dfd.resolve();
-  });
-
-  expect(dfds.length).to.be(total+1);
-
-  Q.all(dfds).then(function() {
-    done();
+    return verifyEach();
   });
 }

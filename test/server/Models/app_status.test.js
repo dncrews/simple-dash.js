@@ -1,15 +1,37 @@
-/* global require,describe,it,console */
+/* global require,describe,it,before,after,afterEach,console */
 'use strict';
 
 var expect = require('expect.js')
-  , Model = require('../../../Models/App_Status');
+  , Model = require('../../../Models/App_Status')
+  , Bucket = require('../../../Models/App_Bucket');
 
 describe('Apps interface:', function() {
+
+  afterEach(function(done) {
+    Model.remove(function() {
+      Bucket.remove(done);
+    });
+  });
 
   describe('Given a "good" sample splunk mem_response, fromSplunk', function() {
 
     var mockData = getMockData('good')
-      , sut = Model.fromSplunk(mockData);
+      , sut
+      , statuses
+      , buckets;
+
+    before(function(done) {
+      Model.fromSplunk(mockData).then(function(doc) {
+        sut = doc;
+        Model.find(function(err, docs) {
+          statuses = docs;
+          Bucket.find(function(err, docs) {
+            buckets = docs;
+            done();
+          });
+        });
+      });
+    });
 
     it('should save the raw data as _raw', function() {
       expect(sut._raw).to.be.an(Object);
@@ -51,54 +73,81 @@ describe('Apps interface:', function() {
       expect(sut.status).to.be('good');
     });
 
+    it('should save', function() {
+      expect(statuses.length).to.be(1);
+      expect(statuses[0].repo_name).to.be(sut.repo_name);
+    });
+
+    it('should call App_Bucket.addApp with the generated id', function() {
+      expect(buckets.length).to.be(3);
+    });
+
   });
 
   describe('Given no data, fromSplunk', function() {
-    it('should return as an error', function() {
-      var sut = Model.fromSplunk();
-      expect(sut).to.be.an(Error);
+    it('should reject with an error', function(done) {
+      Model.fromSplunk().then(
+        function doNotWant() {},
+        function rejected(err) {
+          expect(err).to.be.an(Error);
+          done();
+        });
     });
   });
 
   describe('Given no "fs_host" name, fromSplunk', function() {
-    it('should return as an error', function() {
-      var sut = Model.fromSplunk(getMockData('noName'));
-      expect(sut).to.be.an(Error);
+    it('should reject with an error', function(done) {
+      Model.fromSplunk(getMockData('noName')).then(
+        function doNotWant() {},
+        function rejected(err) {
+          expect(err).to.be.an(Error);
+          done();
+        });
     });
   });
 
   describe('Given an almost-"slow" sample, fromSplunk', function() {
-    it('should calculate a "good" status', function() {
-      var sut = Model.fromSplunk(getMockData('almostSlow'));
-      expect(sut.status).to.be('good');
+    it('should calculate a "good" status', function(done) {
+      Model.fromSplunk(getMockData('almostSlow')).then(function(sut) {
+        expect(sut.status).to.be('good');
+        done();
+      });
     });
   });
 
   describe('Given a "slow" sample, fromSplunk', function() {
-    it('should calculate a "slow" status', function() {
-      var sut = Model.fromSplunk(getMockData('slow'));
-      expect(sut.status).to.be('slow');
+    it('should calculate a "slow" status', function(done) {
+      Model.fromSplunk(getMockData('slow')).then(function(sut) {
+        expect(sut.status).to.be('slow');
+        done();
+      });
     });
   });
 
   describe('Given an almost-"down" sample, fromSplunk', function() {
-    it('should calculate a "good" status', function() {
-      var sut = Model.fromSplunk(getMockData('almostDown'));
-      expect(sut.status).to.be('good');
+    it('should calculate a "good" status', function(done) {
+      Model.fromSplunk(getMockData('almostDown')).then(function(sut) {
+        expect(sut.status).to.be('good');
+        done();
+      });
     });
   });
 
   describe('Given a "down" sample, fromSplunk', function() {
-    it('should calculate a "down" status', function() {
-      var sut = Model.fromSplunk(getMockData('down'));
-      expect(sut.status).to.be('down');
+    it('should calculate a "down" status', function(done) {
+      Model.fromSplunk(getMockData('down')).then(function(sut) {
+        expect(sut.status).to.be('down');
+        done();
+      });
     });
   });
 
   describe('Given a "slow" and "down", fromSplunk', function() {
-    it('should calculate a "down" status', function() {
-      var sut = Model.fromSplunk(getMockData('slowAndDown'));
-      expect(sut.status).to.be('down');
+    it('should calculate a "down" status', function(done) {
+      Model.fromSplunk(getMockData('slowAndDown')).then(function(sut) {
+        expect(sut.status).to.be('down');
+        done();
+      });
     });
   });
 

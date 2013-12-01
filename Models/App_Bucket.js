@@ -4,10 +4,13 @@
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , Q = require('q')
-  , debug = require('debug')('marrow:models:app-bucket')
-  , verbose = require('debug')('marrow:models:app-bucket-verbose');
+  , _debug = require('debug')
+  , debug = _debug('marrow:models:app-bucket')
+  , verbose = _debug('marrow:models:app-bucket-verbose');
+
 
 var AppStatus = require('./App_Status')
+  , AppError = require('./App_Error')
   , BUCKET_LENGTH = 300000;
 
 function calculateBucket() {
@@ -23,8 +26,16 @@ function calculateBucket() {
 var BucketSchema = new Schema({
   bucket_time : { type: Date, default: calculateBucket },
   repo_name : String,
-  app_id : { type: Schema.Types.ObjectId, default: null },
-  error_id : { type: Schema.Types.ObjectId, default: null }
+  app : {
+    type: Schema.Types.ObjectId,
+    ref : 'App_Status',
+    default: null
+  },
+  error : {
+    type: Schema.Types.ObjectId,
+    ref : 'App_Error',
+    default: null
+  }
 });
 
 BucketSchema.index({ bucket_time : -1, repo_name : 1}, { unique: true });
@@ -39,13 +50,19 @@ BucketSchema.index({ bucket_time : -1, repo_name : 1}, { unique: true });
  */
 BucketSchema.statics.addApp = function(repo_name, id) {
   var dfd = Q.defer();
-  if (! repo_name) return new Error('No repo_name provided!');
-  if (! id) return new Error('No App log id provided!');
+  if (! repo_name) {
+    dfd.reject(new Error('No repo_name provided!'));
+    return dfd.promise;
+  }
+  if (! id) {
+    dfd.reject(new Error('No App log id provided!'));
+    return dfd.promise;
+  }
 
   debug('Logging app: ' + repo_name + '/' + id);
 
   getBucket(repo_name).then(function success(doc) {
-    doc.app_id = id;
+    doc.app = id;
     doc.save(dfd.resolve);
   }, dfd.reject);
 
@@ -68,7 +85,7 @@ BucketSchema.statics.addError = function(repo_name, id) {
   debug('Logging errors: ' + repo_name + '/' + id);
 
   getBucket(repo_name).then(function success(doc) {
-    doc.error_id = id;
+    doc.error = id;
     doc.save(dfd.resolve);
   }, dfd.reject);
 
@@ -119,6 +136,8 @@ BucketSchema.statics.generateBuckets = function(count, list) {
     , buckets = []
     , dfds = []
     , dfd = Q.defer()
+    , appInc = 0
+    , timeInc = 0
     , i, _dfd;
 
   count = count || 3;
@@ -127,7 +146,6 @@ BucketSchema.statics.generateBuckets = function(count, list) {
     buckets.push(new Date(bucket + (i * BUCKET_LENGTH)));
   }
 
-  // FIXME: Get list of unique apps repo_names
   if (list) {
     useList(list);
   } else {
@@ -162,6 +180,8 @@ function generateBucket(repo, time) {
   var dfd = Q.defer()
     , bucket = new Bucket();
 
+  verbose('Generating bucket ' + time + ' for ' + repo);
+
   bucket.repo_name = repo;
   bucket.bucket_time = time;
   try {
@@ -179,9 +199,49 @@ function generateBucket(repo, time) {
 
 /**
  * This will be to get the current status of all Buckets
+ *
+ * This one will accept a callback because it returns something,
+ * rather then just being a `subroutine` that doesn't
+ *
+ * FIXME: I really wish I could do this all in one call, but I
+ * can't seem to figure out how to do that
+ *
+ * TODO: Caching this. Delete cache on write
  */
-BucketSchema.statics.findCurrent = function() {
-  // Group by name, select unique? or just filter them out?
+BucketSchema.statics.findCurrent = function(cb) {
+
+  var date = new Date()
+    , _this = this;
+  this.aggregate()
+    .match({
+      bucket_time : { $lte : date }
+    })
+    .sort({ bucket_time : -1 })
+    .group({
+      _id : '$repo_name',
+      bucket_id : { $first : '$_id' },
+      bucket_time : { $first : '$bucket_time' },
+      app : { $first : "$app" },
+      error : { $first: "$error" }
+    })
+    .group({
+      _id : '$bucket_id'
+    })
+    // .exec(cb);
+    .exec(function(err, docs) {
+      var ids = [];
+      for(var i=0, l=docs.length; i<l; i++) {
+        ids.push(docs[i]._id);
+      }
+      _this
+        .find({
+          _id : { $in : ids }
+        })
+        // .populate('app error')
+        .populate('app')
+        .exec(cb);
+    });
+
 };
 
 var Bucket = module.exports = mongoose.model('App_Bucket', BucketSchema);

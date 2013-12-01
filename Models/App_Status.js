@@ -3,12 +3,12 @@
 
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
-  , debug = require('debug')('marrow:models:app');
+  , debug = require('debug')('marrow:models:app_status')
+  , Q = require('q');
 
 
 var SLOW = 5000 // 1s response from an app is SLOOOOW
   , DOWN_ERROR_RATE = 50; // 50 pct of responses as errors is BAAAAD
-
 
 var AppSchema = new Schema({
   created_at : { type: Date, default: Date.now },
@@ -35,34 +35,54 @@ var AppSchema = new Schema({
 });
 
 AppSchema.statics.fromSplunk = function(data) {
-  if (! data) return new Error('No Splunk data supplied');
-  if (! data.fs_host) return new Error('No app name given');
-  var App = this
-    , config = {
-      _raw : data,
-      name : data.fs_host,
-      time : {
-        p75 : parseInt(data['time:p75'], 10),
-        p95 : parseInt(data['time:p95'], 10)
-      },
-      memory : {
-        avg : parseInt(data['mem:avg']),
-        max : parseInt(data['mem:max'])
-      },
-      codes : {
-        s2xx: parseInt(data['status:2xx'], 10),
-        s3xx: parseInt(data['status:3xx'], 10),
-        s4xx: parseInt(data['status:4xx'], 10),
-        s5xx: parseInt(data['status:5xx'], 10),
-        sTotal: parseInt(data['status:total'], 10)
-      }
-    };
+  var dfd = Q.defer()
+    , AppBucket = require('./App_Bucket')
+    , config;
+  if (! data) {
+    dfd.reject(new Error('No Splunk data supplied'));
+    return dfd.promise;
+  }
+  if (! data.fs_host) {
+    dfd.reject(new Error('No app name given'));
+    return dfd.promise;
+  }
+  config = {
+    _raw : data,
+    name : data.fs_host,
+    time : {
+      p75 : parseInt(data['time:p75'], 10) || 0,
+      p95 : parseInt(data['time:p95'], 10) || 0
+    },
+    memory : {
+      avg : parseInt(data['mem:avg'], 10) || 0,
+      max : parseInt(data['mem:max'], 10) || 0
+    },
+    codes : {
+      s2xx: parseInt(data['status:2xx'], 10) || 0,
+      s3xx: parseInt(data['status:3xx'], 10) || 0,
+      s4xx: parseInt(data['status:4xx'], 10) || 0,
+      s5xx: parseInt(data['status:5xx'], 10) || 0,
+      sTotal: parseInt(data['status:total'], 10) || 0
+    }
+  };
 
   config.repo_name = data.fs_host
     .replace('fs-','')
     .replace('-prod','');
-  config.error_rate = Math.ceil((config.codes.s5xx / config.codes.sTotal) * 100);
-  return new App(config);
+  config.error_rate = config.codes.s5xx && config.codes.sTotal ? Math.ceil((config.codes.s5xx / config.codes.sTotal) * 100) : 0;
+
+  this.create(config, function(err, doc) {
+    var resolve = function() {
+      dfd.resolve(doc);
+    };
+    if (err) {
+      dfd.reject(err);
+      return dfd.promise;
+    }
+    AppBucket.addApp(doc.repo_name, doc._id).then(resolve);
+  });
+
+  return dfd.promise;
 };
 
 /**
