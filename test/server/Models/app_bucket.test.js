@@ -22,7 +22,7 @@ describe('App_Bucket interface:', function() {
 
       expect(sut.bucket_time).to.eql(bucket);
       expect(sut.app).to.be(null);
-      expect(sut.error).to.be(null);
+      expect(sut.app_errors).to.be(null);
 
     });
 
@@ -153,7 +153,7 @@ describe('App_Bucket interface:', function() {
         Model.addApp('appName', id).then(function() {
           Model.find({ repo_name : 'appName', app : id }, function(err, docs) {
             expect(docs.length).to.be(1);
-            expect(docs[0].error).to.be(null);
+            expect(docs[0].app_errors).to.be(null);
             done();
           });
         });
@@ -162,7 +162,7 @@ describe('App_Bucket interface:', function() {
 
     });
 
-    describe('Given an ObjectId, addError', function() {
+    describe('Given an ObjectId, addErrors', function() {
 
       before(function(done) {
         Model.generateBuckets(1, [app_name]).then(function() {
@@ -172,8 +172,8 @@ describe('App_Bucket interface:', function() {
 
       it('should add and save', function(done) {
 
-        Model.addError('appName', id).then(function() {
-          Model.find({ repo_name : 'appName', error : id }, function(err, docs) {
+        Model.addErrors('appName', id).then(function() {
+          Model.find({ repo_name : 'appName', app_errors : id }, function(err, docs) {
             expect(docs.length).to.be(1);
             expect(docs[0].app).to.be(null);
             done();
@@ -197,10 +197,10 @@ describe('App_Bucket interface:', function() {
 
     });
 
-    describe('Given no bucket exists, addError', function() {
+    describe('Given no bucket exists, addErrors', function() {
 
       it('should generate buckets', function(done) {
-        Model.addError('appName', id).then(function() {
+        Model.addErrors('appName', id).then(function() {
           Model.find({ repo_name : 'appName' }, function(err, docs) {
             expect(docs.length).to.be(3);
             done();

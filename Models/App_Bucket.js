@@ -31,10 +31,13 @@ var BucketSchema = new Schema({
     ref : 'App_Status',
     default: null
   },
-  error : {
+  app_errors : {
     type: Schema.Types.ObjectId,
     ref : 'App_Error',
     default: null
+  },
+  changes : {
+
   }
 });
 
@@ -77,15 +80,15 @@ BucketSchema.statics.addApp = function(repo_name, id) {
  * @param  {ObjectID} id        Mongo ObjectId
  * @return {Promise}
  */
-BucketSchema.statics.addError = function(repo_name, id) {
+BucketSchema.statics.addErrors = function(repo_name, id) {
   var dfd = Q.defer();
   if (! repo_name) return new Error('No repo_name provided!');
   if (! id) return new Error('No Error log id provided!');
 
-  debug('Logging errors: ' + repo_name + '/' + id);
+  debug('Logging app_errors: ' + repo_name + '/' + id);
 
   getBucket(repo_name).then(function success(doc) {
-    doc.error = id;
+    doc.app_errors = id;
     doc.save(dfd.resolve);
   }, dfd.reject);
 
@@ -110,7 +113,7 @@ function getBucket(repo_name) {
     repo_name : repo_name
   }, function(err, doc) {
     if (err) {
-      debug('Current Bucket error', err);
+      debug('Current Bucket err', err);
       return dfd.reject(err);
     }
 
@@ -222,7 +225,7 @@ BucketSchema.statics.findCurrent = function(cb) {
       bucket_id : { $first : '$_id' },
       bucket_time : { $first : '$bucket_time' },
       app : { $first : "$app" },
-      error : { $first: "$error" }
+      app_errors : { $first: "$app_errors" }
     })
     .group({
       _id : '$bucket_id'
@@ -237,7 +240,7 @@ BucketSchema.statics.findCurrent = function(cb) {
         .find({
           _id : { $in : ids }
         })
-        // .populate('app error')
+        // .populate('app app_errors')
         .populate('app')
         .exec(cb);
     });
