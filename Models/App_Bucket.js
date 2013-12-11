@@ -82,8 +82,14 @@ BucketSchema.statics.addApp = function(repo_name, id) {
  */
 BucketSchema.statics.addErrors = function(repo_name, id) {
   var dfd = Q.defer();
-  if (! repo_name) return new Error('No repo_name provided!');
-  if (! id) return new Error('No Error log id provided!');
+  if (! repo_name) {
+    dfd.reject(new Error('No repo_name provided!'));
+    return dfd.promise;
+  }
+  if (! id) {
+    dfd.reject(new Error('No App log id provided!'));
+    return dfd.promise;
+  }
 
   debug('Logging app_errors: ' + repo_name + '/' + id);
 
@@ -123,7 +129,7 @@ function getBucket(repo_name) {
       dfd.resolve(doc);
     } else {
       debug('Current not found. Generating new.');
-      Bucket.generateBuckets().then(function() {
+      Bucket.generateBuckets(null, [repo_name]).then(function() {
         getBucket(repo_name).then(dfd.resolve);
       });
     }
