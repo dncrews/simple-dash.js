@@ -1,6 +1,3 @@
-/* global require,describe,it */
-'use strict';
-
 var expect = require('expect.js');
 
 describe('Logger API', function() {

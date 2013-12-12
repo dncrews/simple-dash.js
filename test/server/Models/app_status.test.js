@@ -1,6 +1,3 @@
-/* global require,describe,it,before,after,afterEach,console */
-'use strict';
-
 var expect = require('expect.js')
   , Model = require('../../../Models/App_Status')
   , Bucket = require('../../../Models/App_Bucket');

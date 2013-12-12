@@ -1,6 +1,3 @@
-/* global require,describe,it,console */
-'use strict';
-
 var expect = require('expect.js')
   , Model = require('../../../Models/Service');
 

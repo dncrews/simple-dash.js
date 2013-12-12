@@ -1,6 +1,3 @@
-/* globals require,module,console */
-'use strict';
-
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , debug = require('debug')('marrow:models:app_status')

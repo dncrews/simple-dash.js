@@ -1,6 +1,3 @@
-/* globals require,module,console,process */
-'use strict';
-
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , Q = require('q')

@@ -1,7 +1,3 @@
-/* global require,describe,it,console,before,beforeEach,after,afterEach,setTimeout */
-'use strict';
-
-
 var expect = require('expect.js')
   , db = require('../../db')
   , Model = require('../../../Models/Change');

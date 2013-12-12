@@ -1,6 +1,3 @@
-/* global require,describe,it,console,before,beforeEach,after,afterEach,setTimeout */
-'use strict';
-
 var expect = require('expect.js')
   , db = require('../../db')
   , Model = require('../../../Models/App_Bucket')
@@ -147,6 +144,8 @@ describe('App_Bucket interface:', function() {
           done();
         });
       });
+
+      it('FIXME: make getBucket not dfd; functions require cb; routines use dfd');
 
       it('should add and save', function(done) {
 

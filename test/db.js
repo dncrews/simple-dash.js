@@ -1,6 +1,3 @@
-/* global require, before, after, module, afterEach */
-'use strict';
-
 var connection, mongoose;
 
 mongoose = require('mongoose');

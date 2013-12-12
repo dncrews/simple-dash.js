@@ -1,6 +1,3 @@
-/* global require,describe,it,before,after,afterEach,console */
-'use strict';
-
 var expect = require('expect.js')
   , Model = require('../../../Models/App_Error')
   , Bucket = require('../../../Models/App_Bucket')
@@ -17,6 +14,8 @@ describe('App Errors interface:', function() {
   });
 
   describe('Give a splunk heroku_errors, fromSplunk', function() {
+
+    it('FIXME: make fromSplunk not dfd; functions require cb; routines use dfd');
 
     var mockData = getMockData('normal')
       , sut

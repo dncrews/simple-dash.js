@@ -1,6 +1,3 @@
-/* globals require,console,module */
-'use strict';
-
 var mongoose = require('mongoose');
 
 var db = mongoose.connection;
