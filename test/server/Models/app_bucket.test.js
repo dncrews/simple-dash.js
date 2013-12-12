@@ -25,33 +25,6 @@ describe('App_Bucket interface:', function() {
 
   });
 
-  describe('If attempting to create a duplicate, App_Bucket', function() {
-
-    after(function(done) {
-      Model.remove(done);
-    });
-
-    it('should throw a duplicate key error', function(done) {
-      var repo_name = 'test_app';
-
-      Model.create({
-        repo_name : repo_name
-      }, function(err, one) {
-        expect(one.repo_name).to.be(repo_name);
-        Model.create({
-          repo_name : repo_name,
-          bucket_time : one.bucket_time
-        }, function(err, two) {
-          expect(err).to.be.an(Error);
-          expect(err.message).to.match(/E11000/);
-          done();
-        });
-      });
-
-
-    });
-  });
-
   describe('generateBuckets:', function(){
     afterEach(function(done) {
       Model.remove(done);
