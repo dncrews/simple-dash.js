@@ -35,9 +35,6 @@ var BucketSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref : 'App_Error',
     default: null
-  },
-  changes : {
-
   }
 });
 

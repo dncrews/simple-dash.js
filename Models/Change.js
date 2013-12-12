@@ -8,7 +8,12 @@ var mongoose = require('mongoose')
   , debug = require('debug')('marrow:models:change')
   , sendgrid = require('sendgrid')(process.env.SENDGRID_USERNAME, process.env.SENDGRID_PASSWORD);
 
-var heroku;
+// If sendgrid isn't configured, don't try to send emails
+if (! sendgrid.api_user) {
+  sendgrid = undefined;
+}
+
+var heroku, restart, _restart;
 
 try {
   heroku = new HerokuAPI({"email" : process.env.HEROKU_EMAIL, "apiToken" : process.env.HEROKU_API_TOKEN});
@@ -34,47 +39,39 @@ var ChangeSchema = new Schema({
  */
 ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
   var dfd = Q.defer()
-    , change;
+    , Change = this;
+
+  if (app_name && reason) {
+    restart(app_name, function(restarted) {
+      var change;
+      if (restarted instanceof Error) return dfd.reject(restarted);
+
+      if (typeof restarted !== 'boolean') {
+        dfd.reject();
+        throw new Error('Restart returned unknown value', restarted);
+      }
+
+      if (restarted) {
+        // App successfully restarted
+        change = Change.fromMarrow(app_name, 'restart', reason);
+      } else {
+        // App would've restarted, but wasn't configured
+        change = Change.fromMarrow(app_name, 'restart.not_configured', reason);
+      }
+      return change.save(function(err, doc) {
+        if (err) return dfd.reject(err);
+        dfd.resolve(doc);
+      });
+    });
+  }
+
   if (! app_name) {
     dfd.reject(new Error('No Marrow app_name supplied'));
-    return dfd.promise;
   }
   if (! reason) {
     dfd.reject(new Error('No restart reason supplied'));
-    return dfd.promise;
   }
 
-  function finalize(doc, cb) {
-    doc.save(function() {
-      if (cb) cb();
-      dfd.resolve(doc);
-    });
-    return dfd.promise;
-  }
-
-  // No penalty if Heroku configuration isn't defined
-  if (! heroku) {
-    change = this.fromMarrow(app_name, 'not_configured', reason);
-    return finalize(change);
-  }
-
-  heroku.restart(app_name, function(err, resp) {
-
-    if (err) return console.error(err);
-
-    change = this.fromMarrow(app_name, 'restart', reason);
-    return finalize(change, function() {
-      sendgrid.send({
-        to: process.env.RESTART_EMAIL_TO,
-        from: process.env.RESTART_EMAIL_FROM,
-        subject: 'Automatic app restart',
-        text: 'The Heroku app "' + app_name + '" has been automatically restarted. Be advised.'
-      }, function(err, json) {
-        if (err) return console.error(err);
-      });
-    });
-
-  });
   return dfd.promise;
 };
 
@@ -86,12 +83,12 @@ ChangeSchema.statics.fromGithub = function(data, action) {
       _raw : data,
       type : 'github',
       action : action || 'merge',
-      name : data.repo_name + '/' + data.org_name,
-      repo_name : data.repo_name,
+      name : data.repository.organization + '/' + data.repository.name,
+      repo_name : data.repository.name,
       meta : {
-        message : data.commit.message,
-        url : data.commit.url,
-        author : data.author.username
+        message : data.head_commit.message,
+        url : data.head_commit.url,
+        author : data.head_commit.author
       }
     };
   return new Change(config);
@@ -130,5 +127,52 @@ ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
 
   return new Change(config);
 };
+
+ChangeSchema.statics.mockRestart = function(fn) {
+  restart = fn;
+};
+
+ChangeSchema.statics.restore = function() {
+  restart = doRestart;
+};
+
+restart = doRestart;
+
+function doRestart(app_name, cb) {
+  if (! app_name) {
+    return cb && cb(new Error('No Marrow app_name supplied'));
+  }
+
+  if (! heroku) {
+    console.error('Restart Requested; Heroku not configured');
+    return cb(false);
+  }
+
+  heroku.restart(app_name, restartHandler);
+
+  function restartHandler(err, resp) {
+    if (err) {
+      console.error(err);
+      return cb(err);
+    }
+
+    if (! sendgrid) {
+      console.error('Restart occurred. Sendgrid not configured');
+      return cb(true);
+    }
+
+    sendgrid.send({
+      to: process.env.RESTART_EMAIL_TO,
+      from: process.env.RESTART_EMAIL_FROM,
+      subject: 'Automatic app restart',
+      text: 'The Heroku app "' + app_name + '" has been automatically restarted. Be advised.'
+    }, function(err, json) {
+      if (err) {
+        console.error('Restart occurred. Sendgrid error', err);
+      }
+      return cb(true);
+    });
+  }
+}
 
 module.exports = mongoose.model('Change', ChangeSchema);
