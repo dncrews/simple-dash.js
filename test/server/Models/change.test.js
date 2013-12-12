@@ -15,7 +15,7 @@ describe('Changes interface:', function() {
 
   describe('restartHerokuApp:', function() {
     var appName = 'fs-testName-prod'
-      , rsReason = 'Because I said so';
+      , reason = 'Because I said so';
 
     describe('Given an appName and reason, restartHerokuApp', function() {
 
@@ -29,7 +29,7 @@ describe('Changes interface:', function() {
           cb(true);
         });
 
-        Model.restartHerokuApp(appName, rsReason).then(function(doc) {
+        Model.restartHerokuApp(appName, reason).then(function(doc) {
           change = doc;
           done();
         });
@@ -70,7 +70,7 @@ describe('Changes interface:', function() {
 
     describe('Given a reason only, restartHerokuApp', function() {
       it('should reject with an Error', function(done) {
-        Model.restartHerokuApp(null, rsReason).then(
+        Model.restartHerokuApp(null, reason).then(
           function doNotWant() {},
           function rejected(doc) {
             expect(doc).to.be.an(Error);
@@ -127,40 +127,92 @@ describe('Changes interface:', function() {
   });
 
   describe('fromJenkins:', function() {
+    var data = getMockData('jenkins');
     describe('Given Jenkins build data, fromJenkins', function() {
-      it('should save the raw data as _raw');
-      it('should set the name and repo_name');
-      it('should set created_at');
-      it('should set the type to "jenkins"');
-      it('should set the action to "build"');
-      it('should not set meta data');
+      var change = Model.fromJenkins(data);
+      it('should save the raw data as _raw', function() {
+        expect(change._raw).to.eql(data);
+      });
+      it('should set the name and repo_name', function() {
+        expect(change.name).to.be('fs-newAppName');
+        expect(change.repo_name).to.be('newAppName');
+      });
+      it('should set created_at', function() {
+        expect(change.created_at).to.be.a(Date);
+      });
+      it('should set the type to "jenkins"', function() {
+        expect(change.type).to.be('jenkins');
+      });
+      it('should set the action to "build"', function() {
+        expect(change.action).to.be('build');
+      });
+      it('should not set meta data', function() {
+        expect(change.meta).to.be(undefined);
+      });
     });
 
     describe('Given Jenkins data and an action, fromJenkins', function() {
-      it('should set the action passed');
+      var change = Model.fromJenkins(data, 'anotherType');
+      it('should set the action passed', function() {
+        expect(change.action).to.be('anotherType');
+      });
     });
 
     describe('Given no data, fromJenkins', function() {
-      it('should return an Error');
+      var change = Model.fromJenkins();
+      it('should return an Error', function() {
+        expect(change).to.be.an(Error);
+      });
     });
   });
 
   describe('fromMarrow:', function() {
-    describe('Given Marrow build data, fromMarrow', function() {
-      it('should save the raw data as _raw');
-      it('should set the name and repo_name');
-      it('should set created_at');
-      it('should set the type to "jenkins"');
-      it('should set the action to "build"');
-      it('should not set meta data');
+    var appName = 'fs-someApp-prod'
+      , action = 'notRestart'
+      , reason = 'Because I said so';
+
+    describe('Given an app_name, fromMarrow', function() {
+      var change = Model.fromMarrow(appName);
+      it('should not set a _raw', function() {
+        expect(change._raw).to.be(undefined);
+      });
+      it('should set the name and repo_name', function() {
+        expect(change.name).to.be(appName);
+        expect(change.repo_name).to.be('someApp');
+      });
+      it('should set created_at', function() {
+        expect(change.created_at).to.be.a(Date);
+      });
+      it('should set the type to "marrow"', function() {
+        expect(change.type).to.be('marrow');
+      });
+      it('should set the action to "restart"', function() {
+        expect(change.action).to.be('restart');
+      });
+      it('should not set meta data', function() {
+        expect(change.meta).to.be(undefined);
+      });
     });
 
-    describe('Given Jenkins data and an action, fromMarrow', function() {
-      it('should set the action passed');
+    describe('Given a reason, fromMarrow', function() {
+      var change = Model.fromMarrow(appName, null, reason);
+      it('should set the meta.reason', function() {
+        expect(change.meta.reason).to.be(reason);
+      });
     });
 
-    describe('Given no data, fromMarrow', function() {
-      it('should return an Error');
+    describe('Given app_name and an action, fromMarrow', function() {
+      var change = Model.fromMarrow(appName, action);
+      it('should set the action passed', function() {
+        expect(change.action).to.be(action);
+      });
+    });
+
+    describe('Given no appName, fromMarrow', function() {
+      var change = Model.fromMarrow();
+      it('should return an Error', function() {
+        expect(change).to.be.an(Error);
+      });
     });
   });
 
@@ -189,8 +241,17 @@ function getMockData(type) {
         "organization":"testAppOrg"
       }
     },
-    splunk_good : {},
-    splunk_no_name : {}
+    jenkins : {
+      "name":"fs-newAppName",
+      "url":"job/fs-newAppName/",
+      "build":{
+        "full_url":"Build URL Goes Here",
+        "number":356,
+        "phase":"FINISHED",
+        "status":"SUCCESS",
+        "url":"job/fs-newAppName/356/"
+      }
+    }
   };
   return mocks[type];
 }

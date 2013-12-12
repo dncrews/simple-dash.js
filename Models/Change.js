@@ -102,10 +102,10 @@ ChangeSchema.statics.fromJenkins = function(data, action) {
       _raw : data,
       type : 'jenkins',
       action: action || 'build',
-      name : data.app_name
+      name : data.name
     };
 
-  config.repo_name = data.app_name.replace('fs-', '');
+  config.repo_name = data.name.replace('fs-', '');
 
   return new Change(config);
 };
@@ -117,9 +117,12 @@ ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
     , config = {
       type : 'marrow',
       action : action || 'restart',
-      meta : { reason : reason },
       name : app_name
     };
+
+  if (reason) {
+    config.meta = { reason : reason };
+  }
 
   config.repo_name = app_name
     .replace('fs-','')
