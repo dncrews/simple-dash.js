@@ -81,7 +81,7 @@ BucketSchema.statics.addErrors = function(repo_name, id) {
     return dfd.promise;
   }
   if (! id) {
-    dfd.reject(new Error('No App log id provided!'));
+    dfd.reject(new Error('No Error log id provided!'));
     return dfd.promise;
   }
 
@@ -240,8 +240,7 @@ BucketSchema.statics.findCurrent = function(cb) {
         .find({
           _id : { $in : ids }
         })
-        // .populate('app app_errors')
-        .populate('app')
+        .populate('app app_errors')
         .exec(cb);
     });
 

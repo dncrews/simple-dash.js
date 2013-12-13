@@ -2,6 +2,7 @@ var expect = require('expect.js')
   , db = require('../../db')
   , Model = require('../../../Models/App_Bucket')
   , Status = require('../../../Models/App_Status')
+  , Errors = require('../../../Models/App_Error')
   , Q = require('q');
 
 describe('App_Bucket interface:', function() {
@@ -186,14 +187,12 @@ describe('App_Bucket interface:', function() {
 
   describe('When getting a list of all current buckets, findCurrent', function() {
 
-    this.timeout(10000);
-
     var appNames = [
       'app1',
       'app2',
       'app3',
       'app4'
-    ], times, current;
+    ], times, current, errs;
 
     var made;
 
@@ -230,8 +229,16 @@ describe('App_Bucket interface:', function() {
 
         Status.create({
           repo_name : appName
-        }, function(err, doc) {
-          Model.addApp(doc.repo_name, doc._id).then(createApp);
+        }, function(err, status) {
+          Errors.create({
+            repo_name : appName
+          }, function(err, newErr) {
+            Model.addApp(status.repo_name, status._id).then(function() {
+              Model.addErrors(newErr.repo_name, newErr._id).then(function() {
+                createApp();
+              });
+            });
+          });
         });
       })();
     });
@@ -274,7 +281,15 @@ describe('App_Bucket interface:', function() {
       }
     });
 
-    it('should populate the error data for each bucket');
+    it('should populate the error data for each bucket', function() {
+      var bucket;
+      expect(current.length).to.be(4);
+      for(var i=0, l=current.length; i<l; i++) {
+        bucket = current[i];
+        expect(bucket.app_errors).to.not.be(null);
+        expect(bucket.app_errors.repo_name).to.be(bucket.repo_name);
+      }
+    });
 
   });
 

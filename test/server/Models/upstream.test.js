@@ -25,12 +25,13 @@ describe('Upstream interface:', function() {
       //   expect(sut._raw).to.be.an(Object);
       //   expect(sut._raw).to.eql(mockData);
       // });
+      it('TODO: make sure the client shows "(fixed)" for fixed issues');
     });
     describe('Given a "blue" sample heroku fetch, fromHeroku', function() {
       it('should set the status as "down"');
     });
     describe('Given a "red" sample heroku fetch, fromHeroku', function() {
-      it('should set the status ad "down"');
+      it('should set the status as "down"');
     });
   });
 
