@@ -55,11 +55,11 @@ describe('Apps interface:', function() {
     });
 
     it('should create a codes object', function() {
-      expect(sut.codes.s2xx).to.be(1000);
-      expect(sut.codes.s3xx).to.be(3);
-      expect(sut.codes.s4xx).to.be(4);
-      expect(sut.codes.s5xx).to.be(5);
-      expect(sut.codes.sTotal).to.be(1012);
+      expect(sut.codes['2xx']).to.be(1000);
+      expect(sut.codes['3xx']).to.be(3);
+      expect(sut.codes['4xx']).to.be(4);
+      expect(sut.codes['5xx']).to.be(5);
+      expect(sut.codes.total).to.be(1012);
     });
 
     it('should round up the error_rate', function() {

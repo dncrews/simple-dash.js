@@ -21,11 +21,11 @@ var AppSchema = new Schema({
     p95 : Number
   },
   codes : {
-    s2xx: Number,
-    s3xx: Number,
-    s4xx: Number,
-    s5xx: Number,
-    sTotal: Number
+    '2xx': Number,
+    '3xx': Number,
+    '4xx': Number,
+    '5xx': Number,
+    'total': Number
   },
   error_rate: Number,
   _raw : Schema.Types.Mixed
@@ -55,18 +55,18 @@ AppSchema.statics.fromSplunk = function(data) {
       max : parseInt(data['mem:max'], 10) || 0
     },
     codes : {
-      s2xx: parseInt(data['status:2xx'], 10) || 0,
-      s3xx: parseInt(data['status:3xx'], 10) || 0,
-      s4xx: parseInt(data['status:4xx'], 10) || 0,
-      s5xx: parseInt(data['status:5xx'], 10) || 0,
-      sTotal: parseInt(data['status:total'], 10) || 0
+      '2xx': parseInt(data['status:2xx'], 10) || 0,
+      '3xx': parseInt(data['status:3xx'], 10) || 0,
+      '4xx': parseInt(data['status:4xx'], 10) || 0,
+      '5xx': parseInt(data['status:5xx'], 10) || 0,
+      'total': parseInt(data['status:total'], 10) || 0
     }
   };
 
   config.repo_name = data.fs_host
     .replace('fs-','')
     .replace('-prod','');
-  config.error_rate = config.codes.s5xx && config.codes.sTotal ? Math.ceil((config.codes.s5xx / config.codes.sTotal) * 100) : 0;
+  config.error_rate = config.codes['5xx'] && config.codes.total ? Math.ceil((config.codes['5xx'] / config.codes.total) * 100) : 0;
 
   this.create(config, function(err, doc) {
     var resolve = function() {

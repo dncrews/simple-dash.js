@@ -11,57 +11,165 @@ describe('Upstream interface:', function() {
 
   describe('Heroku:', function() {
     describe('Given a "green" and "yellow" sample heroku fetch, fromHeroku', function() {
-      it('should create and save a Prod and Dev upstream status');
-      it('should set the type as "heroku"');
-      it('should set the names');
-      it('should set the "good" and "warning" statuses');
-      it('should save the issues to both instances');
-      it('should save the raw data as _raw');
-      it('should set created_at');
-      // it('should set created_at', function() {
-      //   expect(sut.created_at).to.be.a(Date);
-      // });
-      // it('should save the raw data as _raw', function() {
-      //   expect(sut._raw).to.be.an(Object);
-      //   expect(sut._raw).to.eql(mockData);
-      // });
-      it('TODO: make sure the client shows "(fixed)" for fixed issues');
+      var data = getMockData('heroku','greenYellow')
+        , upstreams = {}
+        , upstream = {};
+      before(function(done) {
+        Model.fromHeroku(data).then(function() {
+          Model.find({ name : 'Heroku Production' }, function(err, docs) {
+            if (err) return expect().fail();
+            upstreams.prod = docs;
+            upstream.prod = docs[0];
+            Model.find({ name : 'Heroku Development' }, function(err, docs) {
+              if (err) return expect().fail();
+              upstreams.dev = docs;
+              upstream.dev = docs[0];
+              done();
+            });
+          });
+        });
+      });
+      after(function(done) {
+        Model.remove(done);
+      });
+      it('should create and save a Prod and Dev upstream status', function() {
+        expect(upstreams.prod.length).to.be(1);
+        expect(upstreams.dev.length).to.be(1);
+      });
+      it('should set the type as "heroku"', function() {
+        expect(upstream.prod.type).to.be('heroku');
+        expect(upstream.dev.type).to.be('heroku');
+      });
+      it('should set the names', function() {
+        expect(upstream.prod.name).to.be('Heroku Production');
+        expect(upstream.dev.name).to.be('Heroku Development');
+      });
+      it('should set the "good" and "warning" statuses', function() {
+        expect(upstream.prod.status).to.be('good');
+        expect(upstream.dev.status).to.be('warning');
+      });
+      it('should save the issues to both instances', function() {
+        expect(upstream.prod.meta.issues).to.be.eql(data.issues);
+        expect(upstream.dev.meta.issues).to.be.eql(data.issues);
+      });
+      it('should set created_at', function() {
+        expect(upstream.prod.meta.created_at).to.be.a(Date);
+        expect(upstream.dev.meta.created_at).to.be.a(Date);
+      });
+      it('should save the raw data as _raw', function() {
+        expect(upstream.prod.meta._raw).to.be.an(Object);
+        expect(upstream.prod.meta._raw).to.eql(data);
+        expect(upstream.dev.meta._raw).to.be.an(Object);
+        expect(upstream.dev.meta._raw).to.eql(data);
+      });
     });
     describe('Given a "blue" sample heroku fetch, fromHeroku', function() {
-      it('should set the status as "down"');
+      var data = getMockData('heroku','blue')
+        , upstream;
+      before(function(done) {
+        Model.fromHeroku(data).then(function() {
+          Model.findOne({ name : 'Heroku Development' }, function(err, doc) {
+            if (err) return expect().fail();
+            upstream = doc;
+            done();
+          });
+        });
+      });
+      after(function(done) {
+        Model.remove(done);
+      });
+      it('should set the status as "down"', function() {
+        expect(upstream.status).to.be('down');
+      });
     });
     describe('Given a "red" sample heroku fetch, fromHeroku', function() {
-      it('should set the status as "down"');
+      var data = getMockData('heroku','red')
+        , upstream;
+      before(function(done) {
+        Model.fromHeroku(data).then(function() {
+          Model.findOne({ name : 'Heroku Development' }, function(err, doc) {
+            if (err) return expect().fail();
+            upstream = doc;
+            done();
+          });
+        });
+      });
+      after(function(done) {
+        Model.remove(done);
+      });
+      it('should set the status as "down"', function() {
+        expect(upstream.status).to.be('down');
+      });
+    });
+    describe('Given no data, haFromSplunk', function() {
+      it('should reject with an error', function(done) {
+        Model.fromHeroku().then(
+          function doNotWant() {},
+          function rejected(err) {
+            expect(err).to.be.an(Error);
+            done();
+          });
+      });
     });
   });
 
   describe('HA Proxy:', function() {
     describe('Given a "good" sample splunk mem_response, haFromSplunk', function() {
-      it('should set the type as "haProxy"');
-      it('should set the name as "HA Proxy"');
-      it('should set the status as "good"');
-      it('should set the meta.codes');
-      it('should set the meta.error_rate');
-      it('should save the raw data as _raw');
-      it('should set created_at');
-      // it('should set created_at', function() {
-      //   expect(sut.created_at).to.be.a(Date);
-      // });
-      // it('should save the raw data as _raw', function() {
-      //   expect(sut._raw).to.be.an(Object);
-      //   expect(sut._raw).to.eql(mockData);
-      // });
+      var data = getMockData('haProxy','good')
+        , upstreams, upstream;
+      before(function(done) {
+        Model.haFromSplunk(data).then(function() {
+          Model.find(function(err, docs) {
+            if (err) return expect().fail();
+            upstreams = docs;
+            upstream = docs[0];
+            done();
+          });
+        });
+      });
+      after(function(done) {
+        Model.remove(done);
+      });
+      it('should create and save', function() {
+        expect(upstreams.length).to.be(1);
+      });
+      it('should set the type as "haProxy"', function() {
+        expect(upstream.type).to.be('haProxy');
+      });
+      it('should set the name as "HA Proxy"', function() {
+        expect(upstream.name).to.be('HA Proxy');
+      });
+      it('should set the status as "good"', function() {
+        expect(upstream.status).to.be('good');
+      });
+      it('should set the meta.codes', function() {
+        expect(upstream.meta.codes).to.be.an(Object);
+        expect(upstream.meta.codes['2xx']).to.be(500);
+        expect(upstream.meta.codes['3xx']).to.be(300);
+        expect(upstream.meta.codes['4xx']).to.be(100);
+        expect(upstream.meta.codes['5xx']).to.be(100);
+        expect(upstream.meta.codes.total).to.be(100);
+      });
+      it('should set and round the error rate to 2 decimal places', function() {
+        expect(upstream.meta.error_rate).to.be(0.01);
+      });
+      it('should set created_at', function() {
+        expect(upstream.created_at).to.be.a(Date);
+      });
+      it('should save the raw data as _raw', function() {
+        expect(upstream._raw).to.be.an(Object);
+        expect(upstream._raw).to.eql(data);
+      });
     });
     describe('Given no data, haFromSplunk', function() {
-      it('should reject with an error');
-      // it('should reject with an error', function(done) {
-      //   Model.fromSplunk().then(
-      //     function doNotWant() {},
-      //     function rejected(err) {
-      //       expect(err).to.be.an(Error);
-      //       done();
-      //     });
-      // });
+      it('should reject with an error', function(done) {
+        Model.haFromSplunk().then(
+          function doNotWant() {},
+          function rejected(err) {
+            expect(err).to.be.an(Error);
+            done();
+          });
+      });
     });
     describe('Given an almost-"warning" sample, haFromSplunk', function() {
       it('should set the status as "good"');
@@ -81,7 +189,7 @@ describe('Upstream interface:', function() {
 
 function getMockData(src, type) {
   var mocks = {
-    github : {
+    heroku : {
       greenYellow : {
         "status": {
           "Production": "green",
