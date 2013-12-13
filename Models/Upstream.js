@@ -44,10 +44,43 @@ UpstreamSchema.statics.fromHeroku = function(data) {
 };
 
 UpstreamSchema.statics.haFromSplunk = function(data) {
-  var dfd = Q.defer();
+  var dfd = Q.defer()
+    , Upstream = this
+    , config, upstream, error_rate;
 
   if (data) {
-    dfd.resolve();
+    upstream = new Upstream({
+      type : 'haProxy',
+      name : 'HA Proxy',
+      status : 'unknown',
+      meta : {},
+      _raw : data
+    });
+
+    upstream.meta.codes = {
+      "2xx" : parseInt(data['status:2xx'], 10),
+      "3xx" : parseInt(data['status:3xx'], 10),
+      "4xx" : parseInt(data['status:4xx'], 10),
+      "5xx" : parseInt(data['status:5xx'], 10),
+      "total" : parseInt(data['status:total'], 10)
+    };
+
+    if (data['status:5xx'] && data['status:total']) {
+      error_rate = upstream.meta.error_rate = Math.ceil((data['status:5xx'] / data['status:total'] * 100));
+
+      if (error_rate >= 75) {
+        upstream.status = 'down';
+      } else if (error_rate >= 50) {
+        upstream.status = 'warning';
+      } else {
+        upstream.status = 'good';
+      }
+    }
+
+
+    Upstream.create(upstream, function(err, upstream) {
+      dfd.resolve();
+    });
   } else {
     dfd.reject(new Error('No data provided!'));
   }

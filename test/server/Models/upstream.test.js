@@ -144,14 +144,14 @@ describe('Upstream interface:', function() {
       });
       it('should set the meta.codes', function() {
         expect(upstream.meta.codes).to.be.an(Object);
-        expect(upstream.meta.codes['2xx']).to.be(500);
+        expect(upstream.meta.codes['2xx']).to.be(599);
         expect(upstream.meta.codes['3xx']).to.be(300);
         expect(upstream.meta.codes['4xx']).to.be(100);
-        expect(upstream.meta.codes['5xx']).to.be(100);
-        expect(upstream.meta.codes.total).to.be(100);
+        expect(upstream.meta.codes['5xx']).to.be(1);
+        expect(upstream.meta.codes.total).to.be(1000);
       });
       it('should set and round the error rate to 2 decimal places', function() {
-        expect(upstream.meta.error_rate).to.be(0.01);
+        expect(upstream.meta.error_rate).to.be(1);
       });
       it('should set created_at', function() {
         expect(upstream.created_at).to.be.a(Date);
@@ -171,17 +171,85 @@ describe('Upstream interface:', function() {
           });
       });
     });
+
     describe('Given an almost-"warning" sample, haFromSplunk', function() {
-      it('should set the status as "good"');
+      var data = getMockData('haProxy','almostWarning')
+        , upstream;
+      before(function(done) {
+        Model.haFromSplunk(data).then(function() {
+          Model.findOne(function(err, doc) {
+            if (err) return expect().fail();
+            upstream = doc;
+            done();
+          });
+        });
+      });
+      after(function(done) {
+        Model.remove(done);
+      });
+      it('should set the status as "good"', function() {
+        expect(upstream.status).to.be('good');
+      });
     });
+
     describe('Given a "warning" sample, haFromSplunk', function() {
-      it('should set the status as "warning"');
+      var data = getMockData('haProxy','warning')
+        , upstream;
+      before(function(done) {
+        Model.haFromSplunk(data).then(function() {
+          Model.findOne(function(err, doc) {
+            if (err) return expect().fail();
+            upstream = doc;
+            done();
+          });
+        });
+      });
+      after(function(done) {
+        Model.remove(done);
+      });
+      it('should set the status as "warning"', function() {
+        expect(upstream.status).to.be('warning');
+      });
     });
+
     describe('Given an almost-"down" sample, haFromSplunk', function() {
-      it('should set the status as "warning"');
+      var data = getMockData('haProxy','almostDown')
+        , upstream;
+      before(function(done) {
+        Model.haFromSplunk(data).then(function() {
+          Model.findOne(function(err, doc) {
+            if (err) return expect().fail();
+            upstream = doc;
+            done();
+          });
+        });
+      });
+      after(function(done) {
+        Model.remove(done);
+      });
+      it('should set the status as "warning"', function() {
+        expect(upstream.status).to.be('warning');
+      });
     });
+
     describe('Given an "down" sample, haFromSplunk', function() {
-      it('should set the status as "down"');
+      var data = getMockData('haProxy','down')
+        , upstream;
+      before(function(done) {
+        Model.haFromSplunk(data).then(function() {
+          Model.findOne(function(err, doc) {
+            if (err) return expect().fail();
+            upstream = doc;
+            done();
+          });
+        });
+      });
+      after(function(done) {
+        Model.remove(done);
+      });
+      it('should set the status as "down"', function() {
+        expect(upstream.status).to.be('down');
+      });
     });
   });
 
@@ -296,31 +364,31 @@ function getMockData(src, type) {
         "status:total": "1000"
       },
       almostWarning : {
-        "status:2xx": "551",
+        "status:2xx": "500",
         "status:3xx": "300",
         "status:4xx": "100",
-        "status:5xx": "49",
+        "status:5xx": "490",
         "status:total": "1000"
       },
       warning : {
-        "status:2xx": "550",
+        "status:2xx": "500",
         "status:3xx": "300",
         "status:4xx": "100",
-        "status:5xx": "50",
+        "status:5xx": "491",
         "status:total": "1000"
       },
       almostDown : {
-        "status:2xx": "501",
+        "status:2xx": "500",
         "status:3xx": "300",
         "status:4xx": "100",
-        "status:5xx": "99",
+        "status:5xx": "740",
         "status:total": "1000"
       },
       down : {
         "status:2xx": "500",
         "status:3xx": "300",
         "status:4xx": "100",
-        "status:5xx": "100",
+        "status:5xx": "741",
         "status:total": "1000"
       }
     }
