@@ -14,15 +14,31 @@ var UpstreamSchema = new Schema({
 });
 
 UpstreamSchema.statics.fromHeroku = function(data) {
-  var dfd = Q.defer();
+  var dfd = Q.defer()
+    , Upstream = this
+    , prod, dev;
 
   if (data) {
-    dfd.resolve();
+    prod = new Upstream({
+      name : 'Heroku Production',
+      status : data.status.Production
+    });
+    dev = new Upstream({
+      name : 'Heroku Development',
+      status : data.status.Development
+    });
+
+    prod.type = dev.type = 'heroku';
+    prod.meta = dev.meta = {
+      issues : data.issues
+    };
+    prod._raw = dev._raw = data;
+    Upstream.create(prod, dev, function(err, prod, dev) {
+      dfd.resolve();
+    });
   } else {
     dfd.reject(new Error('No data provided!'));
   }
-
-
 
   return dfd.promise;
 };

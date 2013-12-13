@@ -44,23 +44,23 @@ describe('Upstream interface:', function() {
         expect(upstream.prod.name).to.be('Heroku Production');
         expect(upstream.dev.name).to.be('Heroku Development');
       });
-      it('should set the "good" and "warning" statuses', function() {
-        expect(upstream.prod.status).to.be('good');
-        expect(upstream.dev.status).to.be('warning');
+      it('should set the "green" and "yellow" statuses', function() {
+        expect(upstream.prod.status).to.be('green');
+        expect(upstream.dev.status).to.be('yellow');
       });
       it('should save the issues to both instances', function() {
         expect(upstream.prod.meta.issues).to.be.eql(data.issues);
         expect(upstream.dev.meta.issues).to.be.eql(data.issues);
       });
       it('should set created_at', function() {
-        expect(upstream.prod.meta.created_at).to.be.a(Date);
-        expect(upstream.dev.meta.created_at).to.be.a(Date);
+        expect(upstream.prod.created_at).to.be.a(Date);
+        expect(upstream.dev.created_at).to.be.a(Date);
       });
       it('should save the raw data as _raw', function() {
-        expect(upstream.prod.meta._raw).to.be.an(Object);
-        expect(upstream.prod.meta._raw).to.eql(data);
-        expect(upstream.dev.meta._raw).to.be.an(Object);
-        expect(upstream.dev.meta._raw).to.eql(data);
+        expect(upstream.prod._raw).to.be.an(Object);
+        expect(upstream.prod._raw).to.eql(data);
+        expect(upstream.dev._raw).to.be.an(Object);
+        expect(upstream.dev._raw).to.eql(data);
       });
     });
     describe('Given a "blue" sample heroku fetch, fromHeroku', function() {
@@ -78,8 +78,8 @@ describe('Upstream interface:', function() {
       after(function(done) {
         Model.remove(done);
       });
-      it('should set the status as "down"', function() {
-        expect(upstream.status).to.be('down');
+      it('should set the status as "blue"', function() {
+        expect(upstream.status).to.be('blue');
       });
     });
     describe('Given a "red" sample heroku fetch, fromHeroku', function() {
@@ -97,8 +97,8 @@ describe('Upstream interface:', function() {
       after(function(done) {
         Model.remove(done);
       });
-      it('should set the status as "down"', function() {
-        expect(upstream.status).to.be('down');
+      it('should set the status as "red"', function() {
+        expect(upstream.status).to.be('red');
       });
     });
     describe('Given no data, haFromSplunk', function() {
