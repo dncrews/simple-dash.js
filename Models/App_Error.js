@@ -1,58 +1,107 @@
+/**
+ * Models/App_Error.js
+ *
+ * This Mongoose Model is for App Errors.
+ *
+ * At the time of this writing, errors are rolled up in 5-minute
+ * intervals from Splunk, and are Heroku errors thrown by the
+ * individual apps during that 5-minute period.
+ */
+
+/**
+ * Module Dependencies
+ */
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , debug = require('debug')('marrow:models:app_error')
-  , Q = require('q')
-  , Change = require('./Change');
+  , Q = require('q');
+
+/**
+ * Local Dependencies
+ */
+var Change = require('./Change');
 
 
+/**
+ * App_Error Schema
+ * @type {Schema}
+ */
 var ErrorSchema = new Schema({
   created_at : { type: Date, default: Date.now },
   name : String,
   repo_name : String,
-  codes : Array,
-  _raw : Schema.Types.Mixed
+  codes : Array
 });
 
+/**
+ * Parses the Splunk data into individual Apps and saves.
+ *
+ * Also attaches each error status to an app bucket with Bucket.addErrors.
+ * Should be called with the full array of all app errors, including duplicated
+ * app names.
+ *
+ * @param  {Object}  data Splunk res.body.data
+ * @return {Promise}      Q promise object. Resolves on save and addErrors
+ */
 ErrorSchema.statics.fromSplunk = function(data) {
   var dfd = Q.defer()
     , AppBucket = require('./App_Bucket')
-    , config;
+    , errorObj = {} // Obj used to prevent duplicate app names. Contains same as errorArr
+    , errorArr = [] // Array used for this.create. Contains same as errorObj
+    , i, _error, appName, config;
 
-  if (! data) {
-    dfd.reject(new Error('No Splunk data supplied'));
-    return dfd.promise;
-  }
-  if (! data.fs_host) {
-    dfd.reject(new Error('No app name given'));
-    return dfd.promise;
-  }
+  if(data) {
+    for (i=data.length; i--;) {
+      _error = data[i];
+      appName = _error.fs_host;
+      delete _error.fs_host; // Don't save the appName in the codes array
 
-  config = {
-    _raw : data,
-    name : data.fs_host,
-    codes : data.codes
-  };
+      if (! _error) continue;
+      if (! appName) continue;
+      if (! errorObj[appName]) {
+        errorObj[appName] = {
+          name : appName,
+          codes : []
+        };
+        errorObj[appName].repo_name = appName
+          .replace('fs-','')
+          .replace('-prod','');
+        errorArr.push(errorObj[appName]);
+      }
 
-  config.repo_name = data.fs_host
-    .replace('fs-','')
-    .replace('-prod','');
-
-  this.create(config, function(err, doc) {
-    var resolve = function() {
-      dfd.resolve(doc);
-    };
-    if (err) {
-      dfd.reject(err);
-      return dfd.promise;
+      errorObj[appName].codes.push(_error);
     }
-    AppBucket.addErrors(doc.repo_name, doc._id).then(resolve);
-  });
+
+    if (errorArr.length) {
+      errorArr.push(function(err, doc1, doc2, etc) {
+        var dfds = []
+          , i, l, _doc;
+        // 1st argument is err; rest are documents
+        if (err) {
+          dfd.reject(err);
+        }
+        // Skip the first argument (err)
+        for (i=1, l=arguments.length; i<l; i++) {
+          _doc = arguments[i];
+          dfds.push(AppBucket.addErrors(_doc.repo_name, _doc._id));
+        }
+
+        Q.all(dfds).then(dfd.resolve);
+      });
+
+      this.create.apply(this, errorArr);
+    } else { // if (errorArr.length)
+      dfd.reject(new Error('No apps with names provided'));
+    }
+  } else { // if (data)
+    dfd.reject(new Error('No Splunk data supplied'));
+  }
 
   return dfd.promise;
 };
 
 /**
- * Post Save
+ * Pre Save Restart check
  *
  * Before saving an Error set, we want to check for R14
  * errors so that we can restart apps when necessary

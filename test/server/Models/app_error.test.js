@@ -1,19 +1,24 @@
 var expect = require('expect.js')
+  , db = require('../../db')
   , Model = require('../../../Models/App_Error')
   , Bucket = require('../../../Models/App_Bucket')
   , Change = require('../../../Models/Change');
 
-describe('App Errors interface:', function() {
-
-  afterEach(function(done) {
-    Model.remove(function() {
-      Bucket.remove(function() {
-        Change.remove(done);
-      });
+function clearDB(done) {
+  Model.remove(function() {
+    Bucket.remove(function() {
+      Change.remove(done);
     });
   });
+}
 
-  describe('Give a splunk heroku_errors, fromSplunk', function() {
+describe('App Errors interface:', function() {
+  after(function(done) {
+    db.dropDatabase(done);
+  });
+
+  describe('Given a splunk heroku_errors, fromSplunk', function() {
+    after(clearDB);
 
     it('FIXME: make fromSplunk not dfd; functions require cb; routines use dfd');
 
@@ -36,38 +41,47 @@ describe('App Errors interface:', function() {
       });
     });
 
-    it('should save the raw data as _raw', function() {
-      expect(sut._raw).to.be.an(Object);
-      expect(sut._raw).to.eql(mockData);
+    it('should create a status for each appName', function(done) {
+      Model.find(function(err, docs) {
+        if (err) return expect().fail();
+
+        expect(docs.length).to.be(2);
+        done();
+      });
     });
 
-    it('should set the name and repo_name', function() {
-      expect(sut.name).to.be('fs-appName-prod');
-      expect(sut.repo_name).to.be('appName');
-    });
+    describe('For each app,', function() {
+      var status;
+      before(function(done) {
+        Model.findOne({ name:'fs-appName-prod' }, function(err, doc) {
+          if (err) return expect().fail();
+          status = doc;
+          done();
+        });
+      });
+      it('should set the name and repo_name', function() {
+        expect(status.name).to.be('fs-appName-prod');
+        expect(status.repo_name).to.be('appName');
+      });
+      it('should create a codes array', function() {
+        expect(status.codes.length).to.be(2);
+        expect(status.codes[0].code).to.be('H17');
+        expect(status.codes[1].code).to.be('H12');
+      });
+      it('should call App_Bucket.addApp with the generated ids', function(done) {
+        Bucket.find({ repo_name : 'appName', app_errors : { $ne : null } }, function(err, docs) {
+          expect(docs.length).to.be(1);
+          expect(docs[0].app_errors).to.eql(status._id);
+          done();
+        });
+      });
 
-    it('should set created_at', function() {
-      expect(sut.created_at).to.be.a(Date);
-    });
-
-    it('should create a codes array', function() {
-      expect(sut.codes).to.be.an(Array);
-      expect(sut.codes[0].code).to.be('H12');
-      expect(sut.codes[0].count).to.be('2');
-    });
-
-    it('should save', function() {
-      expect(errors.length).to.be(1);
-      expect(errors[0].repo_name).to.be(sut.repo_name);
-    });
-
-    it('should call App_Bucket.addApp with the generated id', function() {
-      expect(buckets.length).to.be(3);
     });
 
   });
 
   describe('Given no data, fromSplunk', function() {
+    after(clearDB);
     it('should reject with an error', function(done) {
       Model.fromSplunk().then(
         function doNotWant() {},
@@ -79,6 +93,7 @@ describe('App Errors interface:', function() {
   });
 
   describe('Given no "fs_host" name, fromSplunk', function() {
+    after(clearDB);
     it('should reject with an error', function(done) {
       Model.fromSplunk(getMockData('noName')).then(
         function doNotWant() {},
@@ -90,6 +105,7 @@ describe('App Errors interface:', function() {
   });
 
   describe('Given a code of "R14", fromSplunk', function() {
+    after(clearDB);
     it('should trigger a Heroku restart', function(done) {
       Model.fromSplunk(getMockData('restart')).then(function() {
         Change.find(function(err, docs) {
@@ -107,40 +123,41 @@ describe('App Errors interface:', function() {
 
 function getMockData(type) {
   var mocks = {
-    'normal' : {
-      'fs_host' : 'fs-appName-prod',
-      'codes' : [
-        {
-          'code' : 'H12',
-          'desc' : 'Request timeout',
-          'count' : '2'
-        },
-        {
-          'code' : 'H17',
-          'desc' : 'Poorly formatted HTTP response',
-          'count' : '1'
-        }
-      ]
-    },
-    'no_name' : {
-      'codes' : [
-        {
-          'code' : 'H17',
-          'desc' : 'Poorly formatted HTTP response',
-          'count' : '1'
-        }
-      ]
-    },
-    'restart' : {
-      'fs_host' : 'fs-otherApp-prod',
-      'codes' : [
-        {
-          'code' : 'R14',
-          'desc' : 'Memory quota exceeded',
-          'count' : '1'
-        }
-      ]
-    }
+    'normal' : [
+      {
+        'fs_host' : 'fs-appName-prod',
+        'code' : 'H12',
+        'desc' : 'Request timeout',
+        'count' : '2'
+      },
+      {
+        'fs_host' : 'fs-appName-prod',
+        'code' : 'H17',
+        'desc' : 'Poorly formatted HTTP response',
+        'count' : '1'
+      },
+      {
+        'fs_host' : 'fs-secondApp-prod',
+        'code' : 'H12',
+        'desc' : 'Request timeout',
+        'count' : '1'
+      }
+    ],
+    'noName' : [
+      {
+        'code' : 'H17',
+        'desc' : 'Poorly formatted HTTP response',
+        'count' : '1'
+      }
+    ],
+    'restart' : [
+      {
+        'fs_host' : 'fs-otherApp-prod',
+        'code' : 'R14',
+        'desc' : 'Memory quota exceeded',
+        'count' : '1'
+      }
+    ]
   };
   return mocks[type];
 }

@@ -1,11 +1,32 @@
+/**
+ * Models/Service.js
+ *
+ * This Mongoose Model is for the Service (API) Statuses.
+ *
+ * At the time of this writing, statuses are rolled up in 5-minute
+ * intervals from Splunk, and are a list of response time, and response
+ * codes provided by all apps for their service dependencies over that
+ * 5-minute period.
+ */
+
+/**
+ * Module Dependencies
+ */
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
+  , Q = require('q')
   , debug = require('debug')('marrow:models:service');
 
+/**
+ * Local Declarations
+ */
 var SLOW = 1000 // 1s response from an API is SLOOOOW
   , DOWN_ERROR_RATE = 50; // 50 pct of responses as errors is BAAAAD
 
-
+/**
+ * Service (API) Status Schema Declaration
+ * @type {Schema}
+ */
 var ServiceSchema = new Schema({
   created_at : { type: Date, default: Date.now },
   name : String,
@@ -23,27 +44,46 @@ var ServiceSchema = new Schema({
   _raw : Schema.Types.Mixed
 });
 
+/**
+ * Parses the given service data and saves.
+ *
+ * Should be called with an individual service's data.
+ *
+ * @param  {Object}  data Service-specific piece of Splunk data from res.body.data
+ * @return {Promise}      Q promise that resolves on save
+ */
 ServiceSchema.statics.fromSplunk = function(data) {
-  if (! data) return new Error('No Splunk data supplied');
-  if (! data.api) return new Error('No api name given');
+  var dfd = Q.defer()
+    , config;
 
-  var Service = this
-    , config = {
+  if (data && data.api) {
+
+    config = {
       _raw : data,
       name : data.api,
       time : {
-        p95 : parseInt(data['time:p95'], 10)
+        p95 : parseInt(data['time:p95'], 10) || 0
       },
       codes : {
-        s2xx: parseInt(data['status:2xx'], 10),
-        s3xx: parseInt(data['status:3xx'], 10),
-        s4xx: parseInt(data['status:4xx'], 10),
-        s5xx: parseInt(data['status:5xx'], 10),
-        sTotal: parseInt(data['status:total'], 10)
+        s2xx: parseInt(data['status:2xx'], 10) || 0,
+        s3xx: parseInt(data['status:3xx'], 10) || 0,
+        s4xx: parseInt(data['status:4xx'], 10) || 0,
+        s5xx: parseInt(data['status:5xx'], 10) || 0,
+        sTotal: parseInt(data['status:total'], 10) || 1
       }
     };
-  config.error_rate = Math.ceil((config.codes.s5xx / config.codes.sTotal) * 100);
-  return new Service(config);
+    config.error_rate = Math.ceil((config.codes.s5xx / config.codes.sTotal) * 100);
+    this.create(config, function(err, doc) {
+      if (err) return dfd.reject(err);
+      dfd.resolve(doc);
+    });
+  } else if (! data) {
+    dfd.reject(new Error('No Splunk data supplied'));
+  } else {
+    dfd.reject(new Error('No api name given'));
+  }
+
+  return dfd.promise;
 };
 
 /**
@@ -81,60 +121,3 @@ ServiceSchema.statics.findCurrentByApp = function(cb) {
 };
 
 module.exports = mongoose.model('Service', ServiceSchema);
-
-// module.exports = Api;
-
-// function Api(data) {
-//   if (! data) {
-//     this.generateEmpty();
-//     return this;
-//   }
-//   this._raw = data;
-//   this.name = data.api;
-//   this.type = 'api';
-//   this.created_at = new Date();
-
-//   this.setStats();
-
-//   return this;
-// }
-
-// Api.prototype.keymap = {
-//   'time:p95' : 'p95',
-//   'status:2xx' : 'status_2xx',
-//   'status:3xx' : 'status_3xx',
-//   'status:4xx' : 'status_4xx',
-//   'status:5xx' : 'status_5xx',
-//   'status:total' : 'status_total'
-// };
-
-// Api.prototype.setStats = function setStats() {
-//   var k,v;
-//   this.stats = {};
-//   for (k in this.keymap) {
-//     v = this.keymap[k];
-//     if (! this._raw.hasOwnProperty(k)) continue;
-//     this.stats[v] = parseInt(this._raw[k]);
-//   }
-
-//   this.setErrorRate();
-//   this.setStatus();
-// };
-
-// Api.prototype.setErrorRate = function setErrorRate() {
-//   this.stats.error_rate = Math.ceil((this.stats.status_5xx / this.stats.status_total) * 100);
-// };
-
-// Api.prototype.setStatus = function setStatus() {
-//   var status = 'good';
-
-//   if (this.stats.p95 >= SLOW) status = 'slow';
-//   if (this.stats.error_rate > DOWN_ERROR_RATE) status = 'down';
-
-//   debug('Status generated: ' + status);
-//   this.stats.status = status;
-// };
-
-// Api.prototype.save = function saveMe() {
-
-// };

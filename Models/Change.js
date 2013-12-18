@@ -1,3 +1,16 @@
+/**
+ * Models/Change.js
+ *
+ * This Mongoose Model is for the Change Log.
+ *
+ * Changes should be posted and saved on occurence. These changes include -- but
+ * are not limited to -- successful builds, change of status from up to down or vice versa,
+ * immune system restarts.
+ */
+
+/**
+ * Module Dependencies
+ */
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , Q = require('q')
@@ -5,19 +18,15 @@ var mongoose = require('mongoose')
   , debug = require('debug')('marrow:models:change')
   , sendgrid = require('sendgrid')(process.env.SENDGRID_USERNAME, process.env.SENDGRID_PASSWORD);
 
-// If sendgrid isn't configured, don't try to send emails
-if (! sendgrid.api_user) {
-  sendgrid = undefined;
-}
-
+/**
+ * Local Declarations
+ */
 var heroku, restart, _restart;
 
-try {
-  heroku = new HerokuAPI({"email" : process.env.HEROKU_EMAIL, "apiToken" : process.env.HEROKU_API_TOKEN});
-} catch (e) {
-  debug('HerokuAPI not configured'); // No penalty if Heroku configuration isn't defined
-}
-
+/**
+ * Changelog Schema Declaration
+ * @type {Schema}
+ */
 var ChangeSchema = new Schema({
   created_at : { type: Date, default: Date.now },
   type : String,
@@ -27,6 +36,20 @@ var ChangeSchema = new Schema({
   meta : Schema.Types.Mixed,
   _raw : Schema.Types.Mixed
 });
+
+/**
+ * Api Configurations
+ */
+if (! sendgrid.api_user) {
+  // If sendgrid isn't configured, don't try to send emails
+  sendgrid = undefined;
+}
+
+try {
+  heroku = new HerokuAPI({"email" : process.env.HEROKU_EMAIL, "apiToken" : process.env.HEROKU_API_TOKEN});
+} catch (e) {
+  debug('HerokuAPI not configured'); // No penalty if Heroku configuration isn't defined
+}
 
 /**
  * Restarts the Heroku app if heroku information is set
@@ -72,6 +95,13 @@ ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
   return dfd.promise;
 };
 
+/**
+ * Report a change from a Github Merge into Master (or other action)
+ *
+ * @param  {Object} data   req.body.payload
+ * @param  {String} action (merge) The action taken that should be logged
+ * @return {Change}        Instance of ChangeSchema (not saved)
+ */
 ChangeSchema.statics.fromGithub = function(data, action) {
   if (! data) return new Error('No Github data supplied');
 
@@ -91,6 +121,13 @@ ChangeSchema.statics.fromGithub = function(data, action) {
   return new Change(config);
 };
 
+/**
+ * Report a change from a Jenkins build (or other action)
+ *
+ * @param  {Object} data   req.body
+ * @param  {String} action (build) The action taken that should be logged
+ * @return {Change}        Instance of ChangeSchema (not saved)
+ */
 ChangeSchema.statics.fromJenkins = function(data, action) {
   if (! data) return new Error('No Jenkins data supplied');
 
@@ -107,6 +144,14 @@ ChangeSchema.statics.fromJenkins = function(data, action) {
   return new Change(config);
 };
 
+/**
+ * Report a change of a Marrow restart (or other action)
+ *
+ * @param  {String} app_name Heroku App name that had action performed
+ * @param  {String} action   (restart) The action taken that should be logged
+ * @param  {String} reason   The reason the action was performed
+ * @return {Change}        Instance of ChangeSchema (not saved)
+ */
 ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
   if (! app_name) return new Error('No Marrow app_name supplied');
 
@@ -128,16 +173,37 @@ ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
   return new Change(config);
 };
 
+/**
+ * Used for Testing. Allows us to mock restart to prevent testing
+ * Heroku functionality
+ *
+ * @param  {Function} fn Function to be used instead of actual heroku restarting
+ */
 ChangeSchema.statics.mockRestart = function(fn) {
   restart = fn;
 };
 
+/**
+ * Used for Testing. Allows us to undo our mocking.
+ */
 ChangeSchema.statics.restore = function() {
   restart = doRestart;
 };
 
 restart = doRestart;
 
+/**
+ * Perform restart of Heroku Application
+ *
+ * Returns information, so requires cb instead of returning a promise
+ * Return of `true`: Heroku app was restarted
+ * Return of `false`: Heroku credentials are not configured
+ * Return of `Error`: Heroku app was not able to restart
+ *
+ * @param  {String}   app_name Name of the Heroku app to restart
+ * @param  {Function} cb       Function to be perfored on completion
+ * @return {Boolean}
+ */
 function doRestart(app_name, cb) {
   if (! app_name) {
     return cb && cb(new Error('No Marrow app_name supplied'));

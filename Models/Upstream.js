@@ -1,18 +1,69 @@
+/**
+ * Models/Upstream.js
+ *
+ * This Mongoose Model is for Frontier Upstream dependencies.
+ */
+
+/**
+ * Module Dependencies
+ */
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , Q = require('q')
-  , debug = require('debug')('marrow:models:upstream');
+  , request = require('superagent')
+  , _debug = require('debug');
 
+/**
+ * Local Declarations
+ */
+var debug = _debug('marrow:models:upstream')
+  , verbose = _debug('marrow:models:upstream-verbose');
 
+/**
+ * Schema Declaration
+ * @type {Schema}
+ */
 var UpstreamSchema = new Schema({
-  created_at : { type: Date, default: Date.now },
-  type : String,
-  name : String,
-  status : String,
-  meta : Object,
-  _raw : Schema.Types.Mixed
-});
+    created_at : { type: Date, default: Date.now },
+    type : String,
+    name : String,
+    status : String,
+    meta : Object,
+    _raw : Schema.Types.Mixed
+  });
 
+/**
+ * Retrieve and save the current status of Heroku
+ *
+ * This should fetch and save two new instances (Production and Development)
+ * @return {Promise} Q promise resolving on successful save of statuses
+ */
+UpstreamSchema.statics.fetchHeroku = function() {
+  var dfd = Q.defer();
+
+  debug('Attempting to Log Heroku');
+
+  request
+    .get('https://status.heroku.com/api/v3/current-status')
+    .set('Accept', 'application/json')
+    .on('error', function(err) {
+      debug('Heroku Status Error', err);
+    })
+    .end(function(res){
+      debug('Heroku status retrieved');
+      verbose(res.body);
+      this.fromHeroku(res.body).then(dfd.resolve, dfd.reject);
+    });
+
+  return dfd.promise;
+};
+
+/**
+ * Parses the given Heroku current status
+ *
+ * @param  {Object}  data Heroku api status object
+ * @return {Promise}      Q promise object. Resolves on creation
+ */
 UpstreamSchema.statics.fromHeroku = function(data) {
   var dfd = Q.defer()
     , Upstream = this
@@ -33,6 +84,7 @@ UpstreamSchema.statics.fromHeroku = function(data) {
       issues : data.issues
     };
     prod._raw = dev._raw = data;
+    verbose('Heroku Statuses Created: ', prod, dev);
     Upstream.create(prod, dev, function(err, prod, dev) {
       dfd.resolve();
     });
@@ -43,6 +95,11 @@ UpstreamSchema.statics.fromHeroku = function(data) {
   return dfd.promise;
 };
 
+/**
+ * Parses the Status of HA Proxy from Splunk data
+ * @param  {Object}  data req.body.data of the HA Proxy status codes
+ * @return {Promise}      Q promise that resolves on successful save
+ */
 UpstreamSchema.statics.haFromSplunk = function(data) {
   var dfd = Q.defer()
     , Upstream = this
@@ -77,8 +134,10 @@ UpstreamSchema.statics.haFromSplunk = function(data) {
       }
     }
 
+    debug('HA Proxy Status: ' + upstream.status);
 
     Upstream.create(upstream, function(err, upstream) {
+      verbose('HA Proxy Status save', arguments);
       dfd.resolve();
     });
   } else {

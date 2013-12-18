@@ -1,17 +1,43 @@
+/**
+ * Models/Service_Map.js
+ *
+ * This Mongoose Model is for App-to-Service mapping.
+ *
+ * Each instance should have a unique app name (repo_name), and an
+ * Array of all of the Services (APIs) that the given app is telling
+ * us that it requires.
+ */
+
+/**
+ * Module Dependencies
+ */
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , Q = require('q')
   , debug = require('debug')('marrow:models:service_map');
 
 
-var MapModel
-  , MapSchema = new Schema({
+/**
+ * Local Declarations
+ */
+var MapModel;
+
+/**
+ * Service Map Schema
+ * @type {Schema}
+ */
+var MapSchema = new Schema({
     created_at : { type: Date, default: Date.now },
     repo_name : String,
     services : [String]
   });
 
-
+/**
+ * Parses the Splunk data into individual Apps and saves.
+ *
+ * @param  {Object}  data Splunk res.body.data
+ * @return {Promise}      Q promise object. Resolves on save of all apps
+ */
 MapSchema.statics.fromSplunk = function(data) {
   var dfd = Q.defer()
     , appsObj = {}
@@ -51,6 +77,11 @@ MapSchema.statics.fromSplunk = function(data) {
   return dfd.promise;
 };
 
+/**
+ * Adds the services for a given app
+ * @param {Object} appData Normalized data for the given app's dependencies
+ * @param {Array}  dfds    Array of deferred objects to add its to
+ */
 function addServices(appData, dfds) {
   var dfd = Q.defer()
     , repo_name = appData.repo_name

@@ -1,3 +1,20 @@
+/**
+ * Models/App_Bucket.js
+ *
+ * This Mongoose Model is for App Buckets.
+ *
+ * An app bucket consists of the app_status (app) and app_errors
+ * for a specific app during an existing bucket. At the time of this
+ * writing, a "bucket" is designated as a 5-minute interval of statuses
+ * and errors.
+ *
+ * @see App_Status.js
+ * @see App_Error.js
+ */
+
+/**
+ * Module Dependencies
+ */
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , Q = require('q')
@@ -5,21 +22,22 @@ var mongoose = require('mongoose')
   , debug = _debug('marrow:models:app-bucket')
   , verbose = _debug('marrow:models:app-bucket-verbose');
 
-
+/**
+ * Local Dependencies
+ */
 var AppStatus = require('./App_Status')
-  , AppError = require('./App_Error')
+  , AppError = require('./App_Error');
+
+/**
+ * Local Declarations
+ */
+var Bucket
   , BUCKET_LENGTH = 300000;
 
-function calculateBucket() {
-  var now = Date.now()
-    , bucket = Math.floor(now / BUCKET_LENGTH)
-    , time = bucket * BUCKET_LENGTH;
-
-  verbose('Bucket time generated: ' + time);
-
-  return time;
-}
-
+/**
+ * App Bucket Schema
+ * @type {Schema}
+ */
 var BucketSchema = new Schema({
   bucket_time : { type: Date, default: calculateBucket },
   repo_name : String,
@@ -133,6 +151,17 @@ function getBucket(repo_name) {
   return dfd.promise;
 }
 
+/**
+ * Generates next set(s) of buckets)
+ *
+ * If called with a count, it generates that many buckets for
+ * the apps. If called with a list, those are the apps it
+ * will generate buckets for.
+ *
+ * @param  {Number}  count (3) The number of buckets to generate for each app
+ * @param  {Array}   list  (all) Array of string app_names to generate buckets for
+ * @return {Promise}       Q promise resolving on bucket generation
+ */
 BucketSchema.statics.generateBuckets = function(count, list) {
   var bucket = calculateBucket()
     , Bucket = this
@@ -179,6 +208,12 @@ BucketSchema.statics.generateBuckets = function(count, list) {
   return dfd.promise;
 };
 
+/**
+ * Generates a single bucket for supplied repo_name and bucket time
+ * @param  {String}  repo Github repo_name to generate a bucket for
+ * @param  {Date}    time Date of the Bucket to create
+ * @return {Promise}      Q promise resolved on bucket creation
+ */
 function generateBucket(repo, time) {
   var dfd = Q.defer()
     , bucket = new Bucket();
@@ -246,4 +281,18 @@ BucketSchema.statics.findCurrent = function(cb) {
 
 };
 
-var Bucket = module.exports = mongoose.model('App_Bucket', BucketSchema);
+/**
+ * Calculate the Date of the current Bucket Time
+ * @return {Date} Date of the current Bucket Time
+ */
+function calculateBucket() {
+  var now = Date.now()
+    , bucket = Math.floor(now / BUCKET_LENGTH)
+    , time = bucket * BUCKET_LENGTH;
+
+  verbose('Bucket time generated: ' + time);
+
+  return time;
+}
+
+Bucket = module.exports = mongoose.model('App_Bucket', BucketSchema);

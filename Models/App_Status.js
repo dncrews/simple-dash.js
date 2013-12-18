@@ -1,12 +1,31 @@
+/**
+ * Models/App_Status.js
+ *
+ * This Mongoose Model is for App Statuses.
+ *
+ * At the time of this writing, statuses are rolled up in 5-minute
+ * intervals from Splunk, and are a full list of all memory, response time,
+ * and response codes from a given app over that 5-minute period.
+ */
+
+/**
+ * Module Dependencies
+ */
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
-  , debug = require('debug')('marrow:models:app_status')
-  , Q = require('q');
+  , Q = require('q')
+  , debug = require('debug')('marrow:models:app_status');
 
-
+/**
+ * Local Declarations
+ */
 var SLOW = 5000 // 1s response from an app is SLOOOOW
   , DOWN_ERROR_RATE = 50; // 50 pct of responses as errors is BAAAAD
 
+/**
+ * App Status Schema Declaration
+ * @type {Schema}
+ */
 var AppSchema = new Schema({
   created_at : { type: Date, default: Date.now },
   name : String,
@@ -31,6 +50,15 @@ var AppSchema = new Schema({
   _raw : Schema.Types.Mixed
 });
 
+/**
+ * Parses the given app data and saves.
+ *
+ * Should be called with an individual app's data.
+ * Also attaches the app status to an app bucket with Bucket.addApp
+ *
+ * @param  {Object}  data App-specific piece of Splunk data from res.body.data
+ * @return {Promise}      Q promise object. Resolves on save and addApp
+ */
 AppSchema.statics.fromSplunk = function(data) {
   var dfd = Q.defer()
     , AppBucket = require('./App_Bucket')
