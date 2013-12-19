@@ -60,17 +60,13 @@ var AppSchema = new Schema({
  * @return {Promise}      Q promise object. Resolves on save and addApp
  */
 AppSchema.statics.fromSplunk = function(data) {
+  if (! data) return Q.reject(new Error('No Splunk data supplied'));
+  if (! data.fs_host) return Q.reject(new Error('No app name given'));
+
   var dfd = Q.defer()
     , AppBucket = require('./App_Bucket')
     , config;
-  if (! data) {
-    dfd.reject(new Error('No Splunk data supplied'));
-    return dfd.promise;
-  }
-  if (! data.fs_host) {
-    dfd.reject(new Error('No app name given'));
-    return dfd.promise;
-  }
+
   config = {
     _raw : data,
     name : data.fs_host,
@@ -97,14 +93,11 @@ AppSchema.statics.fromSplunk = function(data) {
   config.error_rate = config.codes['5xx'] && config.codes.total ? Math.ceil((config.codes['5xx'] / config.codes.total) * 100) : 0;
 
   this.create(config, function(err, doc) {
-    var resolve = function() {
+    if (err) return dfd.reject(err);
+
+    AppBucket.addApp(doc.repo_name, doc._id).then(function() {
       dfd.resolve(doc);
-    };
-    if (err) {
-      dfd.reject(err);
-      return dfd.promise;
-    }
-    AppBucket.addApp(doc.repo_name, doc._id).then(resolve);
+    });
   });
 
   return dfd.promise;

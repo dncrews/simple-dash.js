@@ -1,19 +1,21 @@
 /**
- * Dependencies
+ * Module Dependencies
  */
-var request = require('superagent')
-  , express = require('express')
-  , url = require('url')
+var express = require('express')
   , stylus = require('stylus')
-  , debug = require('debug')('app:routing');
-
+  , debug = require('debug')('marrow:routing');
 
 /**
- * Local Vars
+ * Local Dependencies
+ */
+var db = require('./Models/db') // Configures Mongoose
+  , Logger = require('./lib/logger')
+  , change_logger = require('./lib/change_logger');
+
+/**
+ * Local Declarations
  */
 var app = module.exports = express()
-  , Logger = require('./lib/logger')
-  , change_log = require('./lib/change_log')
   , PORT = process.env.PORT || 5000;
 
 /**
@@ -79,23 +81,16 @@ app.post('/change', function(req, res){
   debug("user-agent", ua);
 
 
-
   if (ua.match("GitHub Hookshot")) src = "github"; //TODO: add the IP Address
-
-  if (ua.match("Marrow")) src = "marrow";
-
   if (ua.match("Java")) src = "jenkins"; //TODO: add the IP Address
 
-  if (src) {
-    // Not returning. We want to parse after sending response
-    res.send(200);
-  } else {
-    return res.send(507); //not posted
-  }
-
+  // if (! src) return res.send(507);
+  if (! src) src = 'github';
+  // Not returning. We want to parse after sending response
+  res.send(200);
 
   //save the data
-  change_log.save(req.body, src).then(function success(stuff) {
+  change_logger(req.body, src).then(function success(stuff) {
     debug('successfully saved change to DB');
     res.send(201);
   }, function fail(err) {

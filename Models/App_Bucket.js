@@ -64,15 +64,10 @@ BucketSchema.index({ bucket_time : -1, repo_name : 1}, { unique: true });
  * @return {Promise}
  */
 BucketSchema.statics.addApp = function(repo_name, id) {
+  if (! repo_name)return Q.reject(new Error('No repo_name provided!'));
+  if (! id) return Q.reject(new Error('No App log id provided!'));
+
   var dfd = Q.defer();
-  if (! repo_name) {
-    dfd.reject(new Error('No repo_name provided!'));
-    return dfd.promise;
-  }
-  if (! id) {
-    dfd.reject(new Error('No App log id provided!'));
-    return dfd.promise;
-  }
 
   debug('Logging app: ' + repo_name + '/' + id);
 
@@ -93,15 +88,10 @@ BucketSchema.statics.addApp = function(repo_name, id) {
  * @return {Promise}
  */
 BucketSchema.statics.addErrors = function(repo_name, id) {
+  if (! repo_name) return Q.reject(new Error('No repo_name provided!'));
+  if (! id) return Q.reject(new Error('No Error log id provided!'));
+
   var dfd = Q.defer();
-  if (! repo_name) {
-    dfd.reject(new Error('No repo_name provided!'));
-    return dfd.promise;
-  }
-  if (! id) {
-    dfd.reject(new Error('No Error log id provided!'));
-    return dfd.promise;
-  }
 
   debug('Logging app_errors: ' + repo_name + '/' + id);
 

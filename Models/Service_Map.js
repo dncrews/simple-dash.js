@@ -45,10 +45,7 @@ MapSchema.statics.fromSplunk = function(data) {
     , dfds = []
     , config, i, _app, repo_name;
 
-  if (! data) {
-    dfd.reject(new Error('No Splunk data supplied'));
-    return dfd.promise;
-  }
+  if (! data) return Q.reject(new Error('No Splunk data supplied'));
 
   for (i=data.length; i--;) {
     _app = data[i];
@@ -105,9 +102,11 @@ function addServices(appData, dfds) {
       return doc.services.indexOf(el) === -1;
     });
 
+    if (! services.length) return dfd.resolve(doc);
+
     MapModel.findByIdAndUpdate(doc._id, {
-      services : {
-        $pushAll : services
+      $pushAll : {
+        services : services
       }
     }, {
       "new" : true

@@ -44,58 +44,54 @@ var ErrorSchema = new Schema({
  * @return {Promise}      Q promise object. Resolves on save and addErrors
  */
 ErrorSchema.statics.fromSplunk = function(data) {
+  if (! data) return Q.reject(new Error('No Splunk data supplied'));
+
   var dfd = Q.defer()
     , AppBucket = require('./App_Bucket')
     , errorObj = {} // Obj used to prevent duplicate app names. Contains same as errorArr
     , errorArr = [] // Array used for this.create. Contains same as errorObj
     , i, _error, appName, config;
 
-  if(data) {
-    for (i=data.length; i--;) {
-      _error = data[i];
-      appName = _error.fs_host;
-      delete _error.fs_host; // Don't save the appName in the codes array
+  for (i=data.length; i--;) {
+    _error = data[i];
+    appName = _error.fs_host;
+    delete _error.fs_host; // Don't save the appName in the codes array
 
-      if (! _error) continue;
-      if (! appName) continue;
-      if (! errorObj[appName]) {
-        errorObj[appName] = {
-          name : appName,
-          codes : []
-        };
-        errorObj[appName].repo_name = appName
-          .replace('fs-','')
-          .replace('-prod','');
-        errorArr.push(errorObj[appName]);
-      }
-
-      errorObj[appName].codes.push(_error);
+    if (! _error) continue;
+    if (! appName) continue;
+    if (! errorObj[appName]) {
+      errorObj[appName] = {
+        name : appName,
+        codes : []
+      };
+      errorObj[appName].repo_name = appName
+        .replace('fs-','')
+        .replace('-prod','');
+      errorArr.push(errorObj[appName]);
     }
 
-    if (errorArr.length) {
-      errorArr.push(function(err, doc1, doc2, etc) {
-        var dfds = []
-          , i, l, _doc;
-        // 1st argument is err; rest are documents
-        if (err) {
-          dfd.reject(err);
-        }
-        // Skip the first argument (err)
-        for (i=1, l=arguments.length; i<l; i++) {
-          _doc = arguments[i];
-          dfds.push(AppBucket.addErrors(_doc.repo_name, _doc._id));
-        }
-
-        Q.all(dfds).then(dfd.resolve);
-      });
-
-      this.create.apply(this, errorArr);
-    } else { // if (errorArr.length)
-      dfd.reject(new Error('No apps with names provided'));
-    }
-  } else { // if (data)
-    dfd.reject(new Error('No Splunk data supplied'));
+    errorObj[appName].codes.push(_error);
   }
+
+  if (! errorArr.length) return Q.reject(new Error('No apps with names provided'));
+
+  errorArr.push(function(err, doc1, doc2, etc) {
+    var dfds = []
+      , i, l, _doc;
+    // 1st argument is err; rest are documents
+    if (err) {
+      dfd.reject(err);
+    }
+    // Skip the first argument (err)
+    for (i=1, l=arguments.length; i<l; i++) {
+      _doc = arguments[i];
+      dfds.push(AppBucket.addErrors(_doc.repo_name, _doc._id));
+    }
+
+    Q.all(dfds).then(dfd.resolve);
+  });
+
+  this.create.apply(this, errorArr);
 
   return dfd.promise;
 };

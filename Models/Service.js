@@ -53,35 +53,31 @@ var ServiceSchema = new Schema({
  * @return {Promise}      Q promise that resolves on save
  */
 ServiceSchema.statics.fromSplunk = function(data) {
+  if (! data) return Q.reject(new Error('No Splunk data supplied'));
+  if (! data.api) return Q.reject(new Error('No api name given'));
+
   var dfd = Q.defer()
     , config;
 
-  if (data && data.api) {
-
-    config = {
-      _raw : data,
-      name : data.api,
-      time : {
-        p95 : parseInt(data['time:p95'], 10) || 0
-      },
-      codes : {
-        s2xx: parseInt(data['status:2xx'], 10) || 0,
-        s3xx: parseInt(data['status:3xx'], 10) || 0,
-        s4xx: parseInt(data['status:4xx'], 10) || 0,
-        s5xx: parseInt(data['status:5xx'], 10) || 0,
-        sTotal: parseInt(data['status:total'], 10) || 1
-      }
-    };
-    config.error_rate = Math.ceil((config.codes.s5xx / config.codes.sTotal) * 100);
-    this.create(config, function(err, doc) {
-      if (err) return dfd.reject(err);
-      dfd.resolve(doc);
-    });
-  } else if (! data) {
-    dfd.reject(new Error('No Splunk data supplied'));
-  } else {
-    dfd.reject(new Error('No api name given'));
-  }
+  config = {
+    _raw : data,
+    name : data.api,
+    time : {
+      p95 : parseInt(data['time:p95'], 10) || 0
+    },
+    codes : {
+      s2xx: parseInt(data['status:2xx'], 10) || 0,
+      s3xx: parseInt(data['status:3xx'], 10) || 0,
+      s4xx: parseInt(data['status:4xx'], 10) || 0,
+      s5xx: parseInt(data['status:5xx'], 10) || 0,
+      sTotal: parseInt(data['status:total'], 10) || 1
+    }
+  };
+  config.error_rate = Math.ceil((config.codes.s5xx / config.codes.sTotal) * 100);
+  this.create(config, function(err, doc) {
+    if (err) return dfd.reject(err);
+    dfd.resolve(doc);
+  });
 
   return dfd.promise;
 };

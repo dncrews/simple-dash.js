@@ -58,39 +58,33 @@ try {
  * @return null
  */
 ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
+  if (! app_name) return Q.reject(new Error('No Marrow app_name supplied'));
+  if (! reason) return Q.reject(new Error('No restart reason supplied'));
+
   var dfd = Q.defer()
     , Change = this;
 
-  if (app_name && reason) {
-    restart(app_name, function(restarted) {
-      var change;
-      if (restarted instanceof Error) return dfd.reject(restarted);
+  restart(app_name, function(restarted) {
+    var change;
+    if (restarted instanceof Error) return dfd.reject(restarted);
 
-      if (typeof restarted !== 'boolean') {
-        dfd.reject();
-        throw new Error('Restart returned unknown value', restarted);
-      }
+    if (typeof restarted !== 'boolean') {
+      dfd.reject();
+      throw new Error('Restart returned unknown value', restarted);
+    }
 
-      if (restarted) {
-        // App successfully restarted
-        change = Change.fromMarrow(app_name, 'restart', reason);
-      } else {
-        // App would've restarted, but wasn't configured
-        change = Change.fromMarrow(app_name, 'restart.not_configured', reason);
-      }
-      return change.save(function(err, doc) {
-        if (err) return dfd.reject(err);
-        dfd.resolve(doc);
-      });
+    if (restarted) {
+      // App successfully restarted
+      change = Change.fromMarrow(app_name, 'restart', reason);
+    } else {
+      // App would've restarted, but wasn't configured
+      change = Change.fromMarrow(app_name, 'restart.not_configured', reason);
+    }
+    return change.save(function(err, doc) {
+      if (err) return dfd.reject(err);
+      dfd.resolve(doc);
     });
-  }
-
-  if (! app_name) {
-    dfd.reject(new Error('No Marrow app_name supplied'));
-  }
-  if (! reason) {
-    dfd.reject(new Error('No restart reason supplied'));
-  }
+  });
 
   return dfd.promise;
 };
@@ -118,6 +112,7 @@ ChangeSchema.statics.fromGithub = function(data, action) {
         author : data.head_commit.author
       }
     };
+  debug('FromGithub: ', config);
   return new Change(config);
 };
 
@@ -140,6 +135,8 @@ ChangeSchema.statics.fromJenkins = function(data, action) {
     };
 
   config.repo_name = data.name.replace('fs-', '');
+
+  debug('FromJenkins: ', config);
 
   return new Change(config);
 };
@@ -169,6 +166,8 @@ ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
   config.repo_name = app_name
     .replace('fs-','')
     .replace('-prod','');
+
+  debug('FromMarrow: ', config);
 
   return new Change(config);
 };

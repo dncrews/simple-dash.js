@@ -7,4 +7,6 @@ db.once('open', function callback () {
   console.info('Connection Successful');
 });
 
+mongoose.connect(process.env.MONGOHQ_URL);
+
 module.exports = db;
