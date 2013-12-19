@@ -40,6 +40,7 @@ var Bucket
  */
 var BucketSchema = new Schema({
   bucket_time : { type: Date, default: calculateBucket },
+  name : String,
   repo_name : String,
   app : {
     type: Schema.Types.ObjectId,
@@ -53,25 +54,25 @@ var BucketSchema = new Schema({
   }
 });
 
-BucketSchema.index({ bucket_time : -1, repo_name : 1}, { unique: true });
+BucketSchema.index({ bucket_time : -1, name : 1}, { unique: true });
 
 /**
  * Adds App status log to the current app_bucket
- * for a given app repo_name
+ * for a given app name
  *
- * @param  {String}   repo_name Github repo name for the app
+ * @param  {String}   name Heroku name for the app
  * @param  {ObjectID} id        Mongo ObjectId
  * @return {Promise}
  */
-BucketSchema.statics.addApp = function(repo_name, id) {
-  if (! repo_name)return Q.reject(new Error('No repo_name provided!'));
+BucketSchema.statics.addApp = function(name, id) {
+  if (! name)return Q.reject(new Error('No name provided!'));
   if (! id) return Q.reject(new Error('No App log id provided!'));
 
   var dfd = Q.defer();
 
-  debug('Logging app: ' + repo_name + '/' + id);
+  debug('Logging app: ' + name + '/' + id);
 
-  getBucket(repo_name).then(function success(doc) {
+  getBucket(name).then(function success(doc) {
     doc.app = id;
     doc.save(dfd.resolve);
   }, dfd.reject);
@@ -81,21 +82,21 @@ BucketSchema.statics.addApp = function(repo_name, id) {
 
 /**
  * Adds Heroku errors to the current app_bucket
- * for a given app repo_name
+ * for a given app name
  *
- * @param  {String}   repo_name Github repo name for the app
+ * @param  {String}   name Heroku name for the app
  * @param  {ObjectID} id        Mongo ObjectId
  * @return {Promise}
  */
-BucketSchema.statics.addErrors = function(repo_name, id) {
-  if (! repo_name) return Q.reject(new Error('No repo_name provided!'));
+BucketSchema.statics.addErrors = function(name, id) {
+  if (! name) return Q.reject(new Error('No name provided!'));
   if (! id) return Q.reject(new Error('No Error log id provided!'));
 
   var dfd = Q.defer();
 
-  debug('Logging app_errors: ' + repo_name + '/' + id);
+  debug('Logging app_errors: ' + name + '/' + id);
 
-  getBucket(repo_name).then(function success(doc) {
+  getBucket(name).then(function success(doc) {
     doc.app_errors = id;
     doc.save(dfd.resolve);
   }, dfd.reject);
@@ -109,16 +110,16 @@ BucketSchema.statics.addErrors = function(repo_name, id) {
  *
  * Resolves either the existing app or a new one
  *
- * @param  {String}   repo_name The github name of the app
+ * @param  {String}   name The github name of the app
  * @return {Promise}
  */
-function getBucket(repo_name) {
+function getBucket(name) {
   var dfd = Q.defer();
-  verbose('Finding current bucket: ' + repo_name);
+  verbose('Finding current bucket: ' + name);
 
   Bucket.findOne({
     bucket_time : calculateBucket(),
-    repo_name : repo_name
+    name : name
   }, function(err, doc) {
     if (err) {
       debug('Current Bucket err', err);
@@ -126,13 +127,13 @@ function getBucket(repo_name) {
     }
 
     if (doc) {
-      debug('Current found: ' + repo_name);
+      debug('Current found: ' + name);
       verbose('Current: ', doc);
       dfd.resolve(doc);
     } else {
       debug('Current not found. Generating new.');
-      Bucket.generateBuckets(null, [repo_name]).then(function() {
-        getBucket(repo_name).then(dfd.resolve);
+      Bucket.generateBuckets(null, [name]).then(function() {
+        getBucket(name).then(dfd.resolve);
       });
     }
 
@@ -173,19 +174,19 @@ BucketSchema.statics.generateBuckets = function(count, list) {
   } else {
     _dfd = Q.defer();
     dfds.push(_dfd.promise);
-    AppStatus.distinct('repo_name', function(err, list) {
+    AppStatus.distinct('name', function(err, list) {
       useList(list, _dfd);
     });
   }
 
   function useList(list, d) {
-    var repo_name, _dfd, time, i, l, ii, ll;
+    var name, _dfd, time, i, l, ii, ll;
     debug('Generating ' + buckets.length + ' buckets for ' + list.length + ' apps.');
     for (i=0, l=list.length; i<l; i++) {
-      repo_name = list[i];
+      name = list[i];
       for (ii=0, ll=buckets.length; ii<ll; ii++) {
         time = buckets[ii];
-        dfds.push(generateBucket(repo_name, buckets[ii]));
+        dfds.push(generateBucket(name, buckets[ii]));
       }
     }
     if (d) d.resolve();
@@ -199,19 +200,20 @@ BucketSchema.statics.generateBuckets = function(count, list) {
 };
 
 /**
- * Generates a single bucket for supplied repo_name and bucket time
- * @param  {String}  repo Github repo_name to generate a bucket for
+ * Generates a single bucket for supplied name and bucket time
+ * @param  {String}  name Github name to generate a bucket for
  * @param  {Date}    time Date of the Bucket to create
  * @return {Promise}      Q promise resolved on bucket creation
  */
-function generateBucket(repo, time) {
+function generateBucket(name, time) {
   var dfd = Q.defer()
     , bucket = new Bucket();
 
-  verbose('Generating bucket ' + time + ' for ' + repo);
+  verbose('Generating bucket ' + time + ' for ' + name);
 
-  bucket.repo_name = repo;
+  bucket.name = name;
   bucket.bucket_time = time;
+  bucket.repo_name = bucket.name.replace('fs-', '').replace('-prod', '');
   try {
     bucket.save(dfd.resolve);
   } catch(e) {
@@ -246,7 +248,7 @@ BucketSchema.statics.findCurrent = function(cb) {
     })
     .sort({ bucket_time : -1 })
     .group({
-      _id : '$repo_name',
+      _id : '$name',
       bucket_id : { $first : '$_id' },
       bucket_time : { $first : '$bucket_time' },
       app : { $first : "$app" },
@@ -265,6 +267,7 @@ BucketSchema.statics.findCurrent = function(cb) {
         .find({
           _id : { $in : ids }
         })
+        .sort({ name : 1 })
         .populate('app app_errors')
         .exec(cb);
     });

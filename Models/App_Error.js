@@ -85,7 +85,7 @@ ErrorSchema.statics.fromSplunk = function(data) {
     // Skip the first argument (err)
     for (i=1, l=arguments.length; i<l; i++) {
       _doc = arguments[i];
-      dfds.push(AppBucket.addErrors(_doc.repo_name, _doc._id));
+      dfds.push(AppBucket.addErrors(_doc.name, _doc._id));
     }
 
     Q.all(dfds).then(dfd.resolve);

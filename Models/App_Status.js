@@ -48,6 +48,13 @@ var AppSchema = new Schema({
   },
   error_rate: Number,
   _raw : Schema.Types.Mixed
+}, {
+  toJSON : {
+    virtuals : true
+  },
+  toObject : {
+    virtuals : true
+  }
 });
 
 /**
@@ -95,7 +102,7 @@ AppSchema.statics.fromSplunk = function(data) {
   this.create(config, function(err, doc) {
     if (err) return dfd.reject(err);
 
-    AppBucket.addApp(doc.repo_name, doc._id).then(function() {
+    AppBucket.addApp(doc.name, doc._id).then(function() {
       dfd.resolve(doc);
     });
   });

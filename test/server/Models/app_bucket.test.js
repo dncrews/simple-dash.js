@@ -36,7 +36,7 @@ describe('App_Bucket interface:', function() {
         Status.remove(done);
       });
 
-      it('should create 3 buckets for all unique App_Status repo_names', function(done) {
+      it('should create 3 buckets for all unique App_Status names', function(done) {
         var apps = [ 'status1', 'status2' ]
           , items = []
           , buckets;
@@ -44,7 +44,7 @@ describe('App_Bucket interface:', function() {
         for (var i=0, l=apps.length; i<l; i++) {
           // Generate 3 apps
           for (var ii=0, ll=3; ii<ll; ii++) {
-            items.push({ repo_name : apps[i]});
+            items.push({ name : apps[i]});
           }
         }
 
@@ -96,7 +96,7 @@ describe('App_Bucket interface:', function() {
 
     before(function(done) {
       Status.create({
-        repo_name : app_name
+        name : app_name
       }, function(err, doc) {
         id = doc._id;
         done();
@@ -124,7 +124,7 @@ describe('App_Bucket interface:', function() {
       it('should add and save', function(done) {
 
         Model.addApp('appName', id).then(function() {
-          Model.find({ repo_name : 'appName', app : id }, function(err, docs) {
+          Model.find({ name : 'appName', app : id }, function(err, docs) {
             expect(docs.length).to.be(1);
             expect(docs[0].app_errors).to.be(null);
             done();
@@ -146,7 +146,7 @@ describe('App_Bucket interface:', function() {
       it('should add and save', function(done) {
 
         Model.addErrors('appName', id).then(function() {
-          Model.find({ repo_name : 'appName', app_errors : id }, function(err, docs) {
+          Model.find({ name : 'appName', app_errors : id }, function(err, docs) {
             expect(docs.length).to.be(1);
             expect(docs[0].app).to.be(null);
             done();
@@ -161,7 +161,7 @@ describe('App_Bucket interface:', function() {
 
       it('should generate buckets', function(done) {
         Model.addApp('appName', id).then(function() {
-          Model.find({ repo_name : 'appName' }, function(err, docs) {
+          Model.find({ name : 'appName' }, function(err, docs) {
             expect(docs.length).to.be(3);
             done();
           });
@@ -174,7 +174,7 @@ describe('App_Bucket interface:', function() {
 
       it('should generate buckets', function(done) {
         Model.addErrors('appName', id).then(function() {
-          Model.find({ repo_name : 'appName' }, function(err, docs) {
+          Model.find({ name : 'appName' }, function(err, docs) {
             expect(docs.length).to.be(3);
             done();
           });
@@ -211,7 +211,7 @@ describe('App_Bucket interface:', function() {
         }
 
         Model.create({
-          repo_name : appName,
+          name : appName,
           bucket_time : oldDate
         }, addOlder);
       }
@@ -228,13 +228,13 @@ describe('App_Bucket interface:', function() {
         }
 
         Status.create({
-          repo_name : appName
+          name : appName
         }, function(err, status) {
           Errors.create({
-            repo_name : appName
+            name : appName
           }, function(err, newErr) {
-            Model.addApp(status.repo_name, status._id).then(function() {
-              Model.addErrors(newErr.repo_name, newErr._id).then(function() {
+            Model.addApp(status.name, status._id).then(function() {
+              Model.addErrors(newErr.name, newErr._id).then(function() {
                 createApp();
               });
             });
@@ -277,7 +277,7 @@ describe('App_Bucket interface:', function() {
       for(var i=0, l=current.length; i<l; i++) {
         bucket = current[i];
         expect(bucket.app).to.not.be(null);
-        expect(bucket.app.repo_name).to.be(bucket.repo_name);
+        expect(bucket.app.name).to.be(bucket.name);
       }
     });
 
@@ -287,7 +287,7 @@ describe('App_Bucket interface:', function() {
       for(var i=0, l=current.length; i<l; i++) {
         bucket = current[i];
         expect(bucket.app_errors).to.not.be(null);
-        expect(bucket.app_errors.repo_name).to.be(bucket.repo_name);
+        expect(bucket.app_errors.name).to.be(bucket.name);
       }
     });
 
@@ -309,7 +309,7 @@ function verifyApps(apps, buckets, total, done) {
       return verifyEach(); // On to the next app
     }
 
-    Model.find({ repo_name : app, bucket_time : time }, function(err, docs) {
+    Model.find({ name : app, bucket_time : time }, function(err, docs) {
       expect(docs.length).to.be(1);
       verifyEach();
     });
