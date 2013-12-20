@@ -27,7 +27,7 @@ var Change = require('./Change');
  * @type {Schema}
  */
 var ErrorSchema = new Schema({
-  created_at : { type: Date, default: Date.now },
+  created_at : { type: Date, default: Date.now, expires: 604800 },
   name : String,
   repo_name : String,
   codes : Array

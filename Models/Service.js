@@ -18,6 +18,11 @@ var mongoose = require('mongoose')
   , debug = require('debug')('marrow:models:service');
 
 /**
+ * Local Dependencies
+ */
+var Service_Map = require('./Service_Map');
+
+/**
  * Local Declarations
  */
 var SLOW = 1000 // 1s response from an API is SLOOOOW
@@ -28,20 +33,24 @@ var SLOW = 1000 // 1s response from an API is SLOOOOW
  * @type {Schema}
  */
 var ServiceSchema = new Schema({
-  created_at : { type: Date, default: Date.now },
+  created_at : { type: Date, default: Date.now, expires: 604800 },
   name : String,
   time : {
     p95 : Number
   },
   codes : {
-    s2xx: Number,
-    s3xx: Number,
-    s4xx: Number,
-    s5xx: Number,
-    sTotal: Number
+    '2xx': Number,
+    '3xx': Number,
+    '4xx': Number,
+    '5xx': Number,
+    'total': Number
   },
   error_rate: Number,
   _raw : Schema.Types.Mixed
+}, {
+  toJSON: {
+    virtuals: true
+  }
 });
 
 /**
@@ -66,14 +75,14 @@ ServiceSchema.statics.fromSplunk = function(data) {
       p95 : parseInt(data['time:p95'], 10) || 0
     },
     codes : {
-      s2xx: parseInt(data['status:2xx'], 10) || 0,
-      s3xx: parseInt(data['status:3xx'], 10) || 0,
-      s4xx: parseInt(data['status:4xx'], 10) || 0,
-      s5xx: parseInt(data['status:5xx'], 10) || 0,
-      sTotal: parseInt(data['status:total'], 10) || 1
+      '2xx': parseInt(data['status:2xx'], 10) || 0,
+      '3xx': parseInt(data['status:3xx'], 10) || 0,
+      '4xx': parseInt(data['status:4xx'], 10) || 0,
+      '5xx': parseInt(data['status:5xx'], 10) || 0,
+      'total': parseInt(data['status:total'], 10) || 1
     }
   };
-  config.error_rate = Math.ceil((config.codes.s5xx / config.codes.sTotal) * 100);
+  config.error_rate = Math.ceil((config.codes['5xx'] / config.codes.total) * 100);
   this.create(config, function(err, doc) {
     if (err) return dfd.reject(err);
     dfd.resolve(doc);
@@ -101,18 +110,81 @@ ServiceSchema.virtual('status').get(function() {
 });
 
 /**
- * This will be to get the current status of all
- * services (apis)
+ * This will be to get the current status of all Services
+ *
+ * This one will accept a callback because it returns something,
+ * rather then just being a `subroutine` that doesn't
+ *
+ * FIXME: I really wish I could do this all in one call, but I
+ * can't seem to figure out how to do that
+ *
+ * TODO: Caching this. Delete cache on write
  */
 ServiceSchema.statics.findCurrent = function(cb) {
-  // Group by name, select unique? or just filter them out?
+
+  var _this = this;
+  this.aggregate()
+    .sort({ created_at : -1 })
+    .group({
+      _id : '$name',
+      service_id : { $first : '$_id' },
+    })
+    .group({
+      _id : '$service_id'
+    })
+    // .exec(cb);
+    .exec(function(err, docs) {
+      var ids = [];
+      for(var i=0, l=docs.length; i<l; i++) {
+        ids.push(docs[i]._id);
+      }
+      _this
+        .find({
+          _id : { $in : ids }
+        })
+        .sort({ repo_name : 1, name : 1 })
+        .exec(cb);
+    });
+
 };
 
 /**
  * This will be to get the current status of all
  * service dependencies (apis) of an app
  */
-ServiceSchema.statics.findCurrentByApp = function(cb) {
+ServiceSchema.statics.findCurrentByRepo = function(repo_name, cb) {
+  var _this = this;
+  Service_Map.findOne({
+    repo_name : repo_name
+  }, function(err, doc) {
+    if (! doc) return cb({});
+    var services = doc.services;
+    _this.aggregate()
+      .match({
+        name : { $in : services }
+      })
+      .sort({ created_at : -1 })
+      .group({
+        _id : '$name',
+        service_id : { $first : '$_id' },
+      })
+      .group({
+        _id : '$service_id'
+      })
+      // .exec(cb);
+      .exec(function(err, docs) {
+        var ids = [];
+        for(var i=0, l=docs.length; i<l; i++) {
+          ids.push(docs[i]._id);
+        }
+        _this
+          .find({
+            _id : { $in : ids }
+          })
+          .sort({ repo_name : 1, name : 1 })
+          .exec(cb);
+      });
+  });
   // Group by name, select unique? or just filter them out?
 };
 

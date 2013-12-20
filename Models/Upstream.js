@@ -24,7 +24,7 @@ var debug = _debug('marrow:models:upstream')
  * @type {Schema}
  */
 var UpstreamSchema = new Schema({
-    created_at : { type: Date, default: Date.now },
+    created_at : { type: Date, default: Date.now, expires: 604800 },
     type : String,
     name : String,
     status : String,
@@ -145,7 +145,7 @@ UpstreamSchema.statics.haFromSplunk = function(data) {
 };
 
 /**
- * This will be to get the current status of all Buckets
+ * This will be to get the current status of all Upstreams
  *
  * This one will accept a callback because it returns something,
  * rather then just being a `subroutine` that doesn't
@@ -160,7 +160,7 @@ UpstreamSchema.statics.findCurrent = function(cb) {
   var date = new Date()
     , _this = this;
   this.aggregate()
-    .sort({ bucket_time : -1 })
+    .sort({ created_at : -1 })
     .group({
       _id : '$name',
       upstream_id : { $first : '$_id' },
@@ -178,6 +178,7 @@ UpstreamSchema.statics.findCurrent = function(cb) {
         .find({
           _id : { $in : ids }
         })
+        .sort({ repo_name : 1, name : 1 })
         .exec(cb);
     });
 

@@ -51,11 +51,11 @@ describe('Services interface:', function() {
     });
 
     it('create a time and a codes object', function() {
-      expect(service.codes.s2xx).to.be(3211);
-      expect(service.codes.s3xx).to.be(3);
-      expect(service.codes.s4xx).to.be(4);
-      expect(service.codes.s5xx).to.be(5);
-      expect(service.codes.sTotal).to.be(3223);
+      expect(service.codes['2xx']).to.be(3211);
+      expect(service.codes['3xx']).to.be(3);
+      expect(service.codes['4xx']).to.be(4);
+      expect(service.codes['5xx']).to.be(5);
+      expect(service.codes.total).to.be(3223);
     });
 
     it('should round up the error_rate', function() {
@@ -136,13 +136,6 @@ describe('Services interface:', function() {
         done();
       });
     });
-  });
-
-  describe('findCurrent', function() {
-    it('should be able to fetch most recent from EACH service in the system');
-  });
-  describe('findCurrentByApp', function() {
-    it('should be able to fetch most recent from EACH service listed in an service map for an app');
   });
 
 });

@@ -290,17 +290,21 @@
       load();
 
       function setCurrent(current) {
-        var status = current.stats.uptime_status;
+        var status = current.status;
         $scope.current = current;
-        $rootScope.updated = getTime(current.stats.timestamp);
+        console.log(current.created_at);
+        $rootScope.updated = getTime(current.created_at);
 
         $scope.status = status;
+        $scope.codes = current.codes;
+        $scope.time = current.time;
+        $scope.error_rate = current.error_rate;
         $scope.statusClass = statusToBS(status);
         $scope.glyph = getGlyph(status);
       }
 
       function getTime(timestamp) {
-        var updated = moment.unix(timestamp);
+        var updated = moment(timestamp);
         return {
           formatted: updated.format('h:mm a'),
           delta: updated.fromNow()

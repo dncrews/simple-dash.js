@@ -150,31 +150,20 @@
           scope.glyph = 'glyphicon-' + glyphs[status] || 'question-sign';
 
           function getName() {
-            var name;
-            if (type === 'api') return item.api;
-            if (type === 'app') {
-              if (item.name) return item.name;
-              if (item.app && item.app.name) return item.app.name;
-              if (item.app_errors && item.app_errors.name) return item.app_errors.name;
-              return item.repo_name;
-            }
-            if (type === 'upstream') return item.name;
+            if (item.name) return item.name;
+            if (item.app && item.app.name) return item.app.name;
+            if (item.app_errors && item.app_errors.name) return item.app_errors.name;
+            return item.repo_name;
           }
 
           function getStatus() {
-            if (type === 'api') return item.stats.uptime_status;
-            if (type === 'app') return item.status;
-            if (type === 'upstream') {
-              if (item.type === 'heroku') {
-                return {
-                  "green" : "good",
-                  "yellow" : "slow",
-                  "blue" : "down",
-                  "red" : "down"
-                }[item.status];
-              }
-              return item.status;
-            }
+            console.log(item.status);
+            return {
+              "green" : "good",
+              "yellow" : "slow",
+              "blue" : "down",
+              "red" : "down"
+            }[item.status] || item.status;
           }
 
           function goTo() {

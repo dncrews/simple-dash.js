@@ -39,7 +39,7 @@ var Bucket
  * @type {Schema}
  */
 var BucketSchema = new Schema({
-  bucket_time : { type: Date, default: calculateBucket },
+  bucket_time : { type: Date, default: calculateBucket, expires: 604800 },
   name : String,
   repo_name : String,
   app : {
