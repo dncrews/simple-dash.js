@@ -1,4 +1,5 @@
-(function(angular, jQuery) {
+/* global escape */
+(function(angular, jQuery, moment) {
 
   'use strict';
 
@@ -113,11 +114,6 @@
         'main' : true
       };
 
-      $scope.labelStatus = function(item) {
-        console.log(item);
-        return 'label-' + statusToBS(item.stats.status);
-      };
-
       $scope.setCurrent = setCurrent;
 
       function load() {
@@ -137,13 +133,14 @@
 
       function setCurrent(current) {
         var updated = moment(current.created_at)
-          , status = current.stats.status
+          , status = current.status
           , statusClass = status;
 
-        if (current.src === 'heroku_status_api') {
+        if (current.type === 'heroku') {
           statusClass = {
             "green" : "good",
             "yellow" : "slow",
+            "blue" : "down",
             "red" : "down"
           }[status];
         }
@@ -154,10 +151,11 @@
         };
 
         $scope.status = status;
+        $scope.codes = current.meta.codes;
+        $scope.error_rate = current.meta.error_rate;
         $scope.statusClass = statusToBS(statusClass);
         $scope.glyph = getGlyph(statusClass);
-        $scope.issues = current.stats.issues;
-        console.log(current.stats.issues);
+        $scope.issues = current.meta.issues;
       }
     }
   ]);
@@ -185,10 +183,6 @@
         'events' : true
       };
 
-      $scope.labelStatus = function(item) {
-        return 'label-' + statusToBS(item.stats.uptime_status);
-      };
-
       $scope.setCurrent = setCurrent;
 
       $scope.goToApi = function(name) {
@@ -213,7 +207,6 @@
         dfds[0].then(function(appList) {
           var current = appList[0];
           setCurrent(current);
-          $rootScope.updated = getTime(current.stats.timestamp);
           $scope.history = appList;
           $scope.loading.main = false;
         });
@@ -239,17 +232,22 @@
       load();
 
       function setCurrent(current) {
-        var status = current.stats.uptime_status;
+        var status = current.status;
         $scope.current = current;
-        $scope.updated = getTime(current.stats.timestamp);
+        $scope.codes = current.app.codes;
+        $scope.memory = current.app.memory;
+        $scope.time = current.app.time;
+        $scope.error_rate = current.app.error_rate;
+        $scope.errors = current.app_errors;
+        $rootScope.updated = getTime(current.bucket_time);
 
         $scope.status = status;
         $scope.statusClass = statusToBS(status);
         $scope.glyph = getGlyph(status);
       }
 
-      function getTime(timestamp) {
-        var updated = moment.unix(timestamp);
+      function getTime(time) {
+        var updated = moment(time);
         return {
           formatted: updated.format('h:mm a'),
           delta: updated.fromNow()
@@ -277,10 +275,6 @@
         'main' : true
       };
 
-      $scope.labelStatus = function(item) {
-        return 'label-' + statusToBS(item.stats.uptime_status);
-      };
-
       $scope.setCurrent = setCurrent;
 
       function load() {
@@ -288,7 +282,6 @@
         service.api.details(name).then(function(apiList) {
           var current = apiList[0];
           setCurrent(current);
-          $rootScope.updated = getTime(current.stats.timestamp);
           $scope.history = apiList;
           $scope.loading.main = false;
           reload = window.setTimeout(load, 60000);
@@ -299,7 +292,7 @@
       function setCurrent(current) {
         var status = current.stats.uptime_status;
         $scope.current = current;
-        $scope.updated = getTime(current.stats.timestamp);
+        $rootScope.updated = getTime(current.stats.timestamp);
 
         $scope.status = status;
         $scope.statusClass = statusToBS(status);
@@ -364,4 +357,4 @@
     }
   }
 
-})(window.angular, window.jQuery);
+})(window.angular, window.jQuery, window.moment);

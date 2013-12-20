@@ -144,4 +144,43 @@ UpstreamSchema.statics.haFromSplunk = function(data) {
   return dfd.promise;
 };
 
+/**
+ * This will be to get the current status of all Buckets
+ *
+ * This one will accept a callback because it returns something,
+ * rather then just being a `subroutine` that doesn't
+ *
+ * FIXME: I really wish I could do this all in one call, but I
+ * can't seem to figure out how to do that
+ *
+ * TODO: Caching this. Delete cache on write
+ */
+UpstreamSchema.statics.findCurrent = function(cb) {
+
+  var date = new Date()
+    , _this = this;
+  this.aggregate()
+    .sort({ bucket_time : -1 })
+    .group({
+      _id : '$name',
+      upstream_id : { $first : '$_id' },
+    })
+    .group({
+      _id : '$upstream_id'
+    })
+    // .exec(cb);
+    .exec(function(err, docs) {
+      var ids = [];
+      for(var i=0, l=docs.length; i<l; i++) {
+        ids.push(docs[i]._id);
+      }
+      _this
+        .find({
+          _id : { $in : ids }
+        })
+        .exec(cb);
+    });
+
+};
+
 module.exports = mongoose.model('Upstream', UpstreamSchema);

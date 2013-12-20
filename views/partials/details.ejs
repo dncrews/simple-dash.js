@@ -14,7 +14,7 @@
     <div class="item throughput" data-ng-show="hasThroughput">
       <span class="title">req / 5 min</span>
       <span class="metric">
-        <span class="stats_fld" data-ng-bind="current.stats.status_total">
+        <span class="stats_fld" data-ng-bind="codes.total">
         </span><span class="suffix">req</span>
       </span>
     </div>
@@ -22,7 +22,7 @@
     <div class="item resp_time" data-ng-show="hasRespTime">
       <span class="title">p95 response time</span>
       <span class="metric">
-        <span class="stats_fld" data-ng-bind="current.stats.p95 || 'n/a'">
+        <span class="stats_fld" data-ng-bind="time.p95 || 'n/a'">
         </span><span class="suffix">ms</span>
       </span>
     </div>
@@ -30,17 +30,17 @@
     <div class="item memory" data-ng-show="hasMemory">
       <span class="title">Memory (AVG &amp; MAX)</span>
       <span class="metric">
-        <span class="stats_fld">{{ current.stats.memory_avg | number:0 }}</span><span class="suffix">MB</span>
+        <span class="stats_fld">{{ memory.avg | number:0 }}</span><span class="suffix">MB</span>
       </span>
       <span class="metric">
-        <span class="stats_fld">{{ current.stats.memory_max | number:0 }}</span><span class="suffix">MB</span>
+        <span class="stats_fld">{{ memory.max | number:0 }}</span><span class="suffix">MB</span>
       </span>
     </div>
 
     <div class="item error_rate" data-ng-show="hasErrorRate">
       <span class="title">Error rate (5xx / total)</span>
       <span class="metric">
-        <span class="stats_fld" data-ng-bind="current.stats.error_rate">
+        <span class="stats_fld" data-ng-bind="error_rate">
         </span><span class="suffix">%</span>
       </span>
     </div>
@@ -49,16 +49,16 @@
       <span class="title">Status codes</span>
       <div class="totals">
         <span class="item">2xx:
-          <span class="stats_fld" data-ng-bind="current.stats.status_2xx"></span>
+          <span class="stats_fld" data-ng-bind="codes['2xx']"></span>
         </span>
         <span class="item">3xx:
-          <span class="stats_fld" data-ng-bind="current.stats.status_3xx"></span>
+          <span class="stats_fld" data-ng-bind="codes['3xx']"></span>
         </span>
         <span class="item">4xx:
-          <span class="stats_fld" data-ng-bind="current.stats.status_4xx"></span>
+          <span class="stats_fld" data-ng-bind="codes['4xx']"></span>
         </span>
         <span class="item">5xx:
-          <span class="stats_fld" data-ng-bind="current.stats.status_5xx"></span>
+          <span class="stats_fld" data-ng-bind="codes['5xx']"></span>
         </span>
       </div>
     </div>
@@ -67,9 +67,9 @@
       <span class="title">Heroku codes</span>
       <div class="totals stats_fld">
         <span
-          data-ng-repeat="error in current.stats.heroku_errors.codes"
+          data-ng-repeat="error in errors.codes"
           class="item"
-          data-ng-title="error.code + ': ' + error.desc"
+          title="{{ error.code + ': ' + error.desc }}"
           data-ng-bind="error.code + ': ' + error.count"
           data-ng-value="error"></span>
       </div>

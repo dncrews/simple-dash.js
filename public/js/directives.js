@@ -1,4 +1,4 @@
-(function(angular, moment) {
+(function(angular, moment, $) {
 
   'use strict';
 
@@ -34,25 +34,15 @@
         scope.className = 'label-' + setClassName();
 
         function setClassName() {
-          if (type === 'upstream') {
-            if (item.name.match('Heroku')) {
-              return {
-                'green' : 'success',
-                'yellow' : 'warning',
-                'red' : 'danger'
-              }[item.stats.status] || 'default';
-            }
-            return {
-              'good' : 'success',
-              'slow' : 'warning',
-              'down' : 'danger'
-            }[item.stats.status] || 'default';
-          }
           return {
+            'green' : 'success',
             'good' : 'success',
+            'yellow' : 'warning',
             'slow' : 'warning',
+            'red' : 'danger',
+            'blue' : 'danger',
             'down' : 'danger'
-          }[item.stats.uptime_status] || 'default';
+          }[(item.status || item.stats.uptime_status)] || 'default';
         }
       }
     };
@@ -149,34 +139,41 @@
               "unknown" : "question-sign"
             }
             , toBS = {
-              'good' : 'success',
-              'slow' : 'warning',
-              'down' : 'danger'
+              'good' : 'btn-success',
+              'slow' : 'btn-warning',
+              'down' : 'btn-danger'
             };
-          element.addClass('btn-' + toBS[status] || 'default');
+          element.addClass(toBS[status] || 'btn-default');
           element.bind('click', goTo);
 
           scope.name = name;
           scope.glyph = 'glyphicon-' + glyphs[status] || 'question-sign';
 
           function getName() {
+            var name;
             if (type === 'api') return item.api;
-            if (type === 'app') return item.appName;
+            if (type === 'app') {
+              if (item.name) return item.name;
+              if (item.app && item.app.name) return item.app.name;
+              if (item.app_errors && item.app_errors.name) return item.app_errors.name;
+              return item.repo_name;
+            }
             if (type === 'upstream') return item.name;
           }
 
           function getStatus() {
             if (type === 'api') return item.stats.uptime_status;
-            if (type === 'app') return item.stats.uptime_status;
+            if (type === 'app') return item.status;
             if (type === 'upstream') {
-              if (item.src === 'heroku_status_api') {
+              if (item.type === 'heroku') {
                 return {
                   "green" : "good",
                   "yellow" : "slow",
+                  "blue" : "down",
                   "red" : "down"
-                }[item.stats.status];
+                }[item.status];
               }
-              return item.stats.status;
+              return item.status;
             }
           }
 
@@ -190,4 +187,4 @@
     }
   ]);
 
-})(window.angular, window.moment);
+})(window.angular, window.moment, window.jQuery);

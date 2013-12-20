@@ -52,6 +52,10 @@ var BucketSchema = new Schema({
     ref : 'App_Error',
     default: null
   }
+}, {
+  toJSON : {
+    virtuals : true
+  }
 });
 
 BucketSchema.index({ bucket_time : -1, name : 1}, { unique: true });
@@ -79,6 +83,16 @@ BucketSchema.statics.addApp = function(name, id) {
 
   return dfd.promise;
 };
+
+BucketSchema.virtual('status').get(function() {
+  var status = 'unknown';
+
+  if (this.app && this.app.status) {
+    status = this.app.status;
+  }
+
+  return status;
+});
 
 /**
  * Adds Heroku errors to the current app_bucket
@@ -244,15 +258,17 @@ BucketSchema.statics.findCurrent = function(cb) {
     , _this = this;
   this.aggregate()
     .match({
+      // FIXME: We want to get all emtpies that are older than 5 minutes ago
+      $or : [
+        { app : { $ne : null } },
+        { app_errors : { $ne : null } },
+      ],
       bucket_time : { $lte : date }
     })
     .sort({ bucket_time : -1 })
     .group({
       _id : '$name',
       bucket_id : { $first : '$_id' },
-      bucket_time : { $first : '$bucket_time' },
-      app : { $first : "$app" },
-      app_errors : { $first: "$app_errors" }
     })
     .group({
       _id : '$bucket_id'
@@ -267,7 +283,8 @@ BucketSchema.statics.findCurrent = function(cb) {
         .find({
           _id : { $in : ids }
         })
-        .sort({ name : 1 })
+        // FIXME: Remove the repo_name once they're tracking everywhere
+        .sort({ repo_name : 1, name : 1 })
         .populate('app app_errors')
         .exec(cb);
     });
