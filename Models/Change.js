@@ -21,7 +21,7 @@ var mongoose = require('mongoose')
 /**
  * Local Declarations
  */
-var heroku, restart, _restart;
+var heroku, restart;
 
 /**
  * Changelog Schema Declaration

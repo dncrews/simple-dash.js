@@ -3,7 +3,19 @@
   'use strict';
 
   // No [] here to make sure we're getting and not creating
-  var app = angular.module('fsDashboard');
+  var app = angular.module('fsDashboard')
+    , statusToClass = function(status) {
+      return {
+        'green' : 'success',
+        'good' : 'success',
+        'yellow' : 'warning',
+        'warning' : 'warning',
+        'slow' : 'warning',
+        'red' : 'danger',
+        'blue' : 'danger',
+        'down' : 'danger'
+      }[status] || 'default';
+    };
 
   app.directive('historyItem', function() {
     return {
@@ -34,15 +46,7 @@
         scope.className = 'label-' + setClassName();
 
         function setClassName() {
-          return {
-            'green' : 'success',
-            'good' : 'success',
-            'yellow' : 'warning',
-            'slow' : 'warning',
-            'red' : 'danger',
-            'blue' : 'danger',
-            'down' : 'danger'
-          }[(item.status || item.stats.uptime_status)] || 'default';
+          return statusToClass(item.status || item.stats.uptime_status);
         }
       }
     };
@@ -53,67 +57,36 @@
       restrict: 'A',
       template: ''+
       '<div class="item cf">' +
-      '  <span class="icon {{ src }}">{{ src }}</span>' +
+      '  <span class="icon {{ event.type }}"></span>' +
       '  <div class="change_detail">' +
       '    <span class="commit_msg">' +
-      '      <span class="repo_name">{{ name }}</span>' +
-      '      <a target="_blank" data-ng-show="msg" class="commit_link" data-ng-href="{{ url }}">{{ msg }}</a>' +
+      '      <span class="repo_name">{{ event.name }}</span>' +
+      '      <a target="_blank" data-ng-show="msg" class="commit_link" data-ng-href="{{ event.meta.url }}">{{ msg }}</a>' +
       '    </span>' +
       '  </div>' +
       '  <div class="change_meta">' +
       '    <span title="{{ time.formatted }}" data-ng-show="time.formatted">{{ time.delta }}</span>' +
-      '    <span data-ng-show="author">by {{ author }}</span>' +
+      '    <span data-ng-show="event.meta.author">by {{ event.meta.author.name }}</span>' +
       '  </div>' +
       '</div>',
       replace: true,
       link: function(scope, element, attrs) {
         var event = scope.event
-          , type = event.src
-          , actions = {
-            'github' : 'Committed to',
-            'jenkins' : 'Deployed'
+          , action = event.action
+          , msgMap = {
+            'build' : 'Successfully built and deployed.',
+            'merge' : event.meta && event.meta.message || '',
+            'restart' : event.meta && 'Auto-restarted: ' + event.meta.reason,
+            'restart.not_configured' : event.meta && 'Auto-restarted: ' + event.meta.reason,
           }
-          , date = moment.unix(event.timestamp);
+          , date = moment(event.created_at);
 
         scope.src = event.src;
-        scope.action = actions[type];
-        scope.name = setName();
-        scope.msg = setMsg();
+        scope.msg = msgMap[action];
         scope.time = {
           delta: date.fromNow(),
           formatted: date.format('h:mm a [on] MMM Do YYYY')
         };
-        scope.author = setAuthor();
-        scope.url = setUrl();
-
-
-        function setName() {
-          if (type === 'github') {
-            if (event.data.organization) {
-              return event.data.organization + '/' + event.data.repo_name;
-            }
-            return event.data.repo_name;
-          }
-          if (type === 'jenkins') return event.data.app_name;
-          if (type === 'marrow') return event.data.app_name;
-        }
-
-        function setMsg() {
-          if (type === 'github') return event.data.commit.message;
-          if (type === 'jenkins') return 'Successfully built and deployed.';
-          if (type === 'marrow') {
-            if (event.type === 'marrow restart') return 'Restarted by immune system';
-            if (event.type === 'marrow info:statusChange') return 'Status changed from "' + event.data.uptime_status_prev + '" to "' + event.data.uptime_status + '"';
-          }
-        }
-
-        function setAuthor() {
-          if (type === 'github') return event.data.author.name;
-        }
-
-        function setUrl() {
-          if (type === 'github') return event.data.commit.url;
-        }
       }
     };
   });
@@ -133,17 +106,12 @@
             , name = getName()
             , status = getStatus()
             , glyphs = {
-              "good" : "ok-sign",
-              "slow" : "warning-sign",
-              "down" : "minus-sign",
-              "unknown" : "question-sign"
-            }
-            , toBS = {
-              'good' : 'btn-success',
-              'slow' : 'btn-warning',
-              'down' : 'btn-danger'
+              "success" : "ok-sign",
+              "warning" : "warning-sign",
+              "danger" : "minus-sign",
+              "default" : "question-sign"
             };
-          element.addClass(toBS[status] || 'btn-default');
+          element.addClass('btn-' + status);
           element.bind('click', goTo);
 
           scope.name = name;
@@ -157,13 +125,7 @@
           }
 
           function getStatus() {
-            console.log(item.status);
-            return {
-              "green" : "good",
-              "yellow" : "slow",
-              "blue" : "down",
-              "red" : "down"
-            }[item.status] || item.status;
+            return statusToClass(item.status);
           }
 
           function goTo() {

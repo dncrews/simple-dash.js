@@ -157,7 +157,7 @@ ServiceSchema.statics.findCurrentByRepo = function(repo_name, cb) {
   Service_Map.findOne({
     repo_name : repo_name
   }, function(err, doc) {
-    if (! doc) return cb({});
+    if (! doc) return cb(null, []);
     var services = doc.services;
     _this.aggregate()
       .match({

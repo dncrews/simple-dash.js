@@ -12,7 +12,7 @@
     function($http,$q) {
 
       var app = restify('app', ['index','details'])
-        , api = restify('api', ['index','details','app'])
+        , api = restify('service', ['index','details','app'])
         , upstream = restify('upstream', ['index','details'])
         , event = restify('event', ['index','app','more']);
 

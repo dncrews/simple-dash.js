@@ -17,7 +17,9 @@ var mongoose = require('mongoose')
  * Local Declarations
  */
 var debug = _debug('marrow:models:upstream')
-  , verbose = _debug('marrow:models:upstream-verbose');
+  , verbose = _debug('marrow:models:upstream-verbose')
+  , DOWN_RATE = 75
+  , WARNING_RATE = 50;
 
 /**
  * Schema Declaration
@@ -27,10 +29,41 @@ var UpstreamSchema = new Schema({
     created_at : { type: Date, default: Date.now, expires: 604800 },
     type : String,
     name : String,
-    status : String,
     meta : Object,
     _raw : Schema.Types.Mixed
+  }, {
+    toJSON : {
+      virtuals : true
+    }
   });
+
+
+/**
+ * We could decide to store this again instead of virtuals.
+ *
+ * I wanted to do this to test the performance. It'd be easier
+ * this way if we don't need to persist. Big benefits: we never
+ * have to `recalculate` these data.
+ */
+UpstreamSchema.virtual('status').get(function() {
+  if (this.type === 'heroku') {
+    return this._raw.status[this.name.replace('Heroku ', '')];
+  }
+  var status = 'good'
+    , error_rate = this.meta.error_rate;
+
+  if (typeof error_rate === 'undefined') {
+    debug('No status data');
+    return 'unknown';
+  }
+
+  if (error_rate >= WARNING_RATE) status = 'warning';
+  if (error_rate >= DOWN_RATE) status = 'down';
+
+  debug('Status generated: ' + status);
+
+  return status;
+});
 
 /**
  * Retrieve and save the current status of Heroku
@@ -109,7 +142,6 @@ UpstreamSchema.statics.haFromSplunk = function(data) {
   upstream = new Upstream({
     type : 'haProxy',
     name : 'HA Proxy',
-    status : 'unknown',
     meta : {},
     _raw : data
   });
@@ -124,14 +156,6 @@ UpstreamSchema.statics.haFromSplunk = function(data) {
 
   if (data['status:5xx'] && data['status:total']) {
     error_rate = upstream.meta.error_rate = Math.ceil((data['status:5xx'] / data['status:total'] * 100));
-
-    if (error_rate >= 75) {
-      upstream.status = 'down';
-    } else if (error_rate >= 50) {
-      upstream.status = 'warning';
-    } else {
-      upstream.status = 'good';
-    }
   }
 
   debug('HA Proxy Status: ' + upstream.status);

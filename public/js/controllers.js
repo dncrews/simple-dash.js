@@ -7,23 +7,27 @@
   var app = angular.module('fsDashboard')
     , reload;
 
-  function getGlyph(status) {
-    var map = {
-      "good" : "ok-sign",
-      "slow" : "warning-sign",
-      "down" : "minus-sign",
-      "unknown" : "question-sign"
-    };
-    return "glyphicon-" + map[status] || 'question-sign';
+  function statusToClass(status) {
+    return {
+      'green' : 'success',
+      'good' : 'success',
+      'yellow' : 'warning',
+      'warning' : 'warning',
+      'slow' : 'warning',
+      'red' : 'danger',
+      'blue' : 'danger',
+      'down' : 'danger'
+    }[status] || 'default';
   }
 
-  function statusToBS(status) {
+  function classToGlyph(bsClass) {
     var map = {
-      'good' : 'success',
-      'slow' : 'warning',
-      'down' : 'danger'
+      "success" : "ok-sign",
+      "warning" : "warning-sign",
+      "danger" : "minus-sign",
+      "default" : "question-sign"
     };
-    return map[status] || 'default';
+    return "glyphicon-" + map[bsClass];
   }
 
   app.controller('IndexCtrl', [
@@ -48,11 +52,6 @@
       $scope.clean = function(appName) {
         if (! appName) return;
         return escape(appName);
-      };
-
-      $scope.getGlyph = function(status) {
-        if (! status) return;
-        return getGlyph(status);
       };
 
       function load() {
@@ -134,16 +133,8 @@
       function setCurrent(current) {
         var updated = moment(current.created_at)
           , status = current.status
-          , statusClass = status;
+          , statusClass = statusToClass(status);
 
-        if (current.type === 'heroku') {
-          statusClass = {
-            "green" : "good",
-            "yellow" : "slow",
-            "blue" : "down",
-            "red" : "down"
-          }[status];
-        }
         $scope.current = current;
         $scope.updated = {
           formatted: updated.format('h:mm a'),
@@ -153,8 +144,8 @@
         $scope.status = status;
         $scope.codes = current.meta.codes;
         $scope.error_rate = current.meta.error_rate;
-        $scope.statusClass = statusToBS(statusClass);
-        $scope.glyph = getGlyph(statusClass);
+        $scope.statusClass = statusClass;
+        $scope.glyph = classToGlyph(statusClass);
         $scope.issues = current.meta.issues;
       }
     }
@@ -232,7 +223,8 @@
       load();
 
       function setCurrent(current) {
-        var status = current.status;
+        var status = current.status
+          , statusClass = statusToClass(status);
         $scope.current = current;
         $scope.codes = current.app.codes;
         $scope.memory = current.app.memory;
@@ -242,8 +234,8 @@
         $rootScope.updated = getTime(current.bucket_time);
 
         $scope.status = status;
-        $scope.statusClass = statusToBS(status);
-        $scope.glyph = getGlyph(status);
+        $scope.statusClass = statusClass;
+        $scope.glyph = classToGlyph(statusClass);
       }
 
       function getTime(time) {
@@ -290,17 +282,17 @@
       load();
 
       function setCurrent(current) {
-        var status = current.status;
+        var status = current.status
+          , statusClass = statusToClass(status);
         $scope.current = current;
-        console.log(current.created_at);
         $rootScope.updated = getTime(current.created_at);
 
         $scope.status = status;
         $scope.codes = current.codes;
         $scope.time = current.time;
         $scope.error_rate = current.error_rate;
-        $scope.statusClass = statusToBS(status);
-        $scope.glyph = getGlyph(status);
+        $scope.statusClass = statusClass;
+        $scope.glyph = classToGlyph(statusClass);
       }
 
       function getTime(timestamp) {
