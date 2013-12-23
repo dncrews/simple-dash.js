@@ -1,6 +1,7 @@
 var expect = require('expect.js')
   , Model = require('../../../Models/App_Status')
-  , Bucket = require('../../../Models/App_Bucket');
+  , Bucket = require('../../../Models/App_Bucket')
+  , Change = require('../../../Models/Change');
 
 describe('Apps interface:', function() {
 
@@ -146,6 +147,17 @@ describe('Apps interface:', function() {
         done();
       });
     });
+  });
+
+  describe('When status changes,', function() {
+    it('should register a Change');
+    // it('should register a Change', function(done) {
+    //   Model.fromSplunk(getMockData('good')).then(function() {
+    //     Model.fromSplunk(getMockData('down')).then(function() {
+    //       Change.find()
+    //     });
+    //   });
+    // });
   });
 
 });
