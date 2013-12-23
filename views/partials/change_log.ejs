@@ -32,12 +32,6 @@
     <div
       data-ng-repeat="event in events | filter:search"
       data-event-item="{{ event }}"></div>
-    <btn
-      data-ng-hide="loading.more"
-      class="btn btn-danger"
-      data-ng-click="checkMore()"
-      data-ng-disabled="!isMore"
-      data-ng-bind="{ true : 'Check for more', false : 'No more results' }[isMore]"></btn>
   </div> <!-- ./change_item_container -->
 
 </div> <!-- /.change_log -->

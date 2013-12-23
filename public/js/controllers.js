@@ -316,24 +316,9 @@
       $rootScope.bodyClass = 'change_log';
       $rootScope.refresh = load;
       $scope.loading = {
-        'main' : true,
-        'more' : false
+        'main' : true
       };
       var last_id;
-
-      $scope.checkMore = function() {
-        $scope.loading.more = true;
-        service.change.more(last_id).then(function(eventList) {
-          if (! eventList.length) {
-            $scope.loading.more = false;
-            $scope.isMore = false;
-            return;
-          }
-          $scope.events = $scope.events.concat(eventList);
-          $scope.loading.more = false;
-          last_id = eventList[eventList.length - 1]._id;
-        });
-      };
 
       function load() {
         $rootScope.updated = {};
@@ -345,7 +330,6 @@
           $rootScope.updated = {
             formatted: moment(eventList[0].created_at).format('h:mm a')
           };
-          $scope.isMore = true;
         });
         changeService.repos().then(function(repos) {
           $scope.repos = repos;

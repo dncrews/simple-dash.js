@@ -45,7 +45,7 @@
       var app = restify('app', ['index','details'])
         , api = restify('service', ['index','details','app'])
         , upstream = restify('upstream', ['index','details'])
-        , change = restify('change', ['index','app','more']);
+        , change = restify('change', ['index','app']);
 
       return {
         app: app,
@@ -59,9 +59,7 @@
           , getters = {
             index : getIndex,
             details : getDetails,
-            app : getAppSpecific,
-            more : getMore,
-            moreApp : getMoreApp
+            app : getAppSpecific
           }
           , i, l, obj = {};
 
@@ -75,16 +73,6 @@
           var dfd = $q.defer();
           $http
             .get('/api/' + _type)
-            .success(dfd.resolve)
-            .error(dfd.reject);
-
-          return dfd.promise;
-        }
-
-        function getMore(id) {
-          var dfd = $q.defer();
-          $http
-            .get('/api/' + _type + '/more/' + id)
             .success(dfd.resolve)
             .error(dfd.reject);
 
@@ -105,16 +93,6 @@
           var dfd = $q.defer();
           $http
             .get('/api/' + _type + '/app/' + name)
-            .success(dfd.resolve)
-            .error(dfd.reject);
-
-          return dfd.promise;
-        }
-
-        function getMoreApp(name) {
-          var dfd = $q.defer();
-          $http
-            .get('/api/' + _type + '/app/' + name + '/more')
             .success(dfd.resolve)
             .error(dfd.reject);
 
