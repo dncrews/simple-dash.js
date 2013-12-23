@@ -318,7 +318,15 @@
       $scope.loading = {
         'main' : true
       };
-      var last_id;
+      var last_id
+        , ONE_HOUR = 60 * 60 * 1000
+        , now = Date.now()
+        , times = {
+          '1hr' : now - ONE_HOUR,
+          '3hr' : now - (ONE_HOUR * 3),
+          '6hr' : now - (ONE_HOUR * 6),
+          '1d' : now - (ONE_HOUR * 24)
+        };
 
       function load() {
         $rootScope.updated = {};
@@ -337,9 +345,44 @@
         changeService.types().then(function(types) {
           $scope.types = types;
         });
+
+        setFilterTimes();
       }
 
       load();
+
+      function setFilterTimes() {
+        now = Date.now();
+        times = {
+          '1hr' : now - ONE_HOUR,
+          '3hr' : now - (ONE_HOUR * 3),
+          '6hr' : now - (ONE_HOUR * 6),
+          '1d' : now - (ONE_HOUR * 24)
+        };
+        console.log(times);
+      }
+
+      $scope.timeFilter = function(obj) {
+
+        console.log('stamp: ' + obj.timestamp);
+        var range = times[$scope.timeSearch]
+          , stamp = obj.timestamp;
+
+        if (! stamp) {
+          stamp = new Date(obj.created_at).getTime();
+
+          // Cache the timestamp
+          // This makes each one process twice initially
+          // because it triggers change
+          // Is that worth it?
+          obj.timestamp = stamp;
+          return true;
+        }
+
+        if (! range) return true;
+
+        return stamp > range;
+      };
     }
   ]);
 

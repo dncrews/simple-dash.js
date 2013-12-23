@@ -27,10 +27,22 @@
           </select>
         </div>
       </div>
+      <div class="col-lg-3">
+        <div class="input-group">
+          <span class="input-group-addon">Time Frame</span>
+          <select class="form-control" data-ng-model="timeSearch">
+            <option value="1hr">1 Hour</option>
+            <option value="3hr">3 Hours</option>
+            <option value="6hr">6 Hours</option>
+            <option value="1d">24 Hours</option>
+            <option value="">7 Days (All)</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <div
-      data-ng-repeat="event in events | filter:search"
+      data-ng-repeat="event in events | filter:search | filter:timeFilter"
       data-event-item="{{ event }}"></div>
   </div> <!-- ./change_item_container -->
 
