@@ -5,6 +5,37 @@
   // No [] here to make sure we're getting and not creating
   var app = angular.module('fsDashboard');
 
+  app.factory('changeService', [
+    '$http',
+    '$q',
+
+    function ($http, $q) {
+
+      return {
+        repos : getRepos,
+        types : getTypes
+      };
+
+      function getRepos() {
+        var dfd = $q.defer();
+        $http
+          .get('/api/change/repos')
+          .success(dfd.resolve)
+          .error(dfd.reject);
+        return dfd.promise;
+      }
+
+      function getTypes() {
+        var dfd = $q.defer();
+        $http
+          .get('/api/change/types')
+          .success(dfd.resolve)
+          .error(dfd.reject);
+        return dfd.promise;
+      }
+    }
+  ]);
+
   app.factory('dashService', [
     '$http',
     '$q',
@@ -14,13 +45,13 @@
       var app = restify('app', ['index','details'])
         , api = restify('service', ['index','details','app'])
         , upstream = restify('upstream', ['index','details'])
-        , event = restify('event', ['index','app','more']);
+        , change = restify('change', ['index','app','more']);
 
       return {
         app: app,
         api: api,
         upstream: upstream,
-        event: event
+        change: change
       };
 
       function restify(type, list) {

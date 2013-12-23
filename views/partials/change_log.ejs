@@ -8,11 +8,36 @@
 
   <div class="change_item_container">
 
-    <div
-      data-ng-repeat="event in events"
-      data-event-item="{{ event }}"></div>
-    <btn data-ng-hide="loading.more" class="btn btn-danger" data-ng-click="checkMore()">Check for more</btn>
-  </div> <!-- ./change_item_container -->
+    <div class="header row">
+      <div class="col-lg-3">
+        <div class="input-group">
+          <span class="input-group-addon">Repo</span>
+          <select class="form-control" data-ng-model="search.repo_name">
+            <option value="">All</option>
+            <option data-ng-repeat="repo_name in repos" data-ng-value="repo_name">{{ repo_name }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-lg-3">
+        <div class="input-group">
+          <span class="input-group-addon">Type</span>
+          <select class="form-control" data-ng-model="search.type">
+            <option value="">All</option>
+            <option data-ng-repeat="type in types" data-ng-value="type">{{ type }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
+    <div
+      data-ng-repeat="event in events | filter:search"
+      data-event-item="{{ event }}"></div>
+    <btn
+      data-ng-hide="loading.more"
+      class="btn btn-danger"
+      data-ng-click="checkMore()"
+      data-ng-disabled="!isMore"
+      data-ng-bind="{ true : 'Check for more', false : 'No more results' }[isMore]"></btn>
+  </div> <!-- ./change_item_container -->
 
 </div> <!-- /.change_log -->

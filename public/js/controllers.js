@@ -190,7 +190,7 @@
         var dfds = [
           service.app.details(name),
           service.api.app(name),
-          service.event.app(name)
+          service.change.app(name)
         ];
         $rootScope.updated = {};
 
@@ -309,8 +309,9 @@
     '$rootScope',
     '$scope',
     'dashService',
+    'changeService',
 
-    function ChangeLogCtrl($rootScope, $scope, service) {
+    function ChangeLogCtrl($rootScope, $scope, service, changeService) {
       window.clearTimeout(reload);
       $rootScope.bodyClass = 'change_log';
       $rootScope.refresh = load;
@@ -322,7 +323,12 @@
 
       $scope.checkMore = function() {
         $scope.loading.more = true;
-        service.event.more(last_id).then(function(eventList) {
+        service.change.more(last_id).then(function(eventList) {
+          if (! eventList.length) {
+            $scope.loading.more = false;
+            $scope.isMore = false;
+            return;
+          }
           $scope.events = $scope.events.concat(eventList);
           $scope.loading.more = false;
           last_id = eventList[eventList.length - 1]._id;
@@ -331,7 +337,7 @@
 
       function load() {
         $rootScope.updated = {};
-        service.event.index().then(function(eventList) {
+        service.change.index().then(function(eventList) {
           $scope.events = eventList;
           $scope.loading.events = false;
           last_id = eventList[eventList.length - 1]._id;
@@ -339,6 +345,13 @@
           $rootScope.updated = {
             formatted: moment(eventList[0].created_at).format('h:mm a')
           };
+          $scope.isMore = true;
+        });
+        changeService.repos().then(function(repos) {
+          $scope.repos = repos;
+        });
+        changeService.types().then(function(types) {
+          $scope.types = types;
         });
       }
 
