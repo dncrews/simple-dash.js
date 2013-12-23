@@ -23,8 +23,8 @@ var app = module.exports = express()
  */
 app.use(express.json());
 app.use(express.urlencoded());
-app.use(stylus.middleware(__dirname + '/public'));
-app.use(express.static(__dirname + '/public'));
+app.use(stylus.middleware(__dirname + '/assets'));
+app.use(express.static(__dirname + '/assets'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
