@@ -134,7 +134,7 @@ ChangeSchema.statics.fromJenkins = function(data, action) {
       name : data.name
     };
 
-  config.repo_name = data.name.replace('fs-', '');
+  config.repo_name = data.name.replace('fs-', '').replace('-prod', '');
 
   debug('FromJenkins: ', config);
 
