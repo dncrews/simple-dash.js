@@ -28,7 +28,7 @@ var heroku, restart;
  * @type {Schema}
  */
 var ChangeSchema = new Schema({
-  created_at : { type: Date, default: Date.now },
+  created_at : { type: Date, default: Date.now, expires: 604800 },
   type : String,
   action : String,
   name : String, // org/repo
