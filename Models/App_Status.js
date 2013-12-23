@@ -17,10 +17,16 @@ var mongoose = require('mongoose')
   , debug = require('debug')('marrow:models:app_status');
 
 /**
+ * Local Dependencies
+ */
+var Change = require('./Change');
+
+/**
  * Local Declarations
  */
 var SLOW = 5000 // 1s response from an app is SLOOOOW
-  , DOWN_ERROR_RATE = 50; // 50 pct of responses as errors is BAAAAD
+  , DOWN_ERROR_RATE = 50 // 50 pct of responses as errors is BAAAAD
+  , App_Status;
 
 /**
  * App Status Schema Declaration
@@ -125,4 +131,34 @@ AppSchema.virtual('status').get(function() {
   return status;
 });
 
-module.exports = mongoose.model('App_Status', AppSchema);
+/**
+ * Pre Save Status Change check
+ *
+ * When saving a status, we want to check to see if it's gone "From Down"
+ * or "To Down", so that we can register a Change
+ */
+AppSchema.pre('save', function(next) {
+  var current = this.status;
+
+  App_Status
+    .findOne({ name : this.name })
+    .sort({ created_at : -1 })
+    .exec(function(err, doc) {
+      if (! doc) return next();
+
+      var previous = doc.status;
+      if (current === previous) return next();
+      if (current !== 'down' && previous !== 'down') return next();
+
+      Change
+        .fromMarrow(doc.name, 'status.change', 'Status changed from "' + previous + '" to "' + current + '"')
+        .save(function(err, doc) {
+          if (err) {
+            return next(err);
+          }
+          next();
+      });
+    });
+});
+
+App_Status = module.exports = mongoose.model('App_Status', AppSchema);

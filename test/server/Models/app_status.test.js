@@ -1,9 +1,14 @@
 var expect = require('expect.js')
+  , db = require('../../db')
   , Model = require('../../../Models/App_Status')
   , Bucket = require('../../../Models/App_Bucket')
   , Change = require('../../../Models/Change');
 
 describe('Apps interface:', function() {
+
+  after(function(done) {
+    db.dropDatabase(done);
+  });
 
   afterEach(function(done) {
     Model.remove(function() {
@@ -149,15 +154,48 @@ describe('Apps interface:', function() {
     });
   });
 
-  describe('When status changes,', function() {
-    it('should register a Change');
-    // it('should register a Change', function(done) {
-    //   Model.fromSplunk(getMockData('good')).then(function() {
-    //     Model.fromSplunk(getMockData('down')).then(function() {
-    //       Change.find()
-    //     });
-    //   });
-    // });
+  describe('When status changes to "down",', function() {
+
+    after(function(done) {
+      Change.remove(done);
+    });
+
+    it('should register a Change', function(done) {
+      Model.fromSplunk(getMockData('good')).then(function() {
+        Model.fromSplunk(getMockData('down')).then(function() {
+          Change.find().exec(function(err, docs) {
+            var doc = docs[0];
+            expect(docs.length).to.be(1);
+            expect(doc.type).to.be('marrow');
+            expect(doc.action).to.be('status.change');
+            expect(doc.meta.reason).to.be('Status changed from "good" to "down"');
+            done();
+          });
+        });
+      });
+    });
+  });
+
+  describe('When status changes from "down",', function() {
+
+    after(function(done) {
+      Change.remove(done);
+    });
+
+    it('should register a Change', function(done) {
+      Model.fromSplunk(getMockData('down')).then(function() {
+        Model.fromSplunk(getMockData('slow')).then(function() {
+          Change.find().exec(function(err, docs) {
+            var doc = docs[0];
+            expect(docs.length).to.be(1);
+            expect(doc.type).to.be('marrow');
+            expect(doc.action).to.be('status.change');
+            expect(doc.meta.reason).to.be('Status changed from "down" to "slow"');
+            done();
+          });
+        });
+      });
+    });
   });
 
 });
