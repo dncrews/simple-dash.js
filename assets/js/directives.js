@@ -21,33 +21,19 @@
     return {
       restrict: 'A',
       link: function(scope, element, attrs) {
-        var item = scope.item
-          , type = scope.$parent.pageType;
+        var item = scope.item;
 
-        scope.$parent.$watch('current', function() {
-          if (! scope.$parent) return;
+        scope.mouseIn = function() {
+          scope.$parent.mouseIn(item);
+        };
+        scope.clack = function() {
+          scope.$parent.clickCurrent(item);
+        };
+        scope.mouseGone = function() {
+          scope.$parent.mouseGone();
+        };
 
-          if (angular.equals(scope.item, scope.$parent.current)) {
-            element.addClass('active');
-          } else {
-            element.removeClass('active');
-          }
-        });
-        $(element).bind('activate', function() {
-          changeToMe();
-        });
-
-        function changeToMe() {
-          scope.$apply(function() {
-            scope.$parent.setCurrent(scope.item);
-          });
-        }
-
-        scope.className = 'label-' + setClassName();
-
-        function setClassName() {
-          return statusToClass(item.status || item.stats.uptime_status);
-        }
+        scope.className = 'label-' + statusToClass(item.status);
       }
     };
   });

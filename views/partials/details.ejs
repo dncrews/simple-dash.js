@@ -95,12 +95,15 @@
   <div class="history section">
 
     <h2 class="section_heading">Uptime History</h2>
-    <div class="history_timeline cf">
+    <div class="history_timeline cf" data-ng-mouseleave="mouseGone()">
       <label
-        class="label"
+        class="label {{ className }}"
         data-ng-repeat="item in history"
-        data-history-item="{{ item }}"
-        data-ng-class="className">
+        data-history-item
+        data-ng-class="{ active : item.isActive }"
+        data-ng-mouseenter="mouseIn()"
+        data-ng-click="clack()">
+        <!-- data-ng-class="className"> -->
       </label>
     </div><!-- /.history_timeline -->
 

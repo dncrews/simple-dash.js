@@ -5,6 +5,43 @@
 
   // No [] here to make sure we're getting and not creating
   var app = angular.module('fsDashboard')
+    , bindHistory = function($scope, parentSetCurrent) {
+        function setCurrent(item) {
+          if ($scope.current) $scope.current.isActive = false;
+          item.isActive = true;
+          parentSetCurrent(item);
+        }
+        var locked = false;
+
+        $scope.mouseIn = function(item) {
+          if (locked) return;
+          setCurrent(item);
+        }
+
+        $scope.clickCurrent = function(item) {
+          setCurrent(item);
+          locked = true;
+        };
+
+        $scope.mouseGone = function() {
+          if (locked) return;
+          reset();
+        };
+
+        function reset() {
+          setCurrent($scope.history[0]);
+          locked = false;
+          // setCurrent($scope.history[0]);
+          // $('.history_timeline label').eq(0).trigger('reset');
+        }
+
+        $(document)
+          .off('keydown')
+          .on('keydown', function($evt) {
+            if ((! locked) || ($evt.which !== 27)) return;
+            $scope.$apply(reset);
+          });
+      }
     , reload;
 
   function statusToClass(status) {
@@ -102,7 +139,6 @@
     function UpstreamDetailsCtrl($rootScope, $scope, $routeParams, service) {
       var name = $routeParams.name;
       window.clearTimeout(reload);
-      window.$bindHistory($scope);
       $rootScope.bodyClass = '';
       $rootScope.refresh = load;
       $scope.pageType = 'upstream';
@@ -112,8 +148,6 @@
       $scope.loading = {
         'main' : true
       };
-
-      $scope.setCurrent = setCurrent;
 
       function load() {
         $rootScope.updated = {};
@@ -130,12 +164,15 @@
       }
       load();
 
+      bindHistory($scope, setCurrent);
+
       function setCurrent(current) {
         var updated = moment(current.created_at)
           , status = current.status
           , statusClass = statusToClass(status);
 
         $scope.current = current;
+
         $scope.updated = {
           formatted: updated.format('h:mm a'),
           delta: updated.fromNow()
@@ -162,7 +199,6 @@
     function AppDetailsCtrl($rootScope, $scope, $routeParams, $location, $q, service) {
       var name = $routeParams.name;
       window.clearTimeout(reload);
-      window.$bindHistory($scope);
       $rootScope.bodyClass = '';
       $rootScope.refresh = load;
       $scope.pageType = 'app';
@@ -174,8 +210,6 @@
         'events' : true
       };
 
-      $scope.setCurrent = setCurrent;
-
       $scope.goToApi = function(name) {
         $location.path('/api/' + escape(name));
       };
@@ -184,7 +218,6 @@
         if (! name) return;
         return escape(name);
       };
-
 
       function load() {
         var dfds = [
@@ -222,9 +255,29 @@
 
       load();
 
+      bindHistory($scope, setCurrent);
+
       function setCurrent(current) {
         var status = current.status
           , statusClass = statusToClass(status);
+
+        if (! current.app) {
+          current.app = {
+            codes : {
+              '2xx' : null,
+              '3xx' : null,
+              '4xx' : null,
+              '5xx' : null
+            },
+            memory : null,
+            time : {
+              p95 : null
+            },
+            error_rate : null,
+            app_errors : null
+          }
+        }
+
         $scope.current = current;
         $scope.codes = current.app.codes;
         $scope.memory = current.app.memory;
@@ -257,7 +310,6 @@
     function ApiDetailsCtrl($rootScope, $scope, $routeParams, service) {
       var name = $routeParams.name;
       window.clearTimeout(reload);
-      window.$bindHistory($scope);
       $rootScope.bodyClass = '';
       $rootScope.refresh = load;
       $scope.pageType = 'app';
@@ -266,8 +318,6 @@
       $scope.loading = {
         'main' : true
       };
-
-      $scope.setCurrent = setCurrent;
 
       function load() {
         $rootScope.updated = {};
@@ -280,6 +330,8 @@
         });
       }
       load();
+
+      bindHistory($scope, setCurrent);
 
       function setCurrent(current) {
         var status = current.status
