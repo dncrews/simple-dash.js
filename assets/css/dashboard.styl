@@ -117,65 +117,30 @@ body.api_type .hide-api { display: none }
       .suffix
         font-size: 24px
 
-  .events
-    .item
-      background-color: #FAFAFA
-      margin-bottom: 20px
-      padding: 15px
-      max-width: 600px
-      .icon
-        background: url("../img/github_icon.png") top left no-repeat
-        // border: 1px solid #666
-        float: left
-        margin-right: 15px
-        // padding: 15px
-        text-indent: -500px
-        height: 41px
-        width: 53px
-      .icon
-        &.marrow
-          background: url("../img/immune_icon.png") top left no-repeat
-        &.jenkins
-          background: url("../img/jenkins_icon.png") 0px -2px no-repeat
-      .change_meta
-        display: block
-        font-size: 11px
-        margin-top: 11px
-
-
-
-
-/* TODO: Separate the changelog out into a separate file... */
-.change_log
-  background-color: #666
-
-  .page_title
-    color: #eee
-
-.change_item_container
-
-  .header.row
-    margin-bottom: 15px
-
+.events
   .item
     background-color: #FAFAFA
     margin-bottom: 20px
+    overflow: hidden
     padding: 15px
+    max-width: 600px
     .icon
-      background: url("../img/github_icon.png") top left no-repeat
+      background-position: top left
+      background-repeat: no-repeat
+      background-image: url('../img/github_icon.png')
+      background-size: contain
+      // background: url("../img/github_icon.png") top left no-repeat
       // border: 1px solid #666
       float: left
       margin-right: 15px
       // padding: 15px
-      text-indent: -500px
       height: 55px
       width: 53px
     .icon
       &.marrow
-        background: url("../img/immune_icon.png") top left no-repeat
+        background-image: url('../img/immune_icon.png')
       &.jenkins
-        background: url("../img/jenkins_icon.png") 0px -2px no-repeat
-
+        background-image: url('../img/jenkins_icon.png')
     .repo_name
       background-color: #54B7DD
       border-radius: 4px
@@ -192,10 +157,21 @@ body.api_type .hide-api { display: none }
 
     .commit_link
       color: #3D3D3D
-      // text-decoration: underline
 
 
 
+
+/* TODO: Separate the changelog out into a separate file... */
+.change_log
+  background-color: #666
+
+  .page_title
+    color: #eee
+
+.change_item_container
+
+  .header.row
+    margin-bottom: 15px
 
 /**
  * For modern browsers
@@ -223,3 +199,9 @@ body.api_type .hide-api { display: none }
 .cf {
   *zoom: 1
 }
+
+@media screen and (max-width:800px)
+  .events .item .icon
+    height: 35px
+    width: 35px
+    margin-right: 5px
