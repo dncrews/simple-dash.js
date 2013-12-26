@@ -3,6 +3,8 @@
  */
 var express = require('express')
   , stylus = require('stylus')
+  , passport = require('passport')
+  , GitHubStrategy = require('passport-github').Strategy
   , debug = require('debug')('marrow:routing');
 
 /**
@@ -10,6 +12,7 @@ var express = require('express')
  */
 var db = require('./Models/db') // Configures Mongoose
   , Logger = require('./lib/logger')
+  , GitHubApi = require('./lib/auth/github-api.js') //Github API access for auth purposes
   , change_logger = require('./lib/change_logger');
 
 /**
@@ -21,6 +24,35 @@ var app = module.exports = express()
 /**
  * Express Configuration
  */
+
+//set up Passport SSO via github
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+  done(null, obj);
+});
+
+
+app.use(express.cookieParser('what does the fox say?'));
+app.use(express.session({secret: "ringydingidyindingdindga ding"}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: process.env.PASSPORT_CALLBACK_HOST + "/auth/github/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    process.nextTick(function () {
+      return done(null, {"accessToken": accessToken, "refreshToken": refreshToken, "profile": profile});
+    });
+  }
+));
+//END of Passport SSO
+
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(stylus.middleware(__dirname + '/assets'));
@@ -34,7 +66,7 @@ app.set('view engine', 'ejs');
  */
 app.get('/', function(req, res) {
   debug('Loading angular page');
-  res.render('layout');
+  res.render('layout', {'req': req});
 });
 
 
@@ -98,6 +130,44 @@ app.post('/change', function(req, res){
     res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
   });
 });
+
+
+//github SSO auth routes. TODO: move this out of app.js? Make it cleaner?
+app.get('/auth/github', passport.authenticate('github', { scope: 'repo' }));
+
+app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/?signin_failed=true' }), function(req, res) {
+    // Successful authentication, redirect home.
+
+    //if no user obj, try to login
+    if (!req.user) return res.redirect("/login");
+
+    //am I a fs-webdev member?
+    GitHubApi.isMember(req, res, 'fs-webdev', req.user.profile.username, function(err, status) {
+      if(status === 204) return res.redirect('/'); //yes
+
+      //am I an fs-eng member?
+      GitHubApi.isMember(req, res, 'fs-eng', req.user.profile.username, function(err, eng_status) {
+        if(eng_status === 204) return res.redirect('/'); //yes
+
+        req.logout(); //sign me out, since I am not a member of fs-eng or fs-webdev
+        res.clearCookie('accessToken');
+        res.redirect('/?signin_failed=true'); //redirect and show banner
+      }); //isMember() fs-eng
+      //TODO: move this code out of app.js?
+    });//isMember() fs-webdev
+
+});
+
+app.get('/login', function(req, res){
+  res.redirect('/auth/github');
+});
+
+app.get('/logout', function(req, res){
+  req.logout();
+  res.clearCookie('accessToken');
+  res.redirect('/');
+});
+
 
 app.listen(PORT, function() {
   console.info("Listening on " + PORT);
