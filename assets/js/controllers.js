@@ -11,26 +11,28 @@
           item.isActive = true;
           parentSetCurrent(item);
         }
-        var locked = false;
+        $scope.locked = false;
 
         $scope.mouseIn = function(item) {
-          if (locked) return;
+          if ($scope.locked) return;
           setCurrent(item);
         }
 
         $scope.clickCurrent = function(item) {
           setCurrent(item);
-          locked = true;
+          $scope.locked = true;
         };
 
         $scope.mouseGone = function() {
-          if (locked) return;
+          if ($scope.locked) return;
           reset();
         };
 
+        $scope.reset = reset;
+
         function reset() {
           setCurrent($scope.history[0]);
-          locked = false;
+          $scope.locked = false;
           // setCurrent($scope.history[0]);
           // $('.history_timeline label').eq(0).trigger('reset');
         }
@@ -38,7 +40,7 @@
         $(document)
           .off('keydown')
           .on('keydown', function($evt) {
-            if ((! locked) || ($evt.which !== 27)) return;
+            if ((! $scope.locked) || ($evt.which !== 27)) return;
             $scope.$apply(reset);
           });
       }

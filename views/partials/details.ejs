@@ -94,7 +94,10 @@
 
   <div class="history section">
 
-    <h2 class="section_heading">Uptime History</h2>
+    <h2 class="section_heading">
+      <span>Uptime History</span>
+      <span data-ng-show="locked" class="label label-danger">Pinned <a href="javascript:;" class="glyphicon glyphicon-remove" data-ng-click="reset()"> </a></span>
+    </h2>
     <div class="history_timeline cf" data-ng-mouseleave="mouseGone()">
       <label
         class="label {{ className }}"
