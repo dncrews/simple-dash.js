@@ -77,8 +77,9 @@
 
     function IndexCtrl($rootScope, $scope, $q, service) {
       window.clearTimeout(reload);
-      $rootScope.bodyClass = '';
+
       $rootScope.refresh = load;
+      $rootScope.pageType = 'index';
       $scope.loading = {
         'upstream': true,
         'app': true,
@@ -141,9 +142,8 @@
     function UpstreamDetailsCtrl($rootScope, $scope, $routeParams, service) {
       var name = $routeParams.name;
       window.clearTimeout(reload);
-      $rootScope.bodyClass = '';
       $rootScope.refresh = load;
-      $scope.pageType = 'upstream';
+      $rootScope.pageType = 'upstream';
       $scope.pageTitle = name + ' Status';
       if (name === 'HA Proxy') setFeatures($scope, [ 'hasThroughput', 'hasErrorRate', 'hasStatus']);
       if (name.match('Heroku')) setFeatures($scope, [ 'hasIssues' ]);
@@ -201,9 +201,8 @@
     function AppDetailsCtrl($rootScope, $scope, $routeParams, $location, $q, service) {
       var name = $routeParams.name;
       window.clearTimeout(reload);
-      $rootScope.bodyClass = '';
       $rootScope.refresh = load;
-      $scope.pageType = 'app';
+      $rootScope.pageType = 'app';
       $scope.pageTitle = name + ' Status';
       setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasApis', 'hasEvents']);
       $scope.loading = {
@@ -312,9 +311,8 @@
     function ApiDetailsCtrl($rootScope, $scope, $routeParams, service) {
       var name = $routeParams.name;
       window.clearTimeout(reload);
-      $rootScope.bodyClass = '';
       $rootScope.refresh = load;
-      $scope.pageType = 'app';
+      $rootScope.pageType = 'app';
       $scope.pageTitle = name + ' Status';
       setFeatures($scope, ['hasThroughput','hasRespTime','hasErrorRate','hasStatus']);
       $scope.loading = {
@@ -367,7 +365,7 @@
 
     function ChangeLogCtrl($rootScope, $scope, service, changeService) {
       window.clearTimeout(reload);
-      $rootScope.bodyClass = 'change_log';
+      $rootScope.pageType = 'change_log';
       $rootScope.refresh = load;
       $scope.loading = {
         'main' : true

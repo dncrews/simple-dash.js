@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width">
 </head>
 
-<body data-ng-class="bodyClass">
+<body data-ng-class="pageType">
   <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
     <div class="container">
       <div class="navbar-header">
@@ -21,9 +21,10 @@
       </div>
       <div class="collapse navbar-collapse">
         <% if (req.user) { %>
+        {{ pageType }}
           <ul class="nav navbar-nav">
-            <li><a href="#/">Home</a></li>
-            <li><a href="#/change">Change</a></li>
+            <li><a href="#/" data-ng-class="{ true : 'active' }[pageType == 'index']">Home</a></li>
+            <li><a href="#/change"  data-ng-class="{ true : 'active' }[pageType == 'change_log']">Change</a></li>
             <li data-ng-show="updated.formatted"><a class="refresh" data-ng-click="refresh()"><span class="glyphicon glyphicon-refresh"></span> Last updated at <span data-ng-bind="updated.formatted"></span></a></li>
           </ul>
         <% } %>
@@ -39,7 +40,7 @@
   </nav>
   <div class="container">
 
-    <div data-ng-view>
+    <div data-ng-class="pageType + '_page'" data-ng-view>
     </div>
 
     <% if (!req.user) { %>
