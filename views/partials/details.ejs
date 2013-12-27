@@ -96,7 +96,7 @@
 
     <h2 class="section_heading">
       <span>Uptime History</span>
-      <span data-ng-show="locked" class="label label-danger">Pinned <a href="javascript:;" class="glyphicon glyphicon-remove" data-ng-click="reset()"> </a></span>
+      <span data-ng-show="locked" class="label label-danger">{{ updated.delta }} <a href="javascript:;" class="glyphicon glyphicon-remove" data-ng-click="reset()"> </a></span>
     </h2>
     <div class="history_timeline cf" data-ng-mouseleave="mouseGone()">
       <label
