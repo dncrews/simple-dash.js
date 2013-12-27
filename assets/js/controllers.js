@@ -15,6 +15,7 @@
 
         $scope.mouseIn = function(item) {
           if ($scope.locked) return;
+          $scope.isHistorying = true;
           setCurrent(item);
         }
 
@@ -32,6 +33,7 @@
 
         function reset() {
           setCurrent($scope.history[0]);
+          $scope.isHistorying = false;
           $scope.locked = false;
           // setCurrent($scope.history[0]);
           // $('.history_timeline label').eq(0).trigger('reset');
