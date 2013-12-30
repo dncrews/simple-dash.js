@@ -64,6 +64,7 @@
             'merge' : event.meta && event.meta.message || '',
             'restart' : event.meta && 'Auto-restarted: ' + event.meta.reason,
             'restart.not_configured' : event.meta && 'Auto-restarted: ' + event.meta.reason,
+            'status.change' : event.meta && event.meta.reason
           }
           , date = moment(event.created_at);
 
@@ -85,7 +86,12 @@
         restrict: 'A',
         replace: true,
         scope: true,
-        template: '<a class="app_link btn"><span class="glyphicon {{ glyph }} style="top:2px;"></span> <span>{{ name }}</span></a>',
+        template: '' +
+          '<a class="app_link btn col-xs-6">'+
+          ' <span'+
+          '   class="glyphicon {{ glyph }}"></span>' +
+          '   <span>{{ name }}</span>' +
+          '</a>',
         link: function(scope, element, attrs) {
           var item = scope.item
             , type = attrs.statusType
@@ -97,17 +103,23 @@
               "danger" : "minus-sign",
               "default" : "question-sign"
             };
-          element.addClass('btn-' + status);
-          element.bind('click', goTo);
+          if (name.length > 12) {
+            element.removeClass('col-xs-6').addClass('col-xs-12');
+          }
+          element
+            .addClass('col-sm-' + (Math.ceil(name.length/7) + 1))
+            .addClass('col-md-' + (Math.ceil(name.length/10) + 1))
+            .addClass('btn-' + status)
+            .bind('click', goTo);
 
           scope.name = name;
           scope.glyph = 'glyphicon-' + glyphs[status] || 'question-sign';
 
           function getName() {
-            if (item.name) return item.name;
-            if (item.app && item.app.name) return item.app.name;
-            if (item.app_errors && item.app_errors.name) return item.app_errors.name;
-            return item.repo_name;
+            if (item.repo_name) return item.repo_name;
+            if (item.app && item.app.repo_name) return item.app.repo_name;
+            if (item.app_errors && item.app_errors.repo_name) return item.app_errors.repo_name;
+            return item.name;
           }
 
           function getStatus() {

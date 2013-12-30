@@ -13,7 +13,7 @@
 </div>
 
 <h2>Upstream</h2>
-<div class="section statuses" data-ng-class="{ loading: loading.upstream }">
+<div class="section statuses row" data-ng-class="{ loading: loading.upstream }">
   <span
     data-ng-repeat="item in upstreamList"
     data-status-btn
@@ -24,8 +24,8 @@
   </div>
 </div>
 
-<h2>Frontier</h2>
-<div class="section statuses" data-ng-class="{ loading: loading.app }">
+<h2>Frontier Prod</h2>
+<div class="section statuses row" data-ng-class="{ loading: loading.app }">
   <span
     data-ng-repeat="item in appList"
     data-status-btn
@@ -37,7 +37,7 @@
 </div>
 
 <h2>APIs</h2>
-<div class="section statuses" data-ng-class="{ loading: loading.api }">
+<div class="section statuses row" data-ng-class="{ loading: loading.api }">
   <span
     data-ng-repeat="item in apiList"
     data-status-btn

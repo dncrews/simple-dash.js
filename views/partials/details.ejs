@@ -117,15 +117,13 @@
 
   </div> <!-- /.history.section -->
 
-  <div class="other_apis section cf" data-ng-show="hasApis">
-    <div class="status-table" data-ng-hide="loading.apis">
-      <h3 class="section_heading">Dependent APIs</h3>
-      <span
-        data-ng-repeat="item in apis"
-        data-status-btn
-        data-status-type="api">
-      </span>
-    </div>
+  <h3 class="section_heading">Dependent APIs</h3>
+  <div class="other_apis section cf row" data-ng-show="hasApis" data-ng-hide="loading.apis">
+    <span
+      data-ng-repeat="item in apis"
+      data-status-btn
+      data-status-type="api">
+    </span>
   </div> <!-- /.other_apis -->
 
   <div class="events section cf" data-ng-show="hasEvents">
