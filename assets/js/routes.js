@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var app = angular.module('fsDashboard', []);
+  var app = angular.module('fsDashboard', ['d3']);
 
   app.config([
     '$routeProvider',

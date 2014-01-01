@@ -1,5 +1,5 @@
 /* global escape */
-(function(angular, jQuery, moment) {
+(function(angular, $, moment) {
 
   'use strict';
 
@@ -17,7 +17,7 @@
           if ($scope.locked) return;
           $scope.isHistorying = true;
           setCurrent(item);
-        }
+        };
 
         $scope.clickCurrent = function(item) {
           setCurrent(item);
@@ -278,7 +278,7 @@
             },
             error_rate : null,
             app_errors : null
-          }
+          };
         }
 
         $scope.current = current;
@@ -314,7 +314,7 @@
       var name = $routeParams.name;
       window.clearTimeout(reload);
       $rootScope.refresh = load;
-      $rootScope.pageType = 'app';
+      $rootScope.pageType = 'api';
       $scope.pageTitle = name + ' Status';
       setFeatures($scope, ['hasThroughput','hasRespTime','hasErrorRate','hasStatus']);
       $scope.loading = {
@@ -336,6 +336,7 @@
       bindHistory($scope, setCurrent);
 
       function setCurrent(current) {
+        if (! current) return;
         var status = current.status
           , statusClass = statusToClass(status);
         $scope.current = current;

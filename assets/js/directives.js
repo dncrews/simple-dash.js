@@ -136,4 +136,154 @@
     }
   ]);
 
+  app.directive('uptimeGraph', [
+    '$window',
+    'd3Service',
+
+    function($window, d3Service) {
+      return {
+        link: link
+      };
+
+      function link(scope, element, attrs) {
+        if (scope.pageType !== 'app') return;
+        d3Service.d3().then(d3Handler);
+
+        function d3Handler(d3) {
+          var $element = d3.select(element[0])
+            , margin = { top: 75, right: 20, bottom: 30, left: 50 }
+            , height = 300 - margin.top - margin.bottom
+            , width = $element.node().offsetWidth - margin.left - margin.right
+            , mainSvg = $element
+                .append('svg')
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+            , svg = mainSvg
+                .append('g')
+                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+            , x = d3.time.scale()
+                .range([0, width])
+            , yMem = d3.scale.linear()
+                .range([height, 0])
+            , yResp = d3.scale.linear()
+                .range([height, 0])
+            , xAxis, yAxisResp, yAxisMem, changeAxis;
+
+          // Browser resize
+          // window.onresize = function() {
+          //   scope.$apply();
+          // };
+
+          // scope.$watch(function() {
+          //   return angular.element($window)[0].innerWidth;
+          // }, render);
+          scope.$watch('history.length', render);
+
+          function render() {
+            var buckets = scope.history
+              , changes = scope.events
+              , changeTimes;
+
+            if (! buckets) return;
+
+            svg
+              .attr("width", width + margin.left + margin.right)
+              .attr("height", height + margin.top + margin.bottom);
+
+            changeTimes = [];
+            svg.selectAll('g, path').remove();
+            buckets.forEach(function(bucket) {
+              bucket.date = new Date(bucket.app.created_at || bucket.bucket_time);
+              bucket.resp = bucket.app.time.p75 || 0;
+              bucket.mem = bucket.app.memory.avg || 0;
+            });
+            changes.forEach(function(change) {
+              if (change.type === 'jenkins' && change.action === 'build') changeTimes.push(new Date(change.created_at));
+            });
+
+            x.domain(d3.extent(buckets, function(d) { return d.date; }));
+            yResp.domain(d3.extent(buckets, function(d) { return d.resp; }));
+            yMem.domain(d3.extent(buckets, function(d) { return d.mem; }));
+
+            xAxis = d3.svg.axis()
+              .scale(x)
+              .ticks(d3.time.hours, 2)
+              .orient("bottom");
+
+            yAxisResp = d3.svg.axis()
+              .scale(yResp)
+              .orient("left");
+
+            yAxisMem = d3.svg.axis()
+              .scale(yMem)
+              .orient("right");
+
+            changeAxis = d3.svg.axis()
+              .scale(x)
+              .orient('top')
+              .tickValues(changeTimes)
+              .tickSize(height)
+              .tickFormat(function(d) { return '@ ' + d3.time.format('%X')(d); });
+
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+            svg.append("g")
+                .attr("class", "x axis change")
+                .attr("transform", "translate(0, " + height + ")")
+                .call(changeAxis)
+                .selectAll('text')
+                  .attr('transform', 'rotate(-90)')
+                  .attr('y', 0)
+                  .attr('x', height + margin.top - 45);
+
+            svg.append("g")
+                .attr("class", "y axis time")
+                .call(yAxisResp)
+              .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Time (ms)");
+
+            svg.append("g")
+                .attr("class", "y axis mem")
+                .attr('transform', 'translate(' + width + ', 0)')
+                .call(yAxisMem)
+              .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -15)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Memory (MB)");
+
+            var respLine = d3.svg.line()
+              .x(function(d) { return x(d.date); })
+              .y(function(d) { return yResp(d.resp); });
+
+            var memLine = d3.svg.line()
+              .x(function(d) { return x(d.date); })
+              .y(function(d) { return yMem(d.mem); });
+
+            svg.append("path")
+                .datum(buckets)
+                .attr("class", "line time")
+                .attr("d", respLine);
+
+            svg.append("path")
+              .datum(buckets)
+              .attr("class", "line mem")
+              .attr("d", memLine);
+
+          }
+        }
+
+      }
+    }
+  ]);
+
 })(window.angular, window.moment, window.jQuery);
