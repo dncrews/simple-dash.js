@@ -61,6 +61,7 @@
 
   </div><!-- /.container -->
 
+  <% if (req.user) { %>
   <div class="switch-to-desktop">
     <h4>View this site in:</h4>
     <span data-ng-show="forceDesktop">
@@ -70,6 +71,8 @@
       <span>Auto</span> | <a data-ng-href="./?desktop{{ hash }}">Desktop</a>
     </span>
   </div>
+  <% } %>
+
   <script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
   <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 
