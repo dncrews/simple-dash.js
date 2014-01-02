@@ -47,6 +47,12 @@
       }
     , reload;
 
+  function resetPage($rootScope) {
+    $rootScope.forceDesktop = window.forceDesktop;
+    $rootScope.hash = window.location.hash;
+    window.clearTimeout(reload);
+  }
+
   function statusToClass(status) {
     return {
       'green' : 'success',
@@ -77,7 +83,7 @@
     'dashService',
 
     function IndexCtrl($rootScope, $scope, $q, service) {
-      window.clearTimeout(reload);
+      resetPage($rootScope);
 
       $rootScope.refresh = load;
       $rootScope.pageType = 'index';
@@ -138,8 +144,8 @@
     'dashService',
 
     function UpstreamDetailsCtrl($rootScope, $scope, $routeParams, service) {
+      resetPage($rootScope);
       var name = $routeParams.name;
-      window.clearTimeout(reload);
       $rootScope.refresh = load;
       $rootScope.pageType = 'upstream';
       $scope.pageTitle = name + ' Status';
@@ -197,8 +203,8 @@
     'dashService',
 
     function AppDetailsCtrl($rootScope, $scope, $routeParams, $location, $q, service) {
+      resetPage($rootScope);
       var name = $routeParams.name;
-      window.clearTimeout(reload);
       $rootScope.refresh = load;
       $rootScope.pageType = 'app';
       $scope.pageTitle = name + ' Status';
@@ -302,8 +308,8 @@
     'dashService',
 
     function ServiceDetailsCtrl($rootScope, $scope, $routeParams, service) {
+      resetPage($rootScope);
       var name = $routeParams.name;
-      window.clearTimeout(reload);
       $rootScope.refresh = load;
       $rootScope.pageType = 'service';
       $scope.pageTitle = name + ' Status';
@@ -358,7 +364,7 @@
     'changeService',
 
     function ChangeLogCtrl($rootScope, $scope, service, changeService) {
-      window.clearTimeout(reload);
+      resetPage($rootScope);
       $rootScope.pageType = 'change_log';
       $rootScope.refresh = load;
       $scope.loading = {

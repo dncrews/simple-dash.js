@@ -143,7 +143,7 @@
       };
 
       function link(scope, element, attrs) {
-        if (! $(element).is(':visible')) return;
+        if (! ($(element).is(':visible') && scope.pageType === 'app')) return;
 
         d3Service.d3().then(d3Handler);
 

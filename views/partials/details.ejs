@@ -117,14 +117,14 @@
 
   </div> <!-- /.history.section -->
 
-  <div class="history section graph visible-md visible-lg" data-ng-show="pageType == 'app'">
-
-    <h2 class="section_heading">Uptime Graph</h2>
-    <div class="uptime-graph">
-      <div data-uptime-graph bar-height="20" bar-padding="5"></div>
-    </div><!-- /.history_timeline -->
-
-  </div> <!-- /.history.section -->
+  <div class="visible-md visible-lg">
+    <div class="history section graph" data-ng-show="pageType == 'app'">
+      <h2 class="section_heading">Uptime Graph</h2>
+      <div class="uptime-graph">
+        <div data-uptime-graph bar-height="20" bar-padding="5"></div>
+      </div><!-- /.history_timeline -->
+    </div><!-- /.history.section -->
+  </div>
 
   <div class="other_services section cf row" data-ng-show="hasServices">
     <h3 class="section_heading">Dependent Services</h3>

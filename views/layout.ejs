@@ -63,11 +63,12 @@
 
   <div class="switch-to-desktop">
     <h4>View this site in:</h4>
-    <% if (desktop) { %>
-    <a href="./">Auto</a> | <span>Desktop</span>
-    <% } else { %>
-    <span>Auto</span> | <a href="?desktop">Desktop</a>
-    <% } %>
+    <span data-ng-show="forceDesktop">
+      <a href="./{{ hash }}">Auto</a> | <span>Desktop</span>
+    </span>
+    <span data-ng-hide="forceDesktop">
+      <span>Auto</span> | <a data-ng-href="./?desktop{{ hash }}">Desktop</a>
+    </span>
   </div>
   <script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
   <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
