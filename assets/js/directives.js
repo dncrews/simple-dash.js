@@ -87,7 +87,7 @@
         replace: true,
         scope: true,
         template: '' +
-          '<a class="app_link btn col-xs-6">'+
+          '<a class="app_link btn col-xs-12">'+
           ' <span'+
           '   class="glyphicon {{ glyph }}"></span>' +
           '   <span>{{ name }}</span>' +
@@ -103,9 +103,6 @@
               "danger" : "minus-sign",
               "default" : "question-sign"
             };
-          if (name.length > 12) {
-            element.removeClass('col-xs-6').addClass('col-xs-12');
-          }
           element
             .addClass('col-sm-' + (Math.ceil(name.length/7) + 1))
             .addClass('col-md-' + (Math.ceil(name.length/10) + 1))
@@ -146,7 +143,8 @@
       };
 
       function link(scope, element, attrs) {
-        if (scope.pageType !== 'app') return;
+        if (! $(element).is(':visible')) return;
+
         d3Service.d3().then(d3Handler);
 
         function d3Handler(d3) {
@@ -193,10 +191,12 @@
 
             changeTimes = [];
             svg.selectAll('g, path').remove();
+
             buckets.forEach(function(bucket) {
-              bucket.date = new Date(bucket.app.created_at || bucket.bucket_time);
-              bucket.resp = bucket.app.time.p75 || 0;
-              bucket.mem = bucket.app.memory.avg || 0;
+              var app = bucket.app || { time : {}, memory : {}};
+              bucket.date = new Date(app.created_at || bucket.bucket_time);
+              bucket.resp = app.time.p75 || 0;
+              bucket.mem = app.memory.avg || 0;
             });
             changes.forEach(function(change) {
               if (change.type === 'jenkins' && change.action === 'build') changeTimes.push(new Date(change.created_at));

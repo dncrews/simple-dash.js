@@ -3,7 +3,8 @@
   'use strict';
 
   // No [] here to make sure we're getting and not creating
-  var app = angular.module('fsDashboard');
+  var app = angular.module('fsDashboard')
+    , ENDPOINT = '/api/';
 
   app.factory('changeService', [
     '$http',
@@ -19,7 +20,7 @@
       function getRepos() {
         var dfd = $q.defer();
         $http
-          .get('/api/change/repos')
+          .get(ENDPOINT + 'change/repos')
           .success(dfd.resolve)
           .error(dfd.reject);
         return dfd.promise;
@@ -28,7 +29,7 @@
       function getTypes() {
         var dfd = $q.defer();
         $http
-          .get('/api/change/types')
+          .get(ENDPOINT + 'change/types')
           .success(dfd.resolve)
           .error(dfd.reject);
         return dfd.promise;
@@ -43,13 +44,13 @@
     function($http,$q) {
 
       var app = restify('app', ['index','details'])
-        , api = restify('service', ['index','details','app'])
+        , service = restify('service', ['index','details','app'])
         , upstream = restify('upstream', ['index','details'])
         , change = restify('change', ['index','app']);
 
       return {
         app: app,
-        api: api,
+        service: service,
         upstream: upstream,
         change: change
       };
@@ -72,7 +73,7 @@
         function getIndex() {
           var dfd = $q.defer();
           $http
-            .get('/api/' + _type)
+            .get(ENDPOINT + _type)
             .success(dfd.resolve)
             .error(dfd.reject);
 
@@ -81,8 +82,10 @@
 
         function getDetails(name) {
           var dfd = $q.defer();
+
+          name = encodeURIComponent(name);
           $http
-            .get('/api/' + _type + '/' + name)
+            .get(ENDPOINT + _type + '/' + name)
             .success(dfd.resolve)
             .error(dfd.reject);
 
@@ -92,7 +95,7 @@
         function getAppSpecific(name) {
           var dfd = $q.defer();
           $http
-            .get('/api/' + _type + '/app/' + name)
+            .get(ENDPOINT + _type + '/app/' + name)
             .success(dfd.resolve)
             .error(dfd.reject);
 

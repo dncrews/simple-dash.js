@@ -65,8 +65,15 @@ app.set('view engine', 'ejs');
  * Angular Dashboard
  */
 app.get('/', function(req, res) {
+  var forceDesktop = false;
+  if (req.query.desktop === 'true' || req.query.desktop === '') {
+    forceDesktop = true;
+  }
   debug('Loading angular page');
-  res.render('layout', {'req': req});
+  res.render('layout', {
+    req: req,
+    desktop : forceDesktop
+  });
 });
 
 

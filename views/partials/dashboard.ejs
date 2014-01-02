@@ -3,11 +3,11 @@
     <h1 class="page_title">FamilySearch Status (Alpha) </h1>
   </div>
   <div class="col-md-6 col-xs-12">
-    <div class="legend">
-      <button class="app_link btn btn-success" title="Error rate < 50% AND Response time < thresholds"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good</button>
-      <button class="app_link btn btn-warning" title="Response time > 5s (1s for APIs)"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow</button>
-      <button class="app_link btn btn-danger" title="5xx errors > 50% of total req"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</button>
-      <button class="app_link btn"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unknown</button>
+    <div class="legend row">
+      <button class="app_link btn btn-success col-xs-12 col-sm-3" title="Error rate < 50% AND Response time < thresholds"><span class="glyphicon glyphicon-ok-sign" style="top: 2px;"></span> Good</button>
+      <button class="app_link btn btn-warning col-xs-12 col-sm-3" title="Response time > 5s (1s for Services)"><span class="glyphicon glyphicon-warning-sign" style="top: 2px;"></span> Slow</button>
+      <button class="app_link btn btn-danger col-xs-12 col-sm-3" title="5xx errors > 50% of total req"><span class="glyphicon glyphicon-minus-sign" style="top: 2px;"></span> Down</button>
+      <button class="app_link btn btn-default col-xs-12 col-sm-3"><span class="glyphicon glyphicon-question-sign" style="top: 2px;"></span> Unknown</button>
     </div>
   </div>
 </div>
@@ -36,12 +36,12 @@
   </div>
 </div>
 
-<h2>APIs</h2>
-<div class="section statuses row" data-ng-class="{ loading: loading.api }">
+<h2>Services</h2>
+<div class="section statuses row" data-ng-class="{ loading: loading.services }">
   <span
-    data-ng-repeat="item in apiList"
+    data-ng-repeat="item in serviceList"
     data-status-btn
-    data-status-type="api">
+    data-status-type="service">
   </span>
   <div class="progress progress-striped active">
     <div class="progress-bar progress-bar-success" role="progressbar"></div>

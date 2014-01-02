@@ -180,11 +180,13 @@ UpstreamSchema.statics.haFromSplunk = function(data) {
  * TODO: Caching this. Delete cache on write
  */
 UpstreamSchema.statics.findCurrent = function(cb) {
-
   var date = new Date()
+    , then = new Date(date.setDate(date.getDate() - 2))
     , _this = this;
+
   this.aggregate()
     .sort({ created_at : -1 })
+    .match({ created_at : { $gte : then } })
     .group({
       _id : '$name',
       upstream_id : { $first : '$_id' },

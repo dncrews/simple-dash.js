@@ -1,4 +1,3 @@
-/* global escape */
 (function(angular, $, moment) {
 
   'use strict';
@@ -85,22 +84,17 @@
       $scope.loading = {
         'upstream': true,
         'app': true,
-        'api': true
+        'services': true
       };
       $scope.upstreamList = [];
       $scope.appList = [];
-      $scope.apiList = [];
-
-      $scope.clean = function(appName) {
-        if (! appName) return;
-        return escape(appName);
-      };
+      $scope.serviceList = [];
 
       function load() {
         var dfds = [
           service.upstream.index(),
           service.app.index(),
-          service.api.index()
+          service.service.index()
         ];
         $rootScope.updated = {};
 
@@ -108,9 +102,11 @@
         dfds[0].then(function(upstreamList) {
           $scope.upstreamList = upstreamList;
           $scope.loading.upstream = false;
-          $rootScope.updated = {
-            formatted: moment(upstreamList[0].created_at).format('h:mm a')
-          };
+          if (upstreamList[0]) {
+            $rootScope.updated = {
+              formatted: moment(upstreamList[0].created_at).format('h:mm a')
+            };
+          }
         });
 
         // Load all app data
@@ -119,10 +115,10 @@
           $scope.loading.app = false;
         });
 
-        // Load all API data
-        dfds[2].then(function(apiList) {
-          $scope.apiList = apiList;
-          $scope.loading.api = false;
+        // Load all Service data
+        dfds[2].then(function(serviceList) {
+          $scope.serviceList = serviceList;
+          $scope.loading.services = false;
         });
 
         // Ready reload of data after 60s
@@ -206,26 +202,21 @@
       $rootScope.refresh = load;
       $rootScope.pageType = 'app';
       $scope.pageTitle = name + ' Status';
-      setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasApis', 'hasEvents']);
+      setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasServices', 'hasEvents']);
       $scope.loading = {
         'main' : true,
-        'apis' : true,
+        'services' : true,
         'events' : true
       };
 
-      $scope.goToApi = function(name) {
-        $location.path('/api/' + escape(name));
-      };
-
-      $scope.clean = function(name) {
-        if (! name) return;
-        return escape(name);
+      $scope.goToService = function(name) {
+        $location.path('/service/' + encodeURIComponent(name));
       };
 
       function load() {
         var dfds = [
           service.app.details(name),
-          service.api.app(name),
+          service.service.app(name),
           service.change.app(name)
         ];
         $rootScope.updated = {};
@@ -238,10 +229,10 @@
           $scope.loading.main = false;
         });
 
-        // Load the dependent apis
-        dfds[1].then(function(apiList) {
-          $scope.apis = apiList;
-          $scope.loading.apis = false;
+        // Load the dependent services
+        dfds[1].then(function(serviceList) {
+          $scope.services = serviceList;
+          $scope.loading.services = false;
         });
 
         // Load the events
@@ -304,17 +295,17 @@
     }
   ]);
 
-  app.controller('ApiDetailsCtrl', [
+  app.controller('ServiceDetailsCtrl', [
     '$rootScope',
     '$scope',
     '$routeParams',
     'dashService',
 
-    function ApiDetailsCtrl($rootScope, $scope, $routeParams, service) {
+    function ServiceDetailsCtrl($rootScope, $scope, $routeParams, service) {
       var name = $routeParams.name;
       window.clearTimeout(reload);
       $rootScope.refresh = load;
-      $rootScope.pageType = 'api';
+      $rootScope.pageType = 'service';
       $scope.pageTitle = name + ' Status';
       setFeatures($scope, ['hasThroughput','hasRespTime','hasErrorRate','hasStatus']);
       $scope.loading = {
@@ -323,10 +314,10 @@
 
       function load() {
         $rootScope.updated = {};
-        service.api.details(name).then(function(apiList) {
-          var current = apiList[0];
+        service.service.details(name).then(function(serviceList) {
+          var current = serviceList[0];
           setCurrent(current);
-          $scope.history = apiList;
+          $scope.history = serviceList;
           $scope.loading.main = false;
           reload = window.setTimeout(load, 60000);
         });
@@ -414,12 +405,9 @@
           '6hr' : now - (ONE_HOUR * 6),
           '1d' : now - (ONE_HOUR * 24)
         };
-        console.log(times);
       }
 
       $scope.timeFilter = function(obj) {
-
-        console.log('stamp: ' + obj.timestamp);
         var range = times[$scope.timeSearch]
           , stamp = obj.timestamp;
 

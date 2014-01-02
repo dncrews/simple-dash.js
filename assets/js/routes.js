@@ -18,9 +18,9 @@
           templateUrl: '/partials/details',
           controller: 'AppDetailsCtrl'
         })
-        .when('/api/:name', {
+        .when('/service/:name', {
           templateUrl: '/partials/details',
-          controller: 'ApiDetailsCtrl'
+          controller: 'ServiceDetailsCtrl'
         })
         .when('/upstream/:name', {
           templateUrl: '/partials/details',

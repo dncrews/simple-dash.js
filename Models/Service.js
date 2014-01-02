@@ -121,9 +121,12 @@ ServiceSchema.virtual('status').get(function() {
  * TODO: Caching this. Delete cache on write
  */
 ServiceSchema.statics.findCurrent = function(cb) {
+  var date = new Date()
+    , then = new Date(date.setDate(date.getDate() - 2))
+    , _this = this;
 
-  var _this = this;
   this.aggregate()
+    .match({ created_at : { $gte : then } })
     .sort({ created_at : -1 })
     .group({
       _id : '$name',
@@ -153,7 +156,10 @@ ServiceSchema.statics.findCurrent = function(cb) {
  * service dependencies (apis) of an app
  */
 ServiceSchema.statics.findCurrentByRepo = function(repo_name, cb) {
-  var _this = this;
+  var date = new Date()
+    , then = new Date(date.setDate(date.getDate() - 2))
+    , _this = this;
+
   Service_Map.findOne({
     repo_name : repo_name
   }, function(err, doc) {
@@ -161,7 +167,8 @@ ServiceSchema.statics.findCurrentByRepo = function(repo_name, cb) {
     var services = doc.services;
     _this.aggregate()
       .match({
-        name : { $in : services }
+        name : { $in : services },
+        created_at : { $gte : then }
       })
       .sort({ created_at : -1 })
       .group({

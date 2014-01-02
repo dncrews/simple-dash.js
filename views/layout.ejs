@@ -5,7 +5,11 @@
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css">
   <link rel="stylesheet" href="css/dashboard.css">
+  <% if (desktop) { %>
+  <meta name="viewport" content="width=992">
+  <% } else { %>
   <meta name="viewport" content="width=device-width">
+  <% } %>
 </head>
 
 <body data-ng-class="pageType">
@@ -21,7 +25,6 @@
       </div>
       <div class="collapse navbar-collapse">
         <% if (req.user) { %>
-        {{ pageType }}
           <ul class="nav navbar-nav">
             <li><a href="#/" data-ng-class="{ true : 'active' }[pageType == 'index']">Home</a></li>
             <li><a href="#/change"  data-ng-class="{ true : 'active' }[pageType == 'change_log']">Change</a></li>
@@ -68,6 +71,11 @@
     <script src="js/directives.js"></script>
     <script src="js/services.js"></script>
     <script src="js/d3.js"></script>
+    <% if (desktop) { %>
+    <script>
+      window.forceDesktop = true;
+    </script>
+    <% } %>
   <% } %>
 </body>
 </html>

@@ -117,7 +117,7 @@
 
   </div> <!-- /.history.section -->
 
-  <div class="history section graph" data-ng-show="pageType == 'app'">
+  <div class="history section graph visible-md visible-lg" data-ng-show="pageType == 'app'">
 
     <h2 class="section_heading">Uptime Graph</h2>
     <div class="uptime-graph">
@@ -126,14 +126,14 @@
 
   </div> <!-- /.history.section -->
 
-  <h3 class="section_heading">Dependent APIs</h3>
-  <div class="other_apis section cf row" data-ng-show="hasApis" data-ng-hide="loading.apis">
+  <div class="other_services section cf row" data-ng-show="hasServices">
+    <h3 class="section_heading">Dependent Services</h3>
     <span
-      data-ng-repeat="item in apis"
+      data-ng-repeat="item in services"
       data-status-btn
-      data-status-type="api">
+      data-status-type="service">
     </span>
-  </div> <!-- /.other_apis -->
+  </div> <!-- /.other_services -->
 
   <div class="events section cf" data-ng-show="hasEvents">
     <h2 class="section_heading">Event History</h2>
