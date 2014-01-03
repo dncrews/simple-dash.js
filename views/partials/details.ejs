@@ -8,7 +8,7 @@
     </div>
   </div>
 
-  <div class="health section cf">
+  <div class="health section cf" data-ng-class="{ loading: loading.main }">
     <h2 class="section_heading">Health @ <span data-ng-bind="updated.formatted"></span> (<span class="stats_fld" data-ng-bind="updated.delta"></span>)</h2>
 
     <div class="item throughput" data-ng-show="hasThroughput">
@@ -90,9 +90,13 @@
       </div>
     </div>
 
+    <div class="progress progress-striped active">
+      <div class="progress-bar progress-bar-success" role="progressbar"></div>
+    </div>
+
   </div> <!-- /.health.section.cf -->
 
-  <div class="history section">
+  <div class="history section" data-ng-class="{ loading: loading.main }">
 
     <h2 class="section_heading">
       <span>Uptime History</span>
@@ -118,30 +122,38 @@
   </div> <!-- /.history.section -->
 
   <div class="visible-md visible-lg">
-    <div class="history section graph" data-ng-show="pageType == 'app'">
+    <div class="history section graph" data-ng-class="{ loading: loading.main }" data-ng-show="pageType == 'app'">
       <h2 class="section_heading">Uptime Graph</h2>
       <div class="uptime-graph">
-        <div data-uptime-graph bar-height="20" bar-padding="5"></div>
+        <div data-uptime-graph></div>
       </div><!-- /.history_timeline -->
     </div><!-- /.history.section -->
   </div>
 
-  <div class="other_services section cf row" data-ng-show="hasServices">
+  <div class="other_services section cf row" data-ng-class="{ loading: loading.services }" data-ng-show="hasServices">
     <h3 class="section_heading">Dependent Services</h3>
     <span
       data-ng-repeat="item in services"
       data-status-btn
       data-status-type="service">
     </span>
+
+    <div class="progress progress-striped active">
+      <div class="progress-bar progress-bar-success" role="progressbar"></div>
+    </div>
   </div> <!-- /.other_services -->
 
-  <div class="events section cf" data-ng-show="hasEvents">
+  <div class="events section cf" data-ng-class="{ loading: loading.events }" data-ng-show="hasEvents">
     <h2 class="section_heading">Event History</h2>
 
     <div class="change_item_container">
       <div
         data-ng-repeat="event in events"
         data-event-item></div>
+    </div>
+
+    <div class="progress progress-striped active">
+      <div class="progress-bar progress-bar-success" role="progressbar"></div>
     </div>
   </div><!-- /.events -->
 
