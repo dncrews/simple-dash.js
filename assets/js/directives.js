@@ -17,6 +17,18 @@
         'blue' : 'danger',
         'down' : 'danger'
       }[status] || 'default';
+    }
+    , statusToColor = function(status) {
+      return {
+        'green' : '#5CB85C',
+        'good' : '#5CB85C',
+        'yellow' : '#F0AD4E',
+        'warning' : '#F0AD4E',
+        'slow' : '#F0AD4E',
+        'red' : '#D9534F',
+        'blue' : '#D9534F',
+        'down' : '#D9534F'
+      }[status] || '#CCC';
     };
 
   app.directive('historyItem', function() {
@@ -24,6 +36,35 @@
       restrict: 'A',
       link: function(scope, element, attrs) {
         var item = scope.item;
+        var SHADE_MAGNITUDE = -3/5 //negative shades to black, positive shades to white, the closer to 1 the deeper the shading
+            , percent = null
+            , currentColor = null
+            , newColor = null;
+
+        //Calculate the percent based upon the p95 response time
+        if (item.app) {
+          percent = Math.floor(item.app.time.p95 / 100);
+        }
+        else if (item.time) {
+          percent = Math.floor(item.time.p95 / 100);
+        }
+
+        //Determine and set new color
+        currentColor = statusToColor(item.status);
+        newColor = shadeColor(currentColor, percent);
+        $(element).css('background-color', newColor);
+
+        //Shade the color with a magnitude of SHADE_MAGNITUDE by shifting bits
+        //Based upon: http://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color
+        function shadeColor(color, percent) {
+            var num = parseInt(color.slice(1),16)
+              , amt = Math.round(SHADE_MAGNITUDE * percent)
+              , R = (num >> 16) + amt
+              , B = (num >> 8 & 0x00FF) + amt
+              , G = (num & 0x0000FF) + amt;
+            var newColor = "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (B<255?B<1?0:B:255)*0x100 + (G<255?G<1?0:G:255)).toString(16).slice(1);
+            return newColor;
+        }
 
         scope.mouseIn = function() {
           scope.$parent.mouseIn(item);
