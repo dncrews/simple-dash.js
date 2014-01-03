@@ -155,10 +155,15 @@
           horizons.push('req');
         }
         if (scope.hasRespTime) {
-          horizons.push('time');
+          horizons.push('time95');
+          horizons.push('time75');
+          horizons.push('time50');
         }
         if (scope.hasMemory) {
           horizons.push('mem');
+        }
+        if (scope.hasErrorRate) {
+          horizons.push('err');
         }
 
         if (! horizons.length) return;
@@ -185,11 +190,18 @@
                 // 1 band for memory (no warning level)
                 mem : [null, '#BAE4B3'],
                 // 4 bands for response time: blue at 5s, red at 10s, black at 15s
-                time : [null, null, null, null, '#BAE4B3', '#bdd7e7', 'red', 'black' ]
+                time95 : [null, null, null, null, '#BAE4B3', '#bdd7e7', 'red', 'black' ],
+                time75 : [null, null, null, null, '#BAE4B3', '#bdd7e7', 'red', 'black' ],
+                time50 : [null, null, null, null, '#BAE4B3', '#bdd7e7', 'red', 'black' ],
+                // 1 for errors (no warning)
+                err : [null, '#006d2c']
               }
               , maxes = {
                 mem : 250,
-                time : 20000
+                time95 : 20000,
+                time75 : 20000,
+                time50 : 20000,
+                err : 10
               };
 
             // Set up the graph to have full 2-day data
@@ -230,7 +242,7 @@
                   var which = horizons[i]
                     , max = maxes[which];
 
-                  if (which === 'req') {
+                  if (! max) {
                     return null;
                   }
 
@@ -254,7 +266,10 @@
           var labels = {
               req : 'Throughput (req/5min)',
               mem : 'Memory Usage (MB)',
-              time : 'p75 Response Time (ms)'
+              time95 : 'p95 Response Time (ms)',
+              time75 : 'p75 Response Time (ms)',
+              time50 : 'p50 Response Time (ms)',
+              err : 'HTTP Error Rate (%)'
             };
           return context.metric(function(start, stop, step, callback) {
             var values = [];
@@ -306,13 +321,19 @@
                 created : data.bucket_time || data.created_at,
                 req: 0,
                 mem: 0,
-                time : 0
+                time95 : 0,
+                time75 : 0,
+                time50 : 0,
+                err: 0
               };
             return {
               created : data.bucket_time || data.created_at,
               req : (datum.codes && datum.codes.total) || 0,
               mem : (datum.memory && datum.memory.avg) || 0,
-              time : (datum.time && (datum.time.p75 || datum.time.p95)) || 0
+              time95 : (datum.time && datum.time.p95) || 0,
+              time75 : (datum.time && datum.time.p75) || 0,
+              time50 : (datum.time && datum.time.p50) || 0,
+              err : datum.error_rate || 0
             };
           })(_data[scope.pageType]);
         }
