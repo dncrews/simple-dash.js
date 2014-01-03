@@ -2,6 +2,8 @@
 
   'use strict';
 
+  var TOTAL_SECONDS = 432000;
+
   // No [] here to make sure we're getting and not creating
   var app = angular.module('fsDashboard')
     , statusToClass = function(status) {
@@ -143,145 +145,177 @@
       };
 
       function link(scope, element, attrs) {
-        if (! ($(element).is(':visible') && scope.pageType === 'app')) return;
+        if (! $(element).is(':visible')) return;
+
+        scope.$parent.showHorizons = false;
+
+        var horizons = [];
+
+        if (scope.hasThroughput) {
+          horizons.push('req');
+        }
+        if (scope.hasRespTime) {
+          horizons.push('time');
+        }
+        if (scope.hasMemory) {
+          horizons.push('mem');
+        }
+
+        if (! horizons.length) return;
+
+        scope.$parent.showHorizons = true;
+
+        var context;
 
         d3Service.d3().then(d3Handler);
 
-        function d3Handler(d3) {
-          var $element = d3.select(element[0])
-            , margin = { top: 75, right: 20, bottom: 30, left: 50 }
-            , height = 300 - margin.top - margin.bottom
-            , width = $element.node().offsetWidth - margin.left - margin.right
-            , mainSvg = $element
-                .append('svg')
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-            , svg = mainSvg
-                .append('g')
-                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        function d3Handler(libs) {
+          var d3 = libs[0]
+            , cubism = libs[1];
 
-            , x = d3.time.scale()
-                .range([0, width])
-            , yMem = d3.scale.linear()
-                .range([height, 0])
-            , yResp = d3.scale.linear()
-                .range([height, 0])
-            , xAxis, yAxisResp, yAxisMem, changeAxis;
-
-          // Browser resize
-          // window.onresize = function() {
-          //   scope.$apply();
-          // };
-
-          // scope.$watch(function() {
-          //   return angular.element($window)[0].innerWidth;
-          // }, render);
           scope.$watch('history.length', render);
 
           function render() {
-            var buckets = scope.history
-              , changes = scope.events
-              , changeTimes;
+            if (! scope.history) return;
+            var $el = d3.select(element[0])
+              , height = 60
+              , width = $el.node().offsetWidth
+                // first half of colors arrays are for negative numbers (we have none)
+              , colors = {
+                // 1 band for memory (no warning level)
+                mem : [null, '#BAE4B3'],
+                // 4 bands for response time: blue at 5s, red at 10s, black at 15s
+                time : [null, null, null, null, '#BAE4B3', '#bdd7e7', 'red', 'black' ]
+              }
+              , maxes = {
+                mem : 250,
+                time : 20000
+              };
 
-            if (! buckets) return;
+            // Set up the graph to have full 2-day data
+            context = cubism.context()
+              // Size of each pixel
+              .step(3e5) // 5 minute steps
+              // Number of pixels
+              .size(576)
+              .stop();
 
-            svg
-              .attr("width", width + margin.left + margin.right)
-              .attr("height", height + margin.top + margin.bottom);
+            // Add top and bottom axes
+            $el.selectAll('.axis')
+                .data(['top', 'bottom'])
+              .enter().append('div')
+                .attr('class', function(d) {
+                  return d + ' axis';
+                })
+                .each(function(d) {
+                  d3.select(this)
+                    .call(context.axis().ticks(12).orient(d));
+                });
 
-            changeTimes = [];
-            svg.selectAll('g, path').remove();
+            // Add the slider rule for both graphs
+            $el.append('div')
+              .attr('class', 'rule')
+              .call(context.rule());
 
-            buckets.forEach(function(bucket) {
-              var app = bucket.app || { time : {}, memory : {}};
-              bucket.date = new Date(app.created_at || bucket.bucket_time);
-              bucket.resp = app.time.p75 || 0;
-              bucket.mem = app.memory.avg || 0;
+            // Create the horizon graphs
+            $el.selectAll('.horizon')
+                // Map the horizons to the data we like
+                .data(horizons.map(metricBuilder))
+              // for each of them, add a new horizon before the .bottom
+              .enter().insert('div', '.bottom')
+                .attr('class', 'horizon')
+              .call(context.horizon()
+                // Sets min and max of graph
+                .extent(function(d, i) {
+                  var which = horizons[i]
+                    , max = maxes[which];
+
+                  if (which === 'req') {
+                    return null;
+                  }
+
+                  return [0, max];
+                })
+                .height(height)
+                .colors(function(d, i) {
+                  return colors[horizons[i]] || [null, '#BAE4B3'];
+                })
+                // Use number (with comma) formatting
+                .format(d3.format(',d')));
+
+            context.on('focus', function(i) {
+              d3.selectAll('.value').style('right', i === null ? null : context.size() - i + 'px');
             });
-            changes.forEach(function(change) {
-              if (change.type === 'jenkins' && change.action === 'build') changeTimes.push(new Date(change.created_at));
-            });
-
-            x.domain(d3.extent(buckets, function(d) { return d.date; }));
-            yResp.domain(d3.extent(buckets, function(d) { return d.resp; }));
-            yMem.domain(d3.extent(buckets, function(d) { return d.mem; }));
-
-            xAxis = d3.svg.axis()
-              .scale(x)
-              .ticks(d3.time.hours, 2)
-              .orient("bottom");
-
-            yAxisResp = d3.svg.axis()
-              .scale(yResp)
-              .orient("left");
-
-            yAxisMem = d3.svg.axis()
-              .scale(yMem)
-              .orient("right");
-
-            changeAxis = d3.svg.axis()
-              .scale(x)
-              .orient('top')
-              .tickValues(changeTimes)
-              .tickSize(height)
-              .tickFormat(function(d) { return '@ ' + d3.time.format('%X')(d); });
-
-            svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")")
-                .call(xAxis);
-
-            svg.append("g")
-                .attr("class", "x axis change")
-                .attr("transform", "translate(0, " + height + ")")
-                .call(changeAxis)
-                .selectAll('text')
-                  .attr('transform', 'rotate(-90)')
-                  .attr('y', 0)
-                  .attr('x', height + margin.top - 45);
-
-            svg.append("g")
-                .attr("class", "y axis time")
-                .call(yAxisResp)
-              .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("Time (ms)");
-
-            svg.append("g")
-                .attr("class", "y axis mem")
-                .attr('transform', 'translate(' + width + ', 0)')
-                .call(yAxisMem)
-              .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", -15)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("Memory (MB)");
-
-            var respLine = d3.svg.line()
-              .x(function(d) { return x(d.date); })
-              .y(function(d) { return yResp(d.resp); });
-
-            var memLine = d3.svg.line()
-              .x(function(d) { return x(d.date); })
-              .y(function(d) { return yMem(d.mem); });
-
-            svg.append("path")
-                .datum(buckets)
-                .attr("class", "line time")
-                .attr("d", respLine);
-
-            svg.append("path")
-              .datum(buckets)
-              .attr("class", "line mem")
-              .attr("d", memLine);
-
           }
+
         }
 
+        function metricBuilder(name) {
+          var labels = {
+              req : 'Throughput (req/5min)',
+              mem : 'Memory Usage (MB)',
+              time : 'p75 Response Time (ms)'
+            };
+          return context.metric(function(start, stop, step, callback) {
+            var values = [];
+            var rows = []
+              , maxDiff = 400000
+              , currentTime, previousTime, diff, i, row, data, value;
+
+            if (scope.pageType === 'app') {
+              maxDiff = 300000;
+            }
+
+            function emptyArray(length) {
+              return Array.apply(null, new Array(length)).map(function() { return 0; });
+            }
+
+            for (i=scope.history.length; i--;) {
+              row = scope.history[i];
+
+              data = getData(row);
+
+              currentTime = new Date(data.created).getTime();
+
+              if (previousTime) {
+                diff = currentTime - previousTime;
+                // If there are any blocks missing
+                if (diff > 400000) {
+                  // Add the missing number of 0s
+                  values = values.concat(emptyArray(Math.floor(diff / 300000)));
+                }
+              }
+
+              values.push(data[name]);
+
+              previousTime = currentTime;
+            }
+
+            callback(null, values.slice(-context.size()));
+          }, labels[name]);
+        }
+
+        function getData(data) {
+          var _data = {
+            app : data.app,
+            service : data,
+            upstream : data.meta
+          };
+          return (function parseData(datum) {
+            if (! datum) return {
+                created : data.bucket_time || data.created_at,
+                req: 0,
+                mem: 0,
+                time : 0
+              };
+            return {
+              created : data.bucket_time || data.created_at,
+              req : (datum.codes && datum.codes.total) || 0,
+              mem : (datum.memory && datum.memory.avg) || 0,
+              time : (datum.time && (datum.time.p75 || datum.time.p95)) || 0
+            };
+          })(_data[scope.pageType]);
+        }
       }
     }
   ]);
