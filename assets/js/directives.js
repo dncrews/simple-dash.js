@@ -240,7 +240,12 @@
               bucket.mem = app.memory.avg || 0;
             });
             changes.forEach(function(change) {
-              if (change.type === 'jenkins' && change.action === 'build') changeTimes.push(new Date(change.created_at));
+              if (
+                (change.type === 'jenkins' && change.action === 'build') ||
+                (change.type === 'marrow' && /restart/.test(change.action))
+              ) {
+                changeTimes.push(new Date(change.created_at));
+              }
             });
 
             x.domain(d3.extent(buckets, function(d) { return d.date; }));
