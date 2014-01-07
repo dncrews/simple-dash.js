@@ -4,21 +4,6 @@
 
   var d3;
 
-
-  /**
-   * graphs = [
-   *   {
-   *     name : 'mem',
-   *     y : function(d) { return d.mem; }
-   *   },
-   *   {
-   *     name : 'time',
-   *     y : function(d) { return d.time; }
-   *   }
-   * ]
-   */
-
-
   function Graphs(element, graphs) {
     d3 = window.d3;
 
