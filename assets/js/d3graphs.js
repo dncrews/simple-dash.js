@@ -9,9 +9,9 @@
 
     var $el = this.$el = d3.select(element);
 
-    this.graphs = graphs = graphs || ['mem', 'time'];
+    this.graphs = graphs = graphs || ['mem', 'time95', 'time75', 'time50'];
 
-    var margin = this.margin =  { top: 20, right: 20, bottom: 20, left: 50 }
+    var margin = this.margin =  { top: 20, right: 20, bottom: 20, left: 75 }
       , delta = this.delta = 25
       , height = this.height = 100 // height for each graph
       , outerHeight = this.outerHeight = height * graphs.length + delta * (graphs.length - 1) + margin.top + margin.bottom
@@ -44,13 +44,28 @@
     if (! rawBuckets) return;
 
     var labels = {
-      mem : 'Memory (MB)',
-      time : 'Resp Time (ms)'
+      errRate : 'Err %',
+      mem : 'Mem',
+      time95: 'p95',
+      time75: 'p75',
+      time50: 'p50',
+      tPut: 'Req'
     };
 
     var exts = {
+      errRate : '%',
       mem : 'MB',
-      time : 'ms'
+      time95 : 'ms',
+      time75 : 'ms',
+      time50 : 'ms'
+    };
+
+    var maxes = {
+      errRate : 10,
+      mem : 512,
+      time95 : 5000,
+      time75 : 5000,
+      time50 : 5000
     };
 
     var buckets = rawBuckets.map(function(bucket) {
@@ -61,8 +76,12 @@
 
       return {
         date : new Date(app.created_at || bucket.bucket_time),
-        time : app.time.p75 || 0,
-        mem : app.memory.avg || 0
+        time95 : app.time.p95 || 0,
+        time75 : app.time.p75 || 0,
+        time50 : app.time.p50 || 0,
+        mem : app.memory.avg || 0,
+        errRate : app.error_rate || 0,
+        tPut : app.codes.total
       };
     });
 
@@ -96,9 +115,15 @@
         , top = bottom - height
         , ext = exts[name];
 
+      var yMax = d3.max(buckets, function(d) { return d[name]; });
+
+      if (maxes[name] && maxes[name] > yMax) {
+        yMax = maxes[name];
+      }
+
       var y = d3.scale.linear()
                 .range([height, 0])
-                .domain(d3.extent(buckets, function(d) { return d[name]; }));
+                .domain([0, yMax]);
 
 
       var xAxis = d3.svg.axis()
@@ -127,7 +152,8 @@
           .call(yAxis)
         .append('text')
           .attr('transform', 'rotate(-90)')
-          .attr('y', 6)
+          .attr('y', -75)
+          .attr('x', -(height / 4))
           .attr('dy', '.71em')
           .style('text-anchor', 'end')
           .text(labels[name]);

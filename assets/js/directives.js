@@ -190,7 +190,7 @@
 
         function d3Handler() {
           var el = element[0]
-            , graphNames = ['mem', 'time'];
+            , graphNames = ['tPut', 'time95', 'time75', 'time50', 'errRate', 'mem'];
 
           var graphs = new (window.graphingthingy)(el, graphNames);
 
