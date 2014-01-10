@@ -93,6 +93,7 @@
               time75 : 5000,
               time50 : 5000
             }
+            , graphs = {}
             , tzOffset = new Date().getTimezoneOffset() * 60;
 
           Rickshaw.namespace('Rickshaw.Graph.Renderer.UnstackedArea');
@@ -116,8 +117,7 @@
           function render(history, events) {
             if (! history) return;
 
-            var data = {}
-              , graphs = {};
+            var data = {};
 
             history.map(function(bucket, i) {
               var app = bucket.app || {
@@ -132,7 +132,7 @@
                   time95 : app.time.p95 || 0,
                   time75 : app.time.p75 || 0,
                   time50 : app.time.p50 || 0,
-                  tPut : app.codes.total
+                  tPut : app.codes && app.codes.total || 0
                 };
 
               graphNames.map(function(name) {
@@ -156,10 +156,10 @@
                 , $el, datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis, colors;
 
               if (graphs[name]) {
-                $el = graphs[name];
-              } else {
-                $el = graphs[name] = $('<div class="inner-graph"></div>').appendTo(element[0]);
+                graphs[name].prev().remove();
+                graphs[name].remove();
               }
+              $el = graphs[name] = $('<div class="inner-graph"></div>').appendTo(element[0]);
 
               $el.before('<span class="graph-title">' + titles[name] + '</span>');
 
