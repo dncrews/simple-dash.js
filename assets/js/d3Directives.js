@@ -67,6 +67,7 @@
             , suffixes = {
               errRate : '%',
               mem : 'MB',
+              time: 'ms',
               time95: 'ms',
               time75: 'ms',
               time50: 'ms',
@@ -130,7 +131,7 @@
 
               var $el = $('<div class="inner-graph"></div>').appendTo(element[0])
                 , max = maxes[name]
-                // , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' })
+                , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' })
                 , datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis;
 
               $el.before('<span class="graph-title">' + labels[name] + '</span>');
@@ -164,20 +165,20 @@
 
                 config.series = [
                   {
-                    // color: palette.color(),
-                    color: '#cae2f7',
+                    color: palette.color(),
+                    // color: '#cae2f7',
                     name : labels.time50,
                     data: data.time50
                   },
                   {
-                    // color: palette.color(),
-                    color: '#caf7f6',
+                    color: palette.color(),
+                    // color: '#caf7f6',
                     name : labels.time75,
                     data: data.time75
                   },
                   {
-                    // color: palette.color(),
-                    color: '#caccf7',
+                    color: palette.color(),
+                    // color: '#caccf7',
                     name : labels.time95,
                     data: data.time95
                   }
@@ -217,6 +218,7 @@
 
               yAxis = new Rickshaw.Graph.Axis.Y({
                 graph: graph,
+                ticks: 3
                 // tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
                 // grid: false
               });
