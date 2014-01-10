@@ -153,16 +153,16 @@
 
               var max = maxes[name]
                 , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' })
-                , $el, datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis, colors;
+                , $container, $el, $an, datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis, colors;
 
               if (graphs[name]) {
-                graphs[name].prev().remove();
-                graphs[name].remove();
+                $container = graphs[name].remove();
+              } else {
+                $container = graphs[name] = $('<div class="graph-container"></div>').appendTo(element[0]);
               }
-              $el = graphs[name] = $('<div class="inner-graph"></div>').appendTo(element[0]);
-
-              $el.before('<span class="graph-title">' + titles[name] + '</span>');
-
+              $container.append('<span class="graph-title">' + titles[name] + '</span>');
+              $el = $('<div class="inner-graph"></div>').appendTo($container);
+              $an = $('<div class="anootations"></div>').appendTo($container);
 
               if (name === 'time') {
                 yMax = 0;
@@ -245,13 +245,28 @@
                 }
               });
 
-              // var annotator = new Rickshaw.Graph.Annotate({
-              //   graph: graph
-              // });
+              var annotator = new Rickshaw.Graph.Annotate({
+                graph: graph,
+                element: $an[0]
+              });
 
-              // events.map(function(event) {
-              //   console.log(event);
-              // });
+              events.map(function(event) {
+                if (! (
+                  (event.type === 'jenkins' && event.action === 'build') ||
+                  (event.type === 'marrow' && /restart/.test(event.action))
+                )) return;
+
+                var time = moment(new Date(event.created_at))
+                  , times = {
+                    formatted: time.format('h:mm a'),
+                    delta: time.fromNow()
+                  }
+                  , message = event.action + ' @ ' + times.formatted;
+
+                annotator.add(new Date(event.created_at).getTime()/1000 - tzOffset, message);
+              });
+
+              annotator.update();
 
               xAxis = new Rickshaw.Graph.Axis.Time({
                 graph: graph
