@@ -12,43 +12,35 @@
     function($document, $q, $rootScope) {
       var dfd = $q.defer();
 
-      function d3Ready() {
-        function allReady() {
-          // Load client in the browser
-          $rootScope.$apply(function() { dfd.resolve(window.d3); });
-        }
+      var scripts = [ 'http://d3js.org/d3.v3.min.js', 'js/d3graphs.js', 'vendor/rickshaw.min.js' ];
 
-        var scriptTag = $document[0].createElement('script');
+      var dfds = scripts.map(function(path) {
+        var dfd = $q.defer()
+          , scriptTag = $document[0].createElement('script');
+
         scriptTag.type = 'text/javascript';
         scriptTag.async = true;
-        scriptTag.src = 'js/d3graphs.js';
-        scriptTag.onreadystatechange = function () {
-          if (this.readyState == 'complete') allReady();
+        scriptTag.src = path;
+        scriptTag.onreadystatechange = function() {
+          console.log(this.readyState);
+          if (this.readyState == 'complete') dfd.resolve('sup homie');
         };
-        scriptTag.onload = allReady;
+        scriptTag.onload = function() {
+          dfd.resolve('bueno bro');
+        };
 
         var s = $document[0].getElementsByTagName('body')[0];
         s.appendChild(scriptTag);
-      }
 
-      // Create a script tag with d3 as the source
-      // and call our d3Ready callback when it
-      // has been loaded
-      var scriptTag = $document[0].createElement('script');
-      scriptTag.type = 'text/javascript';
-      scriptTag.async = true;
-      scriptTag.src = 'http://d3js.org/d3.v3.min.js';
-      scriptTag.onreadystatechange = function () {
-        if (this.readyState == 'complete') d3Ready();
-      };
-      scriptTag.onload = d3Ready;
+        return dfd.promise;
+      });
 
-      var s = $document[0].getElementsByTagName('body')[0];
-      s.appendChild(scriptTag);
+      $q.all(dfds).then(function allReady() {
+        // Load client in the browser
+        dfd.resolve([window.d3, window.graphingthingy, window.Rickshaw]);
+      });
 
-      return {
-        d3: function() { return dfd.promise; }
-      };
+      return dfd.promise;
     }
   ]);
 

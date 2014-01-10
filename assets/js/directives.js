@@ -174,33 +174,4 @@
     }
   ]);
 
-  app.directive('uptimeGraph', [
-    '$window',
-    'd3Service',
-
-    function($window, d3Service) {
-      return {
-        link: link
-      };
-
-      function link(scope, element, attrs) {
-        if (! ($(element).is(':visible') && scope.pageType === 'app')) return;
-
-        d3Service.d3().then(d3Handler);
-
-        function d3Handler() {
-          var el = element[0]
-            , graphNames = ['tPut', 'time95', 'time75', 'time50', 'errRate', 'mem'];
-
-          var graphs = new (window.graphingthingy)(el, graphNames);
-
-          scope.$watch('history.length', function() {
-            graphs.render(scope.history, scope.events);
-          });
-        }
-
-      }
-    }
-  ]);
-
 })(window.angular, window.moment, window.jQuery);

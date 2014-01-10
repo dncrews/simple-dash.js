@@ -121,7 +121,16 @@
     <div class="history section graph" data-ng-show="pageType == 'app'">
       <h2 class="section_heading">Uptime Graph</h2>
       <div class="uptime-graph">
-        <div data-uptime-graph bar-height="20" bar-padding="5"></div>
+        <div data-uptime-graph-rickshaw></div>
+      </div><!-- /.history_timeline -->
+    </div><!-- /.history.section -->
+  </div>
+
+  <div class="visible-md visible-lg">
+    <div class="history section graph" data-ng-show="pageType == 'app'">
+      <h2 class="section_heading">Uptime Graph</h2>
+      <div class="uptime-graph uptime-graph-raw">
+        <div data-uptime-graph-raw></div>
       </div><!-- /.history_timeline -->
     </div><!-- /.history.section -->
   </div>
