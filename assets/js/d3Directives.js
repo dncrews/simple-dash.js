@@ -124,7 +124,7 @@
                   time : {},
                   memory : {}
                 }
-                , date = new Date(app.created_at || bucket.bucket)
+                , date = new Date(app.created_at || bucket.bucket || bucket.app_errors.created_at)
                 , datum = {
                   date : (date.getTime() / 1000) - tzOffset,
                   errRate : app.error_rate || 0,
