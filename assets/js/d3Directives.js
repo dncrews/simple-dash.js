@@ -156,7 +156,7 @@
                 , $container, $el, $an, datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis, colors;
 
               if (graphs[name]) {
-                $container = graphs[name].remove();
+                $container = graphs[name].empty();
               } else {
                 $container = graphs[name] = $('<div class="graph-container"></div>').appendTo(element[0]);
               }
