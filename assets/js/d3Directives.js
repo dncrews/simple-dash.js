@@ -1,4 +1,4 @@
-(function(angular, $) {
+(function(angular, $, moment) {
 
   'use strict';
 
@@ -92,7 +92,8 @@
               time95 : 5000,
               time75 : 5000,
               time50 : 5000
-            };
+            }
+            , tzOffset = new Date().getTimezoneOffset() * 60;
 
           Rickshaw.namespace('Rickshaw.Graph.Renderer.UnstackedArea');
           Rickshaw.Graph.Renderer.UnstackedArea = Rickshaw.Class.create(Rickshaw.Graph.Renderer.Area, {
@@ -115,17 +116,17 @@
           function render(history, events) {
             if (! history) return;
 
-            var data = {};
+            var data = {}
+              , graphs = {};
 
-            // history.map(parsers[name])
-
-            history.map(function(bucket) {
+            history.map(function(bucket, i) {
               var app = bucket.app || {
                   time : {},
                   memory : {}
                 }
+                , date = new Date(app.created_at || bucket.bucket)
                 , datum = {
-                  date : new Date(app.created_at || bucket.bucket_time).getTime() / 1000,
+                  date : (date.getTime() / 1000) - tzOffset,
                   errRate : app.error_rate || 0,
                   mem : app.memory.avg || 0,
                   time95 : app.time.p95 || 0,
@@ -150,10 +151,15 @@
             graphNames.map(function(name) {
               if (name === 'time95' || name === 'time75' || name === 'time50') return;
 
-              var $el = $('<div class="inner-graph"></div>').appendTo(element[0])
-                , max = maxes[name]
+              var max = maxes[name]
                 , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' })
-                , datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis, colors;
+                , $el, datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis, colors;
+
+              if (graphs[name]) {
+                $el = graphs[name];
+              } else {
+                $el = graphs[name] = $('<div class="inner-graph"></div>').appendTo(element[0]);
+              }
 
               $el.before('<span class="graph-title">' + titles[name] + '</span>');
 
@@ -184,27 +190,28 @@
 
               if (name === 'time') {
 
-
                 config.series = [
                   {
-                    color: palette.color(),
                     // color: '#caccf7',
                     name : labels.time95,
                     data: data.time95
                   },
                   {
-                    color: palette.color(),
                     // color: '#caf7f6',
                     name : labels.time75,
                     data: data.time75
                   },
                   {
-                    color: palette.color(),
                     // color: '#cae2f7',
                     name : labels.time50,
                     data: data.time50
                   }
                 ];
+
+                // Reverse the colors
+                config.series[2].color = palette.color();
+                config.series[1].color = palette.color();
+                config.series[0].color = palette.color();
               } else {
                 config.series = [{
                   // color: palette.color(),
@@ -226,6 +233,15 @@
                     , pref = name === 'time' ? series.name + ': ' : '';
 
                   return pref + y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + suf;
+                },
+                xFormatter : function(seconds) {
+                  var time = moment.unix(seconds + tzOffset)
+                    , times = {
+                    formatted: time.format('h:mm a'),
+                    delta: time.fromNow()
+                  };
+
+                  return times.formatted + ' (' + times.delta + ')';
                 }
               });
 
@@ -261,4 +277,4 @@
     }
   ]);
 
-})(window.angular, window.jQuery);
+})(window.angular, window.jQuery, window.moment);
