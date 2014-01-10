@@ -75,13 +75,13 @@
         };
 
       return {
-        date : new Date(app.created_at || bucket.bucket_time),
+        date : new Date(app.created_at || bucket.bucket_time || bucket.app_errors.created_at),
         time95 : app.time.p95 || 0,
         time75 : app.time.p75 || 0,
         time50 : app.time.p50 || 0,
         mem : app.memory.avg || 0,
         errRate : app.error_rate || 0,
-        tPut : app.codes.total
+        tPut : app.codes && app.codes.total || 0
       };
     });
 
