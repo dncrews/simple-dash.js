@@ -65,9 +65,13 @@
               tPut: 'Requests (/5min)'
             }
             , labels = {
+              errRate : 'Err',
+              mem : 'Mem',
+              time: 'Response Time',
               time95: 'p95',
               time75: 'p75',
-              time50: 'p50'
+              time50: 'p50',
+              tPut: 'Req'
             }
             , suffixes = {
               errRate : '%',
