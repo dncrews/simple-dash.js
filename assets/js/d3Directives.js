@@ -94,6 +94,18 @@
               time50 : 5000
             };
 
+          Rickshaw.namespace('Rickshaw.Graph.Renderer.UnstackedArea');
+          Rickshaw.Graph.Renderer.UnstackedArea = Rickshaw.Class.create(Rickshaw.Graph.Renderer.Area, {
+            name: 'unstackedarea',
+            defaults: function($super) {
+              return Rickshaw.extend($super(), {
+                unstack: true,
+                fill: false,
+                stroke: false
+              });
+            }
+          });
+
 
           scope.$watch('history.length', function() {
             render(scope.history, scope.events);
@@ -141,7 +153,7 @@
               var $el = $('<div class="inner-graph"></div>').appendTo(element[0])
                 , max = maxes[name]
                 , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' })
-                , datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis;
+                , datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis, colors;
 
               $el.before('<span class="graph-title">' + titles[name] + '</span>');
 
@@ -166,18 +178,19 @@
                 element: $el[0],
                 width: $el[0].offsetWidth,
                 height: heights[name] || 60,
-                renderer: 'area',
+                renderer: 'unstackedarea',
                 stroke: true
               };
 
               if (name === 'time') {
 
+
                 config.series = [
                   {
                     color: palette.color(),
-                    // color: '#cae2f7',
-                    name : labels.time50,
-                    data: data.time50
+                    // color: '#caccf7',
+                    name : labels.time95,
+                    data: data.time95
                   },
                   {
                     color: palette.color(),
@@ -187,9 +200,9 @@
                   },
                   {
                     color: palette.color(),
-                    // color: '#caccf7',
-                    name : labels.time95,
-                    data: data.time95
+                    // color: '#cae2f7',
+                    name : labels.time50,
+                    data: data.time50
                   }
                 ];
               } else {
