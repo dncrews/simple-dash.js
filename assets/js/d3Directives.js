@@ -79,7 +79,8 @@
               time: 'ms',
               time95: 'ms',
               time75: 'ms',
-              time50: 'ms'
+              time50: 'ms',
+              tPut: 'req'
             }
             , heights = {
               time : 200
@@ -207,7 +208,12 @@
 
               hoverDetail = new Rickshaw.Graph.HoverDetail({
                 graph : graph,
-                yFormatter: function(y) { return Math.ceil(y) + (suffixes[name] || ''); }
+                formatter : function(series, x, y, formattedX, formattedY, d) {
+                  var suf = suffixes[name] || ''
+                    , pref = name === 'time' ? series.name + ': ' : '';
+
+                  return pref + y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + suf;
+                }
               });
 
               // var annotator = new Rickshaw.Graph.Annotate({
@@ -226,8 +232,8 @@
 
               yAxis = new Rickshaw.Graph.Axis.Y({
                 graph: graph,
-                ticks: 3
-                // tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+                ticks: 3,
+                tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
                 // grid: false
               });
 
