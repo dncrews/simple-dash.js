@@ -193,8 +193,6 @@
 
               graph = new Rickshaw.Graph(config);
 
-              console.log(yMax);
-
               graph.configure({ max : yMax });
               graph.render();
 

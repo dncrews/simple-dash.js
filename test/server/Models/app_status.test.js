@@ -198,6 +198,18 @@ describe('Apps interface:', function() {
     });
   });
 
+  describe('Given a 30s p75 response time, fromSplunk', function() {
+    it('should trigger a Heroku restart', function(done) {
+      Model.fromSplunk(getMockData('restart')).then(function() {
+        Change.find(function(err, docs) {
+          expect(docs.length).to.be(1);
+          expect(docs[0].meta.reason).to.be('p75 response time exceeded 30s');
+          done();
+        });
+      });
+    });
+  });
+
 });
 
 
@@ -241,6 +253,13 @@ function getMockData(type) {
       "fs_host": "fs-appName-prod",
       "time:p95": "5000",
       "status:5xx": "491",
+      "status:total": "1000",
+    },
+    restart : {
+      "fs_host": "fs-appName-prod",
+      "time:p95": "5000",
+      "status:5xx": "491",
+      "time:p75":"30001",
       "status:total": "1000",
     }
   };

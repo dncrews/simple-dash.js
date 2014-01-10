@@ -157,8 +157,27 @@ AppSchema.pre('save', function(next) {
             return next(err);
           }
           next();
-      });
+        });
     });
+});
+
+/**
+ * Pre Save Restart check
+ *
+ * Before saving an Error set, we want to check for R14
+ * errors so that we can restart apps when necessary
+ */
+AppSchema.pre('save', function(next) {
+  var i,l,code;
+  if (this.time.p75 >= 30000) {
+    return Change.restartHerokuApp(this.name, 'p75 response time exceeded 30s').then(done);
+  }
+
+  // This is to ensure that next is never called with arguments
+  function done() {
+    next();
+  }
+  next();
 });
 
 App_Status = module.exports = mongoose.model('App_Status', AppSchema);

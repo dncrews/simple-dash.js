@@ -22,11 +22,10 @@
         scriptTag.async = true;
         scriptTag.src = path;
         scriptTag.onreadystatechange = function() {
-          console.log(this.readyState);
-          if (this.readyState == 'complete') dfd.resolve('sup homie');
+          if (this.readyState == 'complete') dfd.resolve();
         };
         scriptTag.onload = function() {
-          dfd.resolve('bueno bro');
+          dfd.resolve();
         };
 
         var s = $document[0].getElementsByTagName('body')[0];
