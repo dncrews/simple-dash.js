@@ -55,14 +55,19 @@
             , Rickshaw = results[2]
             , el = element[0]
             , graphNames = ['tPut', 'time', 'time95', 'time75', 'time50', 'errRate', 'mem']
-            , labels = {
-              errRate : 'Err',
-              mem : 'Mem',
-              time: 'Response Time',
+            , titles = {
+              errRate : 'Error Rate (%)',
+              mem : 'Memory Usage (MB)',
+              time: 'Response Time (ms)',
               time95: 'p95',
               time75: 'p75',
               time50: 'p50',
-              tPut: 'Req'
+              tPut: 'Requests (/5min)'
+            }
+            , labels = {
+              time95: 'p95',
+              time75: 'p75',
+              time50: 'p50'
             }
             , suffixes = {
               errRate : '%',
@@ -70,8 +75,7 @@
               time: 'ms',
               time95: 'ms',
               time75: 'ms',
-              time50: 'ms',
-              tPut: '/5min'
+              time50: 'ms'
             }
             , heights = {
               time : 200
@@ -134,7 +138,7 @@
                 , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' })
                 , datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis;
 
-              $el.before('<span class="graph-title">' + labels[name] + '</span>');
+              $el.before('<span class="graph-title">' + titles[name] + '</span>');
 
 
               if (name === 'time') {
