@@ -36,7 +36,9 @@ var ServiceSchema = new Schema({
   created_at : { type: Date, default: Date.now, expires: 604800 },
   name : String,
   time : {
-    p95 : Number
+    p95 : Number,
+    p75 : Number,
+    p50 : Number
   },
   codes : {
     '2xx': Number,
@@ -72,7 +74,9 @@ ServiceSchema.statics.fromSplunk = function(data) {
     _raw : data,
     name : data.api,
     time : {
-      p95 : parseInt(data['time:p95'], 10) || 0
+      p95 : parseInt(data['time:p95'], 10) || 0,
+      p75 : parseInt(data['time:p75'], 10) || 0,
+      p50 : parseInt(data['time:p50'], 10) || 0
     },
     codes : {
       '2xx': parseInt(data['status:2xx'], 10) || 0,

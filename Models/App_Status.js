@@ -41,9 +41,9 @@ var AppSchema = new Schema({
     max: Number
   },
   time : {
-    p50 : Number,
+    p95 : Number,
     p75 : Number,
-    p95 : Number
+    p50 : Number
   },
   codes : {
     '2xx': Number,
@@ -81,8 +81,9 @@ AppSchema.statics.fromSplunk = function(data) {
     _raw : data,
     name : data.fs_host,
     time : {
+      p95 : parseInt(data['time:p95'], 10) || 0,
       p75 : parseInt(data['time:p75'], 10) || 0,
-      p95 : parseInt(data['time:p95'], 10) || 0
+      p50 : parseInt(data['time:p50'], 10) || 0
     },
     memory : {
       avg : parseInt(data['mem:avg'], 10) || 0,
