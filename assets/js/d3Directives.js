@@ -45,8 +45,20 @@
       };
 
       function link(scope, element, attrs) {
-        if (! ($(element).is(':visible') && scope.pageType === 'app')) return;
+        if (! $(element).is(':visible')) return;
 
+        var graphNames = [];
+
+        if (scope.hasThroughput) graphNames.push('tPut');
+        if (scope.hasRespTime) graphNames = graphNames.concat(['time', 'time95', 'time75', 'time50']);
+        if (scope.hasRespTime) graphNames.push('tPut');
+        if (scope.hasErrorRate) graphNames.push('errRate');
+        if (scope.hasMemory) graphNames.push('mem');
+
+        if (! graphNames.length) return;
+
+        scope.hasGraphs = true;
+        console.log(graphNames);
         d3Service.then(d3Handler);
 
         function d3Handler(results) {
@@ -54,7 +66,6 @@
             , Graphs = results[1]
             , Rickshaw = results[2]
             , el = element[0]
-            , graphNames = ['tPut', 'time', 'time95', 'time75', 'time50', 'errRate', 'mem']
             , titles = {
               errRate : 'Error Rate (%)',
               mem : 'Memory Usage (MB)',
@@ -96,6 +107,8 @@
             , graphs = {}
             , tzOffset = new Date().getTimezoneOffset() * 60;
 
+          if (scope.pageType === 'service') maxes.time = 1000;
+
           Rickshaw.namespace('Rickshaw.Graph.Renderer.UnstackedArea');
           Rickshaw.Graph.Renderer.UnstackedArea = Rickshaw.Class.create(Rickshaw.Graph.Renderer.Area, {
             name: 'unstackedarea',
@@ -110,7 +123,7 @@
 
 
           scope.$watch('history.length', function() {
-            render(scope.history, scope.events);
+            render(scope.history, scope.events || []);
           });
 
 
@@ -120,20 +133,30 @@
             var data = {};
 
             history.map(function(bucket, i) {
-              var app = bucket.app || {
-                  time : {},
-                  memory : {}
-                }
-                , date = new Date(app.created_at || bucket.bucket || bucket.app_errors.created_at)
-                , datum = {
-                  date : (date.getTime() / 1000) - tzOffset,
-                  errRate : app.error_rate || 0,
-                  mem : app.memory.avg || 0,
-                  time95 : app.time.p95 || 0,
-                  time75 : app.time.p75 || 0,
-                  time50 : app.time.p50 || 0,
-                  tPut : app.codes && app.codes.total || 0
-                };
+              var selections = {
+                app: bucket.app,
+                upstream : bucket.meta,
+                service: bucket
+              };
+
+              var app = selections[scope.pageType] || {
+                time : {},
+                memory : {}
+              };
+
+              var datum = {}
+                , date = new Date(bucket.created_at || app.created_at || bucket.bucket_time || bucket.app_errors.created_at);
+
+              datum.date = (date.getTime() / 1000) - tzOffset;
+
+              if (graphNames.indexOf('tPut') !== -1) datum.tPut = app.codes && app.codes.total || 0;
+              if (graphNames.indexOf('errRate') !== -1) datum.errRate = app.error_rate || 0;
+              if (graphNames.indexOf('mem') !== -1) datum.mem = app.memory.avg || 0;
+              if (graphNames.indexOf('time') !== -1) {
+                datum.time95 = app.time.p95 || 0;
+                datum.time75 = app.time.p75 || 0;
+                datum.time50 = app.time.p50 || 0;
+              }
 
               graphNames.map(function(name) {
                 if (name === 'time') return;
