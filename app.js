@@ -5,7 +5,8 @@ var express = require('express')
   , stylus = require('stylus')
   , passport = require('passport')
   , GitHubStrategy = require('passport-github').Strategy
-  , debug = require('debug')('marrow:routing');
+  , debug = require('debug')('marrow:routing')
+  , RedisStore = require('connect-redis')(express);
 
 /**
  * Local Dependencies
@@ -34,9 +35,19 @@ passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
 
+var rtg = require('url').parse(process.env.REDISTOGO_URL)
+  , rtgAuth = rtg.auth.split(':');
 
 app.use(express.cookieParser('what does the fox say?'));
-app.use(express.session({secret: "ringydingidyindingdindga ding"}));
+app.use(express.session({
+  secret: "ringydingidyindingdindga ding",
+  store : new RedisStore({
+    host : rtg.hostname,
+    port : rtg.port,
+    user : rtgAuth[0],
+    pass : rtgAuth[1]
+  })
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
