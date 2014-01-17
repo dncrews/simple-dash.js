@@ -58,7 +58,6 @@
         if (! graphNames.length) return;
 
         scope.hasGraphs = true;
-        console.log(graphNames);
         d3Service.then(d3Handler);
 
         function d3Handler(results) {
@@ -176,7 +175,7 @@
 
               var max = maxes[name]
                 , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' })
-                , $container, $el, $an, datum, yMax, linearScale, graph, hoverDetail, xAxis, yAxis, colors;
+                , $container, $el, $an, datum, yMax, graph, hoverDetail, xAxis, yAxis, colors;
 
               if (graphs[name]) {
                 $container = graphs[name].empty();
