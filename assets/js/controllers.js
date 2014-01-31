@@ -392,10 +392,10 @@
           };
         });
         changeService.repos().then(function(repos) {
-          $scope.repos = repos;
+          $scope.repos = repos.sort();
         });
         changeService.types().then(function(types) {
-          $scope.types = types;
+          $scope.types = types.sort();
         });
 
         setFilterTimes();
