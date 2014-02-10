@@ -38,9 +38,9 @@ passport.deserializeUser(function(obj, done) {
 var rtg = require('url').parse(process.env.REDISTOGO_URL)
   , rtgAuth = rtg.auth.split(':');
 
-app.use(express.cookieParser(process.env.cookieSecret || 'what does the fox say?'));
+app.use(express.cookieParser(process.env.COOKIE_SECRET || 'what does the fox say?'));
 app.use(express.session({
-  secret: process.env.sessionSecret || "ringydingidyindingdindga ding",
+  secret: process.env.SESSION_SECRET || "ringydingidyindingdindga ding",
   store : new RedisStore({
     host : rtg.hostname,
     port : rtg.port,
