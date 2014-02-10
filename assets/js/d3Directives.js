@@ -74,6 +74,9 @@
               time50: 'p50',
               tPut: 'Requests (/5min)'
             }
+            , colors = {
+              errRate : '#D9534F'
+            }
             , labels = {
               errRate : 'Err',
               mem : 'Mem',
@@ -175,7 +178,7 @@
 
               var max = maxes[name]
                 , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' })
-                , $container, $el, $an, datum, yMax, graph, hoverDetail, xAxis, yAxis, colors;
+                , $container, $el, $an, datum, yMax, graph, hoverDetail, xAxis, yAxis;
 
               if (graphs[name]) {
                 $container = graphs[name].empty();
@@ -237,7 +240,7 @@
               } else {
                 config.series = [{
                   // color: palette.color(),
-                  color: '#cae2f7',
+                  color: colors[name] || '#cae2f7',
                   name : labels[name],
                   data: datum
                 }];
