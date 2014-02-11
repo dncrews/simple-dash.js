@@ -25,6 +25,11 @@
         <span class="stats_fld" data-ng-bind="time.p95 || 'n/a'">
         </span><span class="suffix">ms</span>
       </span>
+      <span class="title">p50 response time</span>
+      <span class="metric">
+        <span class="stats_fld" data-ng-bind="time.p50 || 'n/a'">
+        </span><span class="suffix">ms</span>
+      </span>
     </div>
 
     <div class="item memory" data-ng-show="hasMemory">

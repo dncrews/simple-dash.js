@@ -5,36 +5,6 @@
   // No [] here to make sure we're getting and not creating
   var app = angular.module('fsDashboard');
 
-  app.directive('uptimeGraphRaw', [
-    '$window',
-    'd3Service',
-
-    function($window, d3Service) {
-      return {
-        link: link
-      };
-
-      function link(scope, element, attrs) {
-        if (! ($(element).is(':visible') && scope.pageType === 'app')) return;
-
-        d3Service.then(d3Handler);
-
-        function d3Handler(results) {
-          var Graphs = results[1]
-            , el = element[0]
-            , graphNames = ['tPut', 'time95', 'time75', 'time50', 'errRate', 'mem'];
-
-          var graphs = new Graphs(el, graphNames);
-
-          scope.$watch('history.length', function() {
-            graphs.render(scope.history, scope.events);
-          });
-        }
-
-      }
-    }
-  ]);
-
   app.directive('uptimeGraphRickshaw', [
     '$window',
     'd3Service',
@@ -50,7 +20,7 @@
         var graphNames = [];
 
         if (scope.hasThroughput) graphNames.push('tPut');
-        if (scope.hasRespTime) graphNames = graphNames.concat(['time', 'time95', 'time75', 'time50']);
+        if (scope.hasRespTime) graphNames = graphNames.concat(['time', 'time95', /*'time75',*/ 'time50']);
         if (scope.hasRespTime) graphNames.push('tPut');
         if (scope.hasErrorRate) graphNames.push('errRate');
         if (scope.hasMemory) graphNames.push('mem');
@@ -62,19 +32,19 @@
 
         function d3Handler(results) {
           var d3 = results[0]
-            , Graphs = results[1]
-            , Rickshaw = results[2]
+            , Rickshaw = results[1]
             , el = element[0]
             , titles = {
               errRate : 'Error Rate (%)',
               mem : 'Memory Usage (MB)',
               time: 'Response Time (ms)',
               time95: 'p95',
-              time75: 'p75',
+              // time75: 'p75',
               time50: 'p50',
               tPut: 'Requests (/5min)'
             }
             , colors = {
+              tPut: '#ABD9AB',
               errRate : '#D9534F'
             }
             , labels = {
@@ -82,7 +52,7 @@
               mem : 'Mem',
               time: 'Response Time',
               time95: 'p95',
-              time75: 'p75',
+              // time75: 'p75',
               time50: 'p50',
               tPut: 'Req'
             }
@@ -91,7 +61,7 @@
               mem : 'MB',
               time: 'ms',
               time95: 'ms',
-              time75: 'ms',
+              // time75: 'ms',
               time50: 'ms',
               tPut: 'req'
             }
@@ -103,7 +73,7 @@
               mem : 512,
               time : 5000,
               time95 : 5000,
-              time75 : 5000,
+              // time75 : 5000,
               time50 : 5000
             }
             , graphs = {}
@@ -156,7 +126,7 @@
               if (graphNames.indexOf('mem') !== -1) datum.mem = app.memory.avg || 0;
               if (graphNames.indexOf('time') !== -1) {
                 datum.time95 = app.time.p95 || 0;
-                datum.time75 = app.time.p75 || 0;
+                // datum.time75 = app.time.p75 || 0;
                 datum.time50 = app.time.p50 || 0;
               }
 
@@ -191,7 +161,7 @@
 
               if (name === 'time') {
                 yMax = 0;
-                ['time95','time75','time50'].map(function(t) {
+                ['time95',/*'time75',*/'time50'].map(function(t) {
                   var max = d3.max(data[t], function(d) { return d.y; });
                   if (max > yMax) yMax = max;
                 });
@@ -221,11 +191,11 @@
                     name : labels.time95,
                     data: data.time95
                   },
-                  {
-                    // color: '#caf7f6',
-                    name : labels.time75,
-                    data: data.time75
-                  },
+                  // {
+                  //   // color: '#caf7f6',
+                  //   name : labels.time75,
+                  //   data: data.time75
+                  // },
                   {
                     // color: '#cae2f7',
                     name : labels.time50,
@@ -234,7 +204,8 @@
                 ];
 
                 // Reverse the colors
-                config.series[2].color = palette.color();
+                // config.series[2].color = palette.color();
+                palette.color(); // To skip to the slightly lighter color
                 config.series[1].color = palette.color();
                 config.series[0].color = palette.color();
               } else {

@@ -12,7 +12,7 @@
     function($document, $q, $rootScope) {
       var dfd = $q.defer();
 
-      var scripts = [ 'http://d3js.org/d3.v3.min.js', 'js/d3graphs.js', 'vendor/rickshaw.min.js' ];
+      var scripts = [ 'http://d3js.org/d3.v3.min.js', 'vendor/rickshaw.min.js' ];
 
       var dfds = scripts.map(function(path) {
         var dfd = $q.defer()
@@ -36,7 +36,7 @@
 
       $q.all(dfds).then(function allReady() {
         // Load client in the browser
-        dfd.resolve([window.d3, window.graphingthingy, window.Rickshaw]);
+        dfd.resolve([window.d3, window.Rickshaw]);
       });
 
       return dfd.promise;
