@@ -76,8 +76,47 @@ PerformanceSchema.statics.fromSplunkPageReady = function(data) {
   return dfd.promise;
 };
 
-PerformanceSchema.statics.fromSplunkByBuckets = function(data, type) {
+PerformanceSchema.statics.fromSplunkHistogram = function(data) {
+  if (! data) return Q.reject(new Error('No Splunk data supplied'));
+  if (! data instanceof Array) return Q.reject(new Error('Improper splunk data supplied'));
 
+  var dfd = Q.defer()
+    , dfds = []
+    , created = []
+    , self = this
+    , appData = {}
+    , toCreate = []
+    , config;
+
+  data.map(function(datum) {
+    var key = datum.page_ready
+      , app;
+    for (var i in datum) {
+      if (i === 'page_ready') continue;
+      if (! datum.hasOwnProperty(i)) continue;
+
+      app = appData[i] = appData[i] || {};
+      app[key] = datum[i];
+    }
+  });
+
+  for (var i in appData) {
+    if (! appData.hasOwnProperty(i)) continue;
+    toCreate.push({
+      repo_name: i,
+      type: 'histogram',
+      meta: appData[i],
+      _raw: data
+    });
+  }
+
+  this.create(toCreate, function(err) {
+    var docs = Array.prototype.slice.call(arguments);
+    docs.shift();
+    dfd.resolve(docs);
+  });
+
+  return dfd.promise;
 };
 
 module.exports = mongoose.model('Performance', PerformanceSchema);

@@ -154,25 +154,25 @@ app.post('/change', function(req, res){
 app.get('/auth/github', passport.authenticate('github', { scope: 'repo' }));
 
 app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/?signin_failed=true' }), function(req, res) {
-    // Successful authentication, redirect home.
+  // Successful authentication, redirect home.
 
-    //if no user obj, try to login
-    if (!req.user) return res.redirect("/login");
+  //if no user obj, try to login
+  if (!req.user) return res.redirect("/login");
 
-    //am I a fs-webdev member?
-    GitHubApi.isMember(req, res, 'fs-webdev', req.user.profile.username, function(err, status) {
-      if(status === 204) return res.redirect('/'); //yes
+  //am I a fs-webdev member?
+  GitHubApi.isMember(req, res, 'fs-webdev', req.user.profile.username, function(err, status) {
+    if(status === 204) return res.redirect('/'); //yes
 
-      //am I an fs-eng member?
-      GitHubApi.isMember(req, res, 'fs-eng', req.user.profile.username, function(err, eng_status) {
-        if(eng_status === 204) return res.redirect('/'); //yes
+    //am I an fs-eng member?
+    GitHubApi.isMember(req, res, 'fs-eng', req.user.profile.username, function(err, eng_status) {
+      if(eng_status === 204) return res.redirect('/'); //yes
 
-        req.logout(); //sign me out, since I am not a member of fs-eng or fs-webdev
-        res.clearCookie('accessToken');
-        res.redirect('/?signin_failed=true'); //redirect and show banner
-      }); //isMember() fs-eng
-      //TODO: move this code out of app.js?
-    });//isMember() fs-webdev
+      req.logout(); //sign me out, since I am not a member of fs-eng or fs-webdev
+      res.clearCookie('accessToken');
+      res.redirect('/?signin_failed=true'); //redirect and show banner
+    }); //isMember() fs-eng
+    //TODO: move this code out of app.js?
+  });//isMember() fs-webdev
 
 });
 

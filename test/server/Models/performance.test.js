@@ -16,8 +16,7 @@ describe('Performance Statistics interface:', function() {
 
     describe('Given a valid sample splunk page_ready_by_app, fromSplunkPageReady', function() {
       var mockData = getMockData('good')
-        , stat
-        , stats;
+        , stat, stats;
 
       before(function(done) {
         Model.fromSplunkPageReady(mockData).then(function(doc) {
@@ -121,10 +120,41 @@ describe('Performance Statistics interface:', function() {
 
   });
 
-  describe('perf.dashboard.frontier.page_ready_by_count_buckets', function() {
+  describe('perf.dashboard.frontier.page_ready_histogram', function() {
 
-    describe('Given a good pageReadyByBucket, fromSplunk', function() {
+    describe('Given a good pageReadyByBucket, fromSplunkHistogram', function() {
+      var mockData = getMockData('good')
+        , stat, stats;
 
+      before(function(done) {
+        Model.fromSplunkHistogram(mockData).then(function(doc) {
+          Model.find().sort({ repo_name : 1 }).exec(function(err, docs) {
+            stats = docs;
+            stat = docs[0];
+            done();
+          });
+        });
+      });
+
+      it('should save data for each app', function() {
+        expect(stats.length).to.be(2);
+        expect(stats[0].repo_name).to.be('home');
+        expect(stats[1].repo_name).to.be('photos');
+      });
+      it('should save the raw data as _raw', function() {
+        expect(stat._raw).to.eql(mockData);
+      });
+      it('should set the repo_name', function() {
+        expect(stat.repo_name).to.be('home');
+      });
+      it('should set the type as histogram', function() {
+        expect(stat.type).to.be('histogram');
+      });
+      it('should set the meta.XXX-XXX data', function() {
+        expect(stat.meta['3000-3500']).to.be('3873');
+        expect(stat.meta['7000-7500']).to.be('910');
+        expect(stat.meta['18500-19000']).to.be('74');
+      });
     });
 
     function getMockData(type) {
@@ -178,7 +208,3 @@ describe('Performance Statistics interface:', function() {
   });
 
 });
-
-
-
-
