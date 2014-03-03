@@ -19,7 +19,7 @@ describe('Changes interface:', function() {
         , appRestarted, change;
 
       before(function(done) {
-        Model.mockRestart(function(app_name, cb) {
+        Model.mockRestart(function(app_name, reason, cb) {
           restartCalled++;
           appRestarted = app_name;
           cb(true);

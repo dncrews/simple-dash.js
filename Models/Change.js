@@ -64,7 +64,7 @@ ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
   var dfd = Q.defer()
     , Change = this;
 
-  restart(app_name, function(restarted) {
+  restart(app_name, reason, function(restarted) {
     var change;
     if (restarted instanceof Error) return dfd.reject(restarted);
 
@@ -147,7 +147,7 @@ ChangeSchema.statics.fromJenkins = function(data, action) {
  * @param  {String} app_name Heroku App name that had action performed
  * @param  {String} action   (restart) The action taken that should be logged
  * @param  {String} reason   The reason the action was performed
- * @return {Change}        Instance of ChangeSchema (not saved)
+ * @return {Change}          Instance of ChangeSchema (not saved)
  */
 ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
   if (! app_name) return new Error('No Marrow app_name supplied');
@@ -200,16 +200,17 @@ restart = doRestart;
  * Return of `Error`: Heroku app was not able to restart
  *
  * @param  {String}   app_name Name of the Heroku app to restart
+ * @param  {String}   reason   The reason for restarting the Heroku app
  * @param  {Function} cb       Function to be perfored on completion
  * @return {Boolean}
  */
-function doRestart(app_name, cb) {
+function doRestart(app_name, reason, cb) {
   if (! app_name) {
     return cb && cb(new Error('No Marrow app_name supplied'));
   }
 
   if (! heroku) {
-    console.error('Restart Requested; Heroku not configured');
+    console.error('Restart Requested; Heroku not configured. Cause: ' + reason);
     return cb(false);
   }
 
@@ -222,7 +223,7 @@ function doRestart(app_name, cb) {
     }
 
     if (! sendgrid) {
-      console.error('Restart occurred. Sendgrid not configured');
+      console.error('Restart occurred. Sendgrid not configured. Cause: ' + reason);
       return cb(true);
     }
 
@@ -230,7 +231,7 @@ function doRestart(app_name, cb) {
       to: process.env.RESTART_EMAIL_TO,
       from: process.env.RESTART_EMAIL_FROM,
       subject: 'Automatic app restart',
-      text: 'The Heroku app "' + app_name + '" has been automatically restarted. Be advised.'
+      text: 'The Heroku app "' + app_name + '" has been automatically restarted. Be advised. Cause: ' + reason
     }, function(err, json) {
       if (err) {
         console.error('Restart occurred. Sendgrid error', err);
