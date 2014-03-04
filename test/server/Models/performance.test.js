@@ -48,11 +48,11 @@ describe('Performance Statistics interface:', function() {
       it('should set the meta.pXX data', function() {
         var meta = stat.meta;
         expect(meta).to.be.an(Object);
-        expect(meta.p25).to.be('2490');
-        expect(meta.p50).to.be('3820');
-        expect(meta.p75).to.be('5800');
-        expect(meta.p95).to.be('14000');
-        expect(meta.count).to.be('47159');
+        expect(meta.p25).to.be(2490);
+        expect(meta.p50).to.be(3820);
+        expect(meta.p75).to.be(5800);
+        expect(meta.p95).to.be(14000);
+        expect(meta.count).to.be(47159);
       });
     });
 

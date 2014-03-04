@@ -24,6 +24,7 @@
         if (scope.hasRespTime) graphNames.push('tPut');
         if (scope.hasErrorRate) graphNames.push('errRate');
         if (scope.hasMemory) graphNames.push('mem');
+        if (scope.hasPerformance) graphNames = graphNames.concat(['pageReady', 'pageReady95', 'pageReady50']);
 
         if (! graphNames.length) return;
 
@@ -41,11 +42,16 @@
               time95: 'p95',
               // time75: 'p75',
               time50: 'p50',
-              tPut: 'Requests (/5min)'
+              tPut: 'Requests (/5min)',
+              pageReady: 'Page Ready',
+              pageReady95: 'Page Ready (p95)',
+              pageReady50: 'Page Ready (p50)'
             }
             , colors = {
               tPut: '#ABD9AB',
-              errRate : '#D9534F'
+              errRate : '#D9534F',
+              pageReady95: '#ABD9AB',
+              pageReady50: '#ABD9AB'
             }
             , labels = {
               errRate : 'Err',
@@ -54,7 +60,9 @@
               time95: 'p95',
               // time75: 'p75',
               time50: 'p50',
-              tPut: 'Req'
+              tPut: 'Req',
+              pageReady95: 'p95',
+              pageReady50: 'p50'
             }
             , suffixes = {
               errRate : '%',
@@ -63,7 +71,9 @@
               time95: 'ms',
               // time75: 'ms',
               time50: 'ms',
-              tPut: 'req'
+              tPut: 'req',
+              pageReady95: 'ms',
+              pageReady50: 'ms'
             }
             , heights = {
               time : 200
@@ -108,7 +118,8 @@
               var selections = {
                 app: bucket.app,
                 upstream : bucket.meta,
-                service: bucket
+                service: bucket,
+                performance: bucket.meta
               };
 
               var app = selections[scope.pageType] || {
@@ -129,10 +140,14 @@
                 // datum.time75 = app.time.p75 || 0;
                 datum.time50 = app.time.p50 || 0;
               }
+              if (graphNames.indexOf('pageReady95') !== -1) datum.pageReady95 = app.p95;
+              if (graphNames.indexOf('pageReady50') !== -1) datum.pageReady50 = app.p50;
 
               graphNames.map(function(name) {
-                if (name === 'time') return;
+                if (['time', 'pageReady'].indexOf(name) !== -1) return;
+
                 if (typeof data[name] === 'undefined') data[name] = [];
+                if (typeof datum[name] === 'string') datum[name] = parseInt(datum[name], 10) || 0;
 
                 data[name].unshift({
                   x : datum.date,
@@ -144,7 +159,7 @@
             });
 
             graphNames.map(function(name) {
-              if (name === 'time95' || name === 'time75' || name === 'time50') return;
+              if (['time95','time75','time50','pageReady95','pageReady50'].indexOf(name) !== -1) return;
 
               var max = maxes[name]
                 , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' })
@@ -162,6 +177,12 @@
               if (name === 'time') {
                 yMax = 0;
                 ['time95',/*'time75',*/'time50'].map(function(t) {
+                  var max = d3.max(data[t], function(d) { return d.y; });
+                  if (max > yMax) yMax = max;
+                });
+              } else if (name === 'pageReady') {
+                yMax = 0;
+                ['pageReady95', 'pageReady50'].map(function(t) {
                   var max = d3.max(data[t], function(d) { return d.y; });
                   if (max > yMax) yMax = max;
                 });
@@ -208,6 +229,30 @@
                 palette.color(); // To skip to the slightly lighter color
                 config.series[1].color = palette.color();
                 config.series[0].color = palette.color();
+              } else if (name === 'pageReady') {
+                config.series = [
+                  {
+                    // color: '#caccf7',
+                    name : labels.pageReady95,
+                    data: data.pageReady95
+                  },
+                  // {
+                  //   // color: '#caf7f6',
+                  //   name : labels.pageReady75,
+                  //   data: data.pageReady75
+                  // },
+                  {
+                    // color: '#cae2f7',
+                    name : labels.pageReady50,
+                    data: data.pageReady50
+                  }
+                ];
+
+                // Reverse the colors
+                // config.series[2].color = palette.color();
+                palette.color(); // To skip to the slightly lighter color
+                config.series[1].color = palette.color();
+                config.series[0].color = palette.color();
               } else {
                 config.series = [{
                   // color: palette.color(),
@@ -226,7 +271,7 @@
                 graph : graph,
                 formatter : function(series, x, y, formattedX, formattedY, d) {
                   var suf = suffixes[name] || ''
-                    , pref = name === 'time' ? series.name + ': ' : '';
+                    , pref = name === 'time' || name === 'pageReady' ? series.name + ': ' : '';
 
                   return pref + y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + suf;
                 },

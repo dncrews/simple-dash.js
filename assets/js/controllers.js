@@ -205,10 +205,11 @@
     function AppDetailsCtrl($rootScope, $scope, $routeParams, $location, $q, service) {
       resetPage($rootScope);
       var name = $routeParams.name;
+      $scope.appName = name;
       $rootScope.refresh = load;
       $rootScope.pageType = 'app';
       $scope.pageTitle = name + ' Status';
-      setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasServices', 'hasEvents']);
+      setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasServices', 'hasEvents', 'hasPeformanceTabs']);
       $scope.loading = {
         'main' : true,
         'services' : true,
@@ -290,6 +291,51 @@
         $scope.statusClass = statusClass;
         $scope.glyph = classToGlyph(statusClass);
       }
+
+      function getTime(time) {
+        var updated = moment(time);
+        return {
+          formatted: updated.format('h:mm a'),
+          delta: updated.fromNow()
+        };
+      }
+    }
+  ]);
+
+  app.controller('AppPerformanceCtrl', [
+    '$rootScope',
+    '$scope',
+    '$routeParams',
+    '$location',
+    '$q',
+    'dashService',
+
+    function AppPerformanceCtrl($rootScope, $scope, $routeParams, $location, $q, service) {
+      resetPage($rootScope);
+      var name = $routeParams.name;
+      $scope.appName = name;
+      $rootScope.refresh = load;
+      $rootScope.pageType = 'performance';
+      $scope.pageTitle = name + ' Performance';
+      setFeatures($scope, ['hasPerformance', 'hasPeformanceTabs']);
+
+      $scope.loading = {
+        'main' : true
+      };
+
+      function load() {
+        service.performance.details(name).then(function (perfList) {
+          window.clearTimeout(reload);
+          $rootScope.updated = {};
+          $scope.history = perfList;
+
+          $rootScope.updated = getTime(perfList[0].bucket_time);
+
+          reload = window.setTimeout(load, 60000);
+        });
+      }
+
+      load();
 
       function getTime(time) {
         var updated = moment(time);

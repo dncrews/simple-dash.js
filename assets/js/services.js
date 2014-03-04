@@ -46,13 +46,15 @@
       var app = restify('app', ['index','details'])
         , service = restify('service', ['index','details','app'])
         , upstream = restify('upstream', ['index','details'])
-        , change = restify('change', ['index','app']);
+        , change = restify('change', ['index','app'])
+        , performance = restify('performance', ['details', 'graph']);
 
       return {
         app: app,
         service: service,
         upstream: upstream,
-        change: change
+        change: change,
+        performance: performance
       };
 
       function restify(type, list) {
@@ -60,7 +62,8 @@
           , getters = {
             index : getIndex,
             details : getDetails,
-            app : getAppSpecific
+            app : getAppSpecific,
+            graph : getHistogram
           }
           , i, l, obj = {};
 
@@ -96,6 +99,16 @@
           var dfd = $q.defer();
           $http
             .get(ENDPOINT + _type + '/app/' + name)
+            .success(dfd.resolve)
+            .error(dfd.reject);
+
+          return dfd.promise;
+        }
+
+        function getHistogram(name) {
+          var dfd = $q.defer();
+          $http
+            .get(ENDPOINT + _type + '/histogram/' + name)
             .success(dfd.resolve)
             .error(dfd.reject);
 

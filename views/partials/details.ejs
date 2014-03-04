@@ -2,6 +2,7 @@
 
   <div class="mast_head section">
     <h1 class="page_title" data-ng-bind="pageTitle"></h1>
+    <div data-detail-tabs data-ng-show="hasPeformanceTabs"></div>
     <div class="curr_status" data-ng-class="statusClass">
       <span class="glyphicon" data-ng-class="glyph" style="top: 4px;"></span>
       <span style="text-transform: capitalize;" data-ng-bind="status" class="stats_fld"></span>

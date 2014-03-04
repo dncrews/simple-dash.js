@@ -18,6 +18,14 @@
           templateUrl: '/partials/details',
           controller: 'AppDetailsCtrl'
         })
+        .when('/app/:name/uptime', {
+          templateUrl: '/partials/details',
+          controller: 'AppDetailsCtrl'
+        })
+        .when('/performance/:name', {
+          templateUrl: '/partials/performance',
+          controller: 'AppPerformanceCtrl'
+        })
         .when('/service/:name', {
           templateUrl: '/partials/details',
           controller: 'ServiceDetailsCtrl'

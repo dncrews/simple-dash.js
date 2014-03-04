@@ -48,11 +48,11 @@ PerformanceSchema.statics.fromSplunkPageReady = function(data) {
       repo_name : datum.app,
       type : 'pageReady',
       meta : {
-        p25 : datum.p25,
-        p50 : datum.p50,
-        p75 : datum.p75,
-        p95 : datum.p95,
-        count : datum.count,
+        p25 : parseInt(datum.p25, 10) || 0,
+        p50 : parseInt(datum.p50, 10) || 0,
+        p75 : parseInt(datum.p75, 10) || 0,
+        p95 : parseInt(datum.p95, 10) || 0,
+        count : parseInt(datum.count, 10) || 0
       }
     };
 

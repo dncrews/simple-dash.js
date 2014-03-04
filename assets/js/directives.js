@@ -174,4 +174,45 @@
     }
   ]);
 
+  app.directive('detailTabs', [
+    '$location',
+
+    function($location) {
+      return {
+        restrict: 'A',
+        replace: true,
+        scope: true,
+        template: '' +
+          '<ul class="nav nav-tabs">' +
+          '  <li class="uptime"><a data-ng-href="/app/{{ appName }}">Uptime</a></li>' +
+          '  <li class="performance"><a data-ng-href="/performance/{{ appName }}">Performance</a></li>' +
+          '</ul>',
+        link: function(scope, element, attrs) {
+          var typeMap = {
+              app : 'uptime',
+              performance: 'performance'
+            }
+          , active = typeMap[scope.pageType];
+
+          if (! active) return;
+
+          element.find('.' + active).addClass('active');
+          element.on('click', 'a', function(evt) {
+            var $this = $(this);
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            if ($this.parent().hasClass('active')) return;
+
+            scope.$apply(function() {
+              $location.path($this.attr('href'));
+            });
+
+
+          });
+        }
+      }
+    }
+  ]);
+
 })(window.angular, window.moment, window.jQuery);
