@@ -43,9 +43,7 @@
               // time75: 'p75',
               time50: 'p50',
               tPut: 'Requests (/5min)',
-              pageReady: 'Page Ready',
-              pageReady95: 'Page Ready (p95)',
-              pageReady50: 'Page Ready (p50)'
+              pageReady: 'RUM Page Ready'
             }
             , colors = {
               tPut: '#ABD9AB',
