@@ -5,6 +5,134 @@
   // No [] here to make sure we're getting and not creating
   var app = angular.module('fsDashboard');
 
+  // This is the new d3 Directive.
+  // This is where all new graphs should go
+  app.directive('fsGraph', [
+    'd3Service',
+
+    function(d3Service) {
+      return { link: link };
+
+      function link(scope, element, attrs) {
+
+        d3Service.then(function(results) {
+          var d3 = results[0]
+            , Rickshaw = results[1]
+            , el = element[0];
+
+          var config = element.data('fsGraph');
+
+          scope.$watch(config.data, function(newValue) {
+            if (! newValue) return;
+
+            scope.hasGraphs = true;
+
+            render(newValue.graphData, null, config);
+          });
+
+          element.append('<h3 class="graph-title">' + config.title + '</h3>');
+
+          function render(data, events, config) {
+            if (! data) return;
+            element.find('.inner-graph, .anotations').remove();
+            var $el = $('<div class="inner-graph"></div>').appendTo(element)
+              , $an = $('<div class="anotations"></div>').appendTo(element);
+
+            var max = config.max || 0
+              , yMax = 0
+              , palette = new Rickshaw.Color.Palette({ scheme: 'spectrum14' });
+
+            palette.color(); // To skip to the slightly lighter color
+
+            if (config.multiSeries) {
+              data.reverse().map(function(item) {
+                item.color = palette.color();
+                var max = d3.max(item.data, function(d) { return d.y; });
+                if (max > yMax) yMax = max;
+              });
+            } else {
+              yMax = d3.max(data, function(d) { return d.y; });
+            }
+
+            if (max > yMax) yMax = max;
+            yMax *= 1.25;
+
+            var graphConfig = {
+              element : $el[0],
+              width: $el[0].offsetWidth,
+              height: config.height || 60,
+              renderer: 'unstackedarea',
+              stroke: true
+            };
+
+            if (! config.multiSeries) {
+              graphConfig.series = [{
+                color: config.color || '#cae2f7',
+                name : config.label,
+                data : data
+              }];
+            } else {
+              graphConfig.series = data.reverse();
+            }
+
+            $el.empty();
+            var graph = new Rickshaw.Graph(graphConfig);
+
+            graph.configure({ max : yMax });
+            graph.render();
+
+            var hoverConfig = {
+              graph : graph,
+              formatter : function(series, x, y, formattedX, formattedY, d) {
+                var suffix = config.suffix || ''
+                  , prefix = d.value.label + ': ' || config.prefix || '';
+
+                return prefix + y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + suffix;
+              }
+            };
+
+            if (config.multiSeries) {
+              hoverConfig.xFormatter = function(seconds) {
+                var tzOffset = new Date().getTimezoneOffset() * 60
+                  , time = moment.unix(seconds + tzOffset)
+                  , times = {
+                  formatted: time.format('h:mm a'),
+                  delta: time.fromNow()
+                };
+
+                return times.formatted + ' (' + times.delta + ')';
+              }
+            }
+
+            var hoverDetail = new Rickshaw.Graph.HoverDetail(hoverConfig);
+
+            var yAxis = new Rickshaw.Graph.Axis.Y({
+              graph : graph,
+              ticks: 3,
+              tickFormat: Rickshaw.Fixtures.Number.formatKMBT
+            });
+
+            var xConfig = {
+              graph : graph
+            };
+
+            var xAxis;
+
+            var graphType = config.type || 'Time'
+              , xAxis = new Rickshaw.Graph.Axis[graphType](xConfig);
+
+            xAxis.render();
+            yAxis.render();
+          }
+
+
+        });
+      }
+    }
+  ])
+
+  // This is the old d3 directive. Most graphs use this
+  // TODO: Migrate to fsGraph directive and deprecate
   app.directive('uptimeGraphRickshaw', [
     '$window',
     'd3Service',

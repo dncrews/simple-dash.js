@@ -36,6 +36,17 @@
 
       $q.all(dfds).then(function allReady() {
         // Load client in the browser
+        window.Rickshaw.namespace('Rickshaw.Graph.Renderer.UnstackedArea');
+        window.Rickshaw.Graph.Renderer.UnstackedArea = window.Rickshaw.Class.create(window.Rickshaw.Graph.Renderer.Area, {
+          name: 'unstackedarea',
+          defaults: function($super) {
+            return window.Rickshaw.extend($super(), {
+              unstack: true,
+              fill: false,
+              stroke: false
+            });
+          }
+        });
         dfd.resolve([window.d3, window.Rickshaw]);
       });
 

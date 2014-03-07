@@ -323,14 +323,59 @@
         'main' : true
       };
 
+
       function load() {
-        service.performance.details(name).then(function (perfList) {
+        var dfds = [
+          service.performance.details(name),
+          service.performance.graph(name)
+        ];
+        dfds[0].then(function(perfList) {
           window.clearTimeout(reload);
-          $rootScope.updated = {};
-          $scope.history = perfList;
+          $rootScope.updated = getTime(perfList[0].created_at);
 
-          $rootScope.updated = getTime(perfList[0].bucket_time);
+          var graphData = [
+              { name: 'p95', data: []},
+              { name: 'p50', data: []}
+            ]
+          , dataMap = {
+              p95: graphData[0].data,
+              p50: graphData[1].data
+            };
+          perfList.map(function(item) {
+            // var date = moment(new Date(item.created_at))
+            var date = ((new Date(item.created_at)).getTime() / 1000) - tzOffset;
+            // var date = item.created_at;
+            dataMap.p95.unshift({
+              label: 'p95',
+              x: date,
+              y: Number(item.meta.p95)
+            });
+            dataMap.p50.unshift({
+              label: 'p50',
+              x: date,
+              y: Number(item.meta.p50)
+            });
+          });
+          $scope.pageReadyGraph = { graphData : graphData };
+        });
 
+        dfds[1].then(function(histData) {
+          var meta = histData.meta;
+          histData.graphData = [];
+          for (var k in meta) {
+            if (! meta.hasOwnProperty(k)) continue;
+
+            histData.graphData.push({
+              label : k + 'ms',
+              x : Number(k.split('-')[1]),
+              y : Number(meta[k])
+            });
+          }
+          $scope.histogramGraph = histData;
+          $scope.histData = histData;
+        });
+
+        $q.all(dfds).then(function() {
           reload = window.setTimeout(load, 60000);
         });
       }
@@ -487,5 +532,7 @@
       $scope[list[i]] = true;
     }
   }
+
+  var tzOffset = new Date().getTimezoneOffset() * 60;
 
 })(window.angular, window.jQuery, window.moment);

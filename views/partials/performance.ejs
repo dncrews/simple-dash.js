@@ -6,11 +6,21 @@
 
   <div data-detail-tabs></div>
 
-  <div class="history section graph" data-ng-show="hasGraphs">
+  <div class="history section graph">
     <h2 class="section_heading">Performance Graphs</h2>
-    <div class="uptime-graph">
-      <div data-uptime-graph-rickshaw></div>
-    </div><!-- /.history_timeline -->
+
+    <div class='graph' data-fs-graph='{
+      "title" : "Page Ready Histogram (4hr rollup)",
+      "data" : "histogramGraph",
+      "type" : "X",
+      "height" : "200"
+    }'></div>
+    <div class='graph' data-fs-graph='{
+      "title" : "Page Ready over Time",
+      "data" : "pageReadyGraph",
+      "multiSeries" : true,
+      "height" : "125"
+    }'></div>
   </div><!-- /.history.section -->
 
 </div> <!-- /.detail -->
