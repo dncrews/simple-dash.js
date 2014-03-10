@@ -47,7 +47,7 @@
         , service = restify('service', ['index','details','app'])
         , upstream = restify('upstream', ['index','details'])
         , change = restify('change', ['index','app'])
-        , performance = restify('performance', ['details', 'graph']);
+        , performance = restify('performance', ['details', 'graph', 'pages']);
 
       return {
         app: app,
@@ -60,10 +60,11 @@
       function restify(type, list) {
         var _type = type
           , getters = {
-            index : getIndex,
-            details : getDetails,
-            app : getAppSpecific,
-            graph : getHistogram
+            index : getData(),
+            details : getData('/'),
+            app : getData('/app/'),
+            graph : getData('/histogram/'),
+            pages : getData('/pages/')
           }
           , i, l, obj = {};
 
@@ -83,37 +84,23 @@
           return dfd.promise;
         }
 
-        function getDetails(name) {
-          var dfd = $q.defer();
+        function getData(path) {
+          return function(name) {
+            var dfd = $q.defer()
+              , url = ENDPOINT + _type;
 
-          name = encodeURIComponent(name);
-          $http
-            .get(ENDPOINT + _type + '/' + name)
-            .success(dfd.resolve)
-            .error(dfd.reject);
+            if (path) url += path;
+            if (name) url += encodeURIComponent(name);
 
-          return dfd.promise;
+            $http
+              .get(url)
+              .success(dfd.resolve)
+              .error(dfd.reject);
+
+            return dfd.promise;
+          }
         }
 
-        function getAppSpecific(name) {
-          var dfd = $q.defer();
-          $http
-            .get(ENDPOINT + _type + '/app/' + name)
-            .success(dfd.resolve)
-            .error(dfd.reject);
-
-          return dfd.promise;
-        }
-
-        function getHistogram(name) {
-          var dfd = $q.defer();
-          $http
-            .get(ENDPOINT + _type + '/histogram/' + name)
-            .success(dfd.resolve)
-            .error(dfd.reject);
-
-          return dfd.promise;
-        }
       }
     }
 

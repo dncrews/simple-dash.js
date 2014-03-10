@@ -313,6 +313,9 @@
     function AppPerformanceCtrl($rootScope, $scope, $routeParams, $location, $q, service) {
       resetPage($rootScope);
       var name = $routeParams.name;
+
+      // Search all start with search-
+      if (name.indexOf('search-') === 0) name = 'search';
       $scope.appName = name;
       $rootScope.refresh = load;
       $rootScope.pageType = 'performance';
@@ -327,7 +330,8 @@
       function load() {
         var dfds = [
           service.performance.details(name),
-          service.performance.graph(name)
+          service.performance.graph(name),
+          service.performance.pages(name)
         ];
         dfds[0].then(function(perfList) {
           window.clearTimeout(reload);
@@ -373,6 +377,13 @@
           }
           $scope.histogramGraph = histData;
           $scope.histData = histData;
+        });
+
+        dfds[2].then(function(pageData) {
+          if (! pageData) return;
+
+          console.log(pageData.meta.pages);
+          $scope.pageData = pageData.meta.pages;
         });
 
         $q.all(dfds).then(function() {

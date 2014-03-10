@@ -9,6 +9,26 @@
   <div class="history section graph">
     <h2 class="section_heading">Performance Graphs</h2>
 
+    <table class="table table-striped table-hover table-condensed">
+      <caption>PageReady by Page Names</caption>
+      <thead>
+        <th>Page Name</th>
+        <th>Count</th>
+        <th>p95</th>
+        <th>p75</th>
+        <th>p50</th>
+        <th>p25</th>
+      </thead>
+      <tr data-ng-repeat="metric in pageData">
+        <td data-ng-bind="metric.pageName"></td>
+        <td data-ng-bind="metric.count"></td>
+        <td data-ng-bind="metric.p95"></td>
+        <td data-ng-bind="metric.p75"></td>
+        <td data-ng-bind="metric.p50"></td>
+        <td data-ng-bind="metric.p25"></td>
+      </tr>
+    </table>
+
     <div class='graph' data-fs-graph='{
       "title" : "Page Ready Histogram (4hr rollup)",
       "data" : "histogramGraph",
