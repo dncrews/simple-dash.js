@@ -120,6 +120,92 @@ describe('Performance Statistics interface:', function() {
 
   });
 
+  describe('perf.dashboard.frontier.page_ready_by_page', function() {
+
+    describe('Given a good pageReadyByPage, fromSplunkPageReadyByPage', function() {
+      var mockData = getMockData('good')
+        , stat, stats;
+
+      before(function(done) {
+        Model.fromSplunkPageReadyByPage(mockData).then(function(doc) {
+          Model.find().sort({ repo_name : 1 }).exec(function(err, docs) {
+            stats = docs;
+            stat = docs[2];
+            done();
+          });
+        });
+      });
+
+      it('should save data for each app', function() {
+        expect(stats.length).to.be(3);
+        expect(stats[0].repo_name).to.be('frontier-tree');
+        expect(stats[1].repo_name).to.be('home');
+        expect(stats[2].repo_name).to.be('search');
+      });
+      it('should save the raw data as _raw', function() {
+        expect(stat._raw).to.eql(mockData);
+      });
+      it('should set the type as pageReadyByPage', function() {
+        expect(stat.type).to.be('pageReadyByPage');
+      });
+      it('should set the meta.pages data', function() {
+        expect(stat.meta.pages[0]).to.eql({
+          p95 : 6600,
+          p75 : 3510,
+          p50 : 2540,
+          p25 : 1910,
+          count : 90715,
+          pageName : "Search: Viewer"
+        });
+      });
+    });
+
+
+    function getMockData(type) {
+      var mocks = {
+        good : [
+          {
+            "count":"90715",
+            "p75":"3510",
+            "app":"search",
+            "p95":"6600",
+            "p25":"1910",
+            "pageName":"Search: Viewer",
+            "p50":"2540"
+          },
+          {
+            "count":"43281",
+            "p75":"3430",
+            "app":"search",
+            "p95":"9000",
+            "p25":"1670",
+            "pageName":"Search: Results",
+            "p50":"2340"
+          },
+          {
+            "count":"25679",
+            "p75":"6400",
+            "app":"home",
+            "p95":"16000",
+            "p25":"2590",
+            "pageName":"Home: Homepage",
+            "p50":"3900"
+          },
+          {
+            "count":"14860",
+            "p75":"5760",
+            "app":"frontier-tree",
+            "p95":"11100",
+            "p25":"2640",
+            "pageName":"Frontier-Tree: Homepage",
+            "p50":"3610"
+          }
+        ]
+      };
+      return mocks[type];
+    }
+  });
+
   describe('perf.dashboard.frontier.page_ready_histogram', function() {
 
     describe('Given a good pageReadyByBucket, fromSplunkHistogram', function() {
@@ -143,9 +229,6 @@ describe('Performance Statistics interface:', function() {
       });
       it('should save the raw data as _raw', function() {
         expect(stat._raw).to.eql(mockData);
-      });
-      it('should set the repo_name', function() {
-        expect(stat.repo_name).to.be('home');
       });
       it('should set the type as histogram', function() {
         expect(stat.type).to.be('histogram');

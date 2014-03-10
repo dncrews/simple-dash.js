@@ -70,3 +70,75 @@
     { "photos": "12", "page_ready": "19500-20000", "home": "57" }
   ]
 }
+
+
+
+{
+  "src":"splunk",
+  "alert_title":"perf.dashboard.frontier.page_ready_by_page",
+  "data":[
+    {
+      "count":"90715",
+      "p75":"3510",
+      "app":"search",
+      "p95":"6600",
+      "p25":"1910",
+      "pageName":"FamilySearch: Search: Records : Viewer | Logged Out",
+      "p50":"2540"
+    },
+    {
+      "count":"43281",
+      "p75":"3430",
+      "app":"search",
+      "p95":"9000",
+      "p25":"1670",
+      "pageName":"FamilySearch: Search: Records : Results | Logged Out",
+      "p50":"2340"
+    },
+    {
+      "count":"41132",
+      "p75":"3820",
+      "app":"search",
+      "p95":"7900",
+      "p25":"1970",
+      "pageName":"FamilySearch: Search: Records : Details | Logged Out",
+      "p50":"2680"
+    },
+    {
+      "count":"25679",
+      "p75":"6400",
+      "app":"home",
+      "p95":"16000",
+      "p25":"2590",
+      "pageName":"FamilySearch: Home: Homepage | Logged Out",
+      "p50":"3900"
+    },
+    {
+      "count":"24725",
+      "p75":"3330",
+      "app":"search",
+      "p95":"6600",
+      "p25":"1800",
+      "pageName":"FamilySearch: Search: Records : Details | Logged In",
+      "p50":"2370"
+    },
+    {
+      "count":"23174",
+      "p75":"3360",
+      "app":"search",
+      "p95":"6100",
+      "p25":"1860",
+      "pageName":"FamilySearch: Search: Records : Viewer | Logged In",
+      "p50":"2430"
+    },
+    {
+      "count":"21894",
+      "p75":"3110",
+      "app":"search",
+      "p95":"6400",
+      "p25":"1660",
+      "pageName":"FamilySearch: Search: Records : Results | Logged In",
+      "p50":"2210"
+    }
+  ]
+}

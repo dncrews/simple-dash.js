@@ -76,7 +76,8 @@ PerformanceSchema.statics.fromSplunkPageReady = function(data) {
   return dfd.promise;
 };
 
-PerformanceSchema.statics.fromSplunkHistogram = function(data) {
+PerformanceSchema.statics.fromSplunkPageReadyByPage = function(data) {
+
   if (! data) return Q.reject(new Error('No Splunk data supplied'));
   if (! data instanceof Array) return Q.reject(new Error('Improper splunk data supplied'));
 
@@ -87,6 +88,50 @@ PerformanceSchema.statics.fromSplunkHistogram = function(data) {
     , appData = {}
     , toCreate = []
     , config;
+
+  data.map(function(datum) {
+    var appName = datum.app
+      , app;
+    if (! appData[appName]) appData[appName] = [];
+
+    appData[appName].push({
+      pageName : datum.pageName,
+      p95 : parseInt(datum.p95, 10) || 0,
+      p75 : parseInt(datum.p75, 10) || 0,
+      p50 : parseInt(datum.p50, 10) || 0,
+      p25 : parseInt(datum.p25, 10) || 0,
+      count : parseInt(datum.count, 10) || 0
+    });
+  });
+
+  for (var i in appData) {
+    if (! appData.hasOwnProperty(i)) continue;
+    toCreate.push({
+      repo_name: i,
+      type: 'pageReadyByPage',
+      meta: { pages : appData[i] },
+      _raw: data
+    });
+  }
+
+  this.create(toCreate, function(err) {
+    var docs = Array.prototype.slice.call(arguments);
+    docs.shift();
+    dfd.resolve(docs);
+  });
+
+  dfd.resolve();
+
+  return dfd.promise;
+};
+
+PerformanceSchema.statics.fromSplunkHistogram = function(data) {
+  if (! data) return Q.reject(new Error('No Splunk data supplied'));
+  if (! data instanceof Array) return Q.reject(new Error('Improper splunk data supplied'));
+
+  var dfd = Q.defer()
+    , appData = {}
+    , toCreate = [];
 
   data.map(function(datum) {
     var key = datum.page_ready
