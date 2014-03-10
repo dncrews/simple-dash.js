@@ -382,7 +382,6 @@
         dfds[2].then(function(pageData) {
           if (! pageData) return;
 
-          console.log(pageData.meta.pages);
           $scope.pageData = pageData.meta.pages;
         });
 
