@@ -18,8 +18,8 @@ var mongoose = require('mongoose')
  */
 var debug = _debug('marrow:models:upstream')
   , verbose = _debug('marrow:models:upstream-verbose')
-  , DOWN_RATE = 75
-  , WARNING_RATE = 50;
+  , DOWN_RATE = 15
+  , WARNING_RATE = 10;
 
 /**
  * Schema Declaration
