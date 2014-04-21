@@ -34,9 +34,9 @@
         <% } %>
         <ul class="nav navbar-nav navbar-right">
           <% if (req.user) { %>
-            <li><a href="<%- assetPath %>logout">Sign out</a></li>
+            <li><a target="_self" href="<%- assetPath %>logout">Sign out</a></li>
           <% } else { %>
-            <li><a href="<%- assetPath %>login">Sign in</a></li>
+            <li><a target="_self" href="<%- assetPath %>login">Sign in</a></li>
           <% } %>
         </ul>
       </div><!--/.nav-collapse -->
@@ -66,10 +66,10 @@
   <div class="switch-to-desktop">
     <h4>View this site in:</h4>
     <span data-ng-show="forceDesktop">
-      <a href="<%- assetPath %>{{ hash }}">Auto</a> | <span>Desktop</span>
+      <a target="_self" href="<%- assetPath %>{{ hash }}">Auto</a> | <span>Desktop</span>
     </span>
     <span data-ng-hide="forceDesktop">
-      <span>Auto</span> | <a data-ng-href="<%- assetPath %>?desktop{{ hash }}">Desktop</a>
+      <span>Auto</span> | <a target="_self" data-ng-href="<%- assetPath %>?desktop{{ hash }}">Desktop</a>
     </span>
   </div>
   <% } %>

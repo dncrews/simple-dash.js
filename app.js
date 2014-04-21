@@ -20,7 +20,8 @@ var db = require('./Models/db') // Configures Mongoose
  * Local Declarations
  */
 var app = module.exports = express()
-  , PORT = process.env.PORT || 5000;
+  , PORT = process.env.PORT || 5000
+  , mountPath = process.env.MOUNT_PATH || '';
 
 /**
  * Express Configuration
@@ -75,7 +76,6 @@ app.set('view engine', 'ejs');
 
 function angularDashboard(req, res, next) {
   var forceDesktop = false
-    , mountPath = process.env.MOUNT_PATH || ''
     , assetPath = mountPath + '/'
     , pushState = process.env.PUSH_STATE === 'true'
     , basePath = mountPath + (pushState ? '/' : '#/');
@@ -166,23 +166,23 @@ app.post('/change', function(req, res){
 //github SSO auth routes. TODO: move this out of app.js? Make it cleaner?
 app.get('/auth/github', passport.authenticate('github', { scope: 'repo' }));
 
-app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/?signin_failed=true' }), function(req, res) {
+app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: mountPath + '/?signin_failed=true' }), function(req, res) {
   // Successful authentication, redirect home.
 
   //if no user obj, try to login
-  if (!req.user) return res.redirect("/login");
+  if (!req.user) return res.redirect(mountPath + "/login");
 
   //am I a fs-webdev member?
   GitHubApi.isMember(req, res, 'fs-webdev', req.user.profile.username, function(err, status) {
-    if(status === 204) return res.redirect('/'); //yes
+    if(status === 204) return res.redirect(mountPath + '/'); //yes
 
     //am I an fs-eng member?
     GitHubApi.isMember(req, res, 'fs-eng', req.user.profile.username, function(err, eng_status) {
-      if(eng_status === 204) return res.redirect('/'); //yes
+      if(eng_status === 204) return res.redirect(mountPath + '/'); //yes
 
       req.logout(); //sign me out, since I am not a member of fs-eng or fs-webdev
       res.clearCookie('accessToken');
-      res.redirect('/?signin_failed=true'); //redirect and show banner
+      res.redirect(mountPath + '/?signin_failed=true'); //redirect and show banner
     }); //isMember() fs-eng
     //TODO: move this code out of app.js?
   });//isMember() fs-webdev
@@ -190,13 +190,13 @@ app.get('/auth/github/callback', passport.authenticate('github', { failureRedire
 });
 
 app.get('/login', function(req, res){
-  res.redirect('/auth/github');
+  res.redirect(mountPath + '/auth/github');
 });
 
 app.get('/logout', function(req, res){
   req.logout();
   res.clearCookie('accessToken');
-  res.redirect('/');
+  res.redirect(mountPath + '/');
 });
 
 app.use(angularDashboard);
