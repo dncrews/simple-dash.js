@@ -76,6 +76,9 @@
 
   <script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
   <script src="<%- assetPath %>vendor/bootstrap/js/bootstrap.min.js"></script>
+  <script>
+    window.assetPath = "<%- assetPath %>";
+  </script>
 
   <% if (req.user) { %>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
