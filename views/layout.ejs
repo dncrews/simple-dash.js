@@ -2,10 +2,10 @@
 <html data-ng-app="fsDashboard">
 <head>
   <title>FamilySearch Status</title>
-  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css">
-  <link rel="stylesheet" href="vendor/rickshaw.min.css">
-  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="<%- assetPath %>vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="<%- assetPath %>vendor/bootstrap/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="<%- assetPath %>vendor/rickshaw.min.css">
+  <link rel="stylesheet" href="<%- assetPath %>css/dashboard.css">
   <% if (desktop) { %>
   <meta name="viewport" content="width=992">
   <% } else { %>
@@ -27,16 +27,16 @@
       <div class="collapse navbar-collapse">
         <% if (req.user) { %>
           <ul class="nav navbar-nav">
-            <li><a href="#/" data-ng-class="{ true : 'active' }[pageType == 'index']">Home</a></li>
-            <li><a href="#/change"  data-ng-class="{ true : 'active' }[pageType == 'change_log']">Change</a></li>
+            <li><a href="<%- basePath %>" data-ng-class="{ true : 'active' }[pageType == 'index']">Home</a></li>
+            <li><a href="<%- basePath %>change" data-ng-class="{ true : 'active' }[pageType == 'change_log']">Change</a></li>
             <li data-ng-show="updated.formatted"><a class="refresh" data-ng-click="refresh()"><span class="glyphicon glyphicon-refresh"></span> Last updated at <span data-ng-bind="updated.formatted"></span></a></li>
           </ul>
         <% } %>
         <ul class="nav navbar-nav navbar-right">
           <% if (req.user) { %>
-            <li><a href="logout">Sign out</a></li>
+            <li><a href="<%- assetPath %>logout">Sign out</a></li>
           <% } else { %>
-            <li><a href="login">Sign in</a></li>
+            <li><a href="<%- assetPath %>login">Sign in</a></li>
           <% } %>
         </ul>
       </div><!--/.nav-collapse -->
@@ -57,7 +57,7 @@
 
       <h2>Please sign in via Github </h2>
       <p>You must be a member of the <strong>-eng</strong> or <strong>-webdev </strong>orgs  to view this content.</p>
-      <a href="login" class="btn btn-primary btn-lg" role="button">Sign in via Github</a>
+      <a href="<%- assetPath %>login" class="btn btn-primary btn-lg" role="button">Sign in via Github</a>
     <% } %>
 
   </div><!-- /.container -->
@@ -66,26 +66,29 @@
   <div class="switch-to-desktop">
     <h4>View this site in:</h4>
     <span data-ng-show="forceDesktop">
-      <a href="./{{ hash }}">Auto</a> | <span>Desktop</span>
+      <a href="<%- assetPath %>{{ hash }}">Auto</a> | <span>Desktop</span>
     </span>
     <span data-ng-hide="forceDesktop">
-      <span>Auto</span> | <a data-ng-href="./?desktop{{ hash }}">Desktop</a>
+      <span>Auto</span> | <a data-ng-href="<%- assetPath %>?desktop{{ hash }}">Desktop</a>
     </span>
   </div>
   <% } %>
 
   <script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+  <script src="<%- assetPath %>vendor/bootstrap/js/bootstrap.min.js"></script>
 
   <% if (req.user) { %>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-    <script src="vendor/moment.min.js"></script>
-    <script src="js/routes.js"></script>
-    <script src="js/controllers.js"></script>
-    <script src="js/directives.js"></script>
-    <script src="js/services.js"></script>
-    <script src="js/d3Service.js"></script>
-    <script src="js/d3Directives.js"></script>
+    <script src="<%- assetPath %>vendor/moment.min.js"></script>
+    <script src="<%- assetPath %>js/routes.js"></script>
+    <% if (pushState) { %>
+    <script src="<%- assetPath %>js/routesHTML5.js"></script>
+    <% } %>
+    <script src="<%- assetPath %>js/controllers.js"></script>
+    <script src="<%- assetPath %>js/directives.js"></script>
+    <script src="<%- assetPath %>js/services.js"></script>
+    <script src="<%- assetPath %>js/d3Service.js"></script>
+    <script src="<%- assetPath %>js/d3Directives.js"></script>
     <% if (desktop) { %>
     <script>
       window.forceDesktop = true;

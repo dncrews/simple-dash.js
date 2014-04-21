@@ -71,21 +71,31 @@ app.use(express.static(__dirname + '/assets'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
+function angularDashboard(req, res, next) {
+  var forceDesktop = false
+    , mountPath = process.env.MOUNT_PATH || ''
+    , assetPath = mountPath + '/'
+    , pushState = process.env.PUSH_STATE === 'true'
+    , basePath = mountPath + (pushState ? '/' : '#/');
 
-/**
- * Angular Dashboard
- */
-app.get('/', function(req, res) {
-  var forceDesktop = false;
   if (req.query.desktop === 'true' || req.query.desktop === '') {
     forceDesktop = true;
   }
   debug('Loading angular page');
   res.render('layout', {
     req: req,
-    desktop : forceDesktop
+    desktop : forceDesktop,
+    assetPath : assetPath,
+    basePath : basePath,
+    pushState : pushState
   });
-});
+}
+
+
+/**
+ * Angular Dashboard
+ */
+app.get('/', angularDashboard);
 
 
 app.get('/partials/:partial', function(req, res) {
@@ -185,6 +195,8 @@ app.get('/logout', function(req, res){
   res.clearCookie('accessToken');
   res.redirect('/');
 });
+
+app.use(angularDashboard);
 
 
 app.listen(PORT, function() {
