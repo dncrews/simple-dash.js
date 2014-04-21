@@ -155,7 +155,8 @@ app.post('/change', function(req, res){
     res.send(201);
   }, function fail(err) {
     debug('change post failure: ', err);
-    res.send(500, 'Internal Server Error 500: ' + err.name + ':' + err.message);
+    res.status(500);
+    res.send('Internal Server Error 500: ' + err.name + ':' + err.message);
   });
 });
 
