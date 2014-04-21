@@ -68,6 +68,8 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(stylus.middleware(__dirname + '/assets'));
 app.use(express.static(__dirname + '/assets'));
+app.use('/status', stylus.middleware(__dirname + '/assets'));
+app.use('/status', express.static(__dirname + '/assets'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
