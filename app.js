@@ -21,7 +21,18 @@ var db = require('./Models/db') // Configures Mongoose
  */
 var app = module.exports = express()
   , PORT = process.env.PORT || 5000
-  , mountPath = process.env.MOUNT_PATH || '';
+  , defaultMountPath = process.env.MOUNT_PATH || ''
+  , domainMountPath = process.env.DOMAIN_MOUNT_PATH || ''
+  , nonDomainGithubConfig = {
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: process.env.PASSPORT_CALLBACK_HOST + "/auth/github/callback"
+    }
+  , domainGithubConfig = {
+      clientID: process.env.DOMAIN_GITHUB_CLIENT_ID,
+      clientSecret: process.env.DOMAIN_GITHUB_CLIENT_SECRET,
+      callbackURL: process.env.DOMAIN_PASSPORT_CALLBACK_HOST + "/authenticate/github/callback"
+    };
 
 /**
  * Express Configuration
@@ -52,17 +63,18 @@ app.use(express.session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: process.env.PASSPORT_CALLBACK_HOST + "/auth/github/callback"
-  },
-  function(accessToken, refreshToken, profile, done) {
-    process.nextTick(function () {
-      return done(null, {"accessToken": accessToken, "refreshToken": refreshToken, "profile": profile});
+var githubTokenHandler = function(accessToken, refreshToken, profile, done) {
+  process.nextTick(function () {
+    return done(null, {
+      "accessToken": accessToken,
+      "refreshToken": refreshToken,
+      "profile": profile
     });
-  }
-));
+  });
+};
+
+passport.use('githubNonDomain', new GitHubStrategy(nonDomainGithubConfig, githubTokenHandler));
+passport.use('githubDomain', new GitHubStrategy(domainGithubConfig, githubTokenHandler));
 //END of Passport SSO
 
 app.use(express.json());
@@ -74,15 +86,25 @@ app.use('/status', express.static(__dirname + '/assets'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
+// Set req.mountPath for use as Heroku app and HAProxy reversed app
+app.use(function(req, res, next) {
+  var mountPath = defaultMountPath
+    , loginPath = '/auth/github';
+  if (req.headers['x-orig-host']) {
+    mountPath = domainMountPath;
+    loginPath = '/authenticate/github';
+  }
+  req.mountPath = mountPath;
+  req.loginPath = mountPath + loginPath;
+  next();
+});
+
 function angularDashboard(req, res, next) {
   var forceDesktop = false
+    , mountPath = req.mountPath
     , assetPath = mountPath + '/'
     , pushState = process.env.PUSH_STATE === 'true'
     , basePath = mountPath + (pushState ? '/' : '#/');
-
-  if (req.headers['x-orig-host']) {
-    console.log(req.headers['x-orig-host']);
-  }
 
   if (req.query.desktop === 'true' || req.query.desktop === '') {
     forceDesktop = true;
@@ -168,10 +190,13 @@ app.post('/change', function(req, res){
 
 
 //github SSO auth routes. TODO: move this out of app.js? Make it cleaner?
-app.get('/auth/github', passport.authenticate('github', { scope: 'repo' }));
+app.get('/auth/github', passport.authenticate('githubNonDomain', { scope: 'read:org' }));
+app.get('/authenticate/github', passport.authenticate('githubNonDomain', { scope: 'read:org' }));
 
-app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: mountPath + '/?signin_failed=true' }), function(req, res) {
+
+var callbackHandler = function(req, res) {
   // Successful authentication, redirect home.
+  var mountPath = req.mountPath;
 
   //if no user obj, try to login
   if (!req.user) return res.redirect(mountPath + "/login");
@@ -191,16 +216,19 @@ app.get('/auth/github/callback', passport.authenticate('github', { failureRedire
     //TODO: move this code out of app.js?
   });//isMember() fs-webdev
 
-});
+};
+
+app.get('/auth/github/callback', passport.authenticate('githubNonDomain', { failureRedirect: '/' }), callbackHandler);
+app.get('/authenticate/github/callback', passport.authenticate('githubDomain', { failureRedirect: '/' }), callbackHandler);
 
 app.get('/login', function(req, res){
-  res.redirect(mountPath + '/auth/github');
+  res.redirect(req.loginPath);
 });
 
 app.get('/logout', function(req, res){
   req.logout();
   res.clearCookie('accessToken');
-  res.redirect(mountPath + '/');
+  res.redirect(req.mountPath + '/');
 });
 
 app.use(angularDashboard);
