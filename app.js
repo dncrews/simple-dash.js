@@ -89,8 +89,11 @@ app.set('view engine', 'ejs');
 // Set req.mountPath for use as Heroku app and HAProxy reversed app
 app.use(function(req, res, next) {
   var mountPath = defaultMountPath
-    , loginPath = '/auth/github';
-  if (req.headers['x-orig-host']) {
+    , redirectPath = mountPath
+    , loginPath = '/auth/github'
+    , origHost = req.headers['x-orig-host'];
+  if (origHost) {
+    console.log(origHost);
     mountPath = domainMountPath;
     loginPath = '/authenticate/github';
   }
