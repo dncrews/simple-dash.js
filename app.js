@@ -116,7 +116,7 @@ app.use(function(req, res, next) {
     loginPath = '/authenticate/github';
   }
   req.mountPath = mountPath;
-  req.loginPath = mountPath + loginPath;
+  req.loginPath = loginPath;
   next();
 });
 
