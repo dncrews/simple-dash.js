@@ -6,7 +6,8 @@ var express = require('express')
   , passport = require('passport')
   , GitHubStrategy = require('passport-github').Strategy
   , debug = require('debug')('marrow:routing')
-  , RedisStore = require('connect-redis')(express);
+  , RedisStore = require('connect-redis')(express)
+  , base = require('connect-base');
 
 /**
  * Local Dependencies
@@ -77,6 +78,7 @@ passport.use('githubNonDomain', new GitHubStrategy(nonDomainGithubConfig, github
 passport.use('githubDomain', new GitHubStrategy(domainGithubConfig, githubTokenHandler));
 //END of Passport SSO
 
+app.use(base());
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(stylus.middleware(__dirname + '/assets'));
