@@ -212,7 +212,7 @@ app.post('/change', function(req, res){
 
 //github SSO auth routes. TODO: move this out of app.js? Make it cleaner?
 app.get('/auth/github', passport.authenticate('githubNonDomain', { scope: 'read:org' }));
-app.get('/authenticate/github', passport.authenticate('githubNonDomain', { scope: 'read:org' }));
+app.get('/authenticate/github', passport.authenticate('githubDomain', { scope: 'read:org' }));
 
 
 var callbackHandler = function(req, res) {
