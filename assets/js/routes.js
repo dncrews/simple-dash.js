@@ -1,4 +1,4 @@
-(function(angular) {
+(function(angular, assetPath) {
 
   'use strict';
 
@@ -11,31 +11,31 @@
     function($routeProvider, $locationProvider) {
       $routeProvider
         .when('/', {
-          templateUrl: '/partials/dashboard',
+          templateUrl: assetPath + 'partials/dashboard',
           controller: 'IndexCtrl'
         })
         .when('/app/:name', {
-          templateUrl: '/partials/details',
+          templateUrl: assetPath + 'partials/details',
           controller: 'AppDetailsCtrl'
         })
         .when('/app/:name/uptime', {
-          templateUrl: '/partials/details',
+          templateUrl: assetPath + 'partials/details',
           controller: 'AppDetailsCtrl'
         })
         .when('/performance/:name', {
-          templateUrl: '/partials/performance',
+          templateUrl: assetPath + 'partials/performance',
           controller: 'AppPerformanceCtrl'
         })
         .when('/service/:name', {
-          templateUrl: '/partials/details',
+          templateUrl: assetPath + 'partials/details',
           controller: 'ServiceDetailsCtrl'
         })
         .when('/upstream/:name', {
-          templateUrl: '/partials/details',
+          templateUrl: assetPath + 'partials/details',
           controller: 'UpstreamDetailsCtrl'
         })
         .when('/change', {
-          templateUrl: '/partials/change_log',
+          templateUrl: assetPath + 'partials/change_log',
           controller: 'ChangeLogCtrl'
         });
 
@@ -43,4 +43,4 @@
     }
   ]);
 
-})(window.angular);
+})(window.angular, window.assetPath);
