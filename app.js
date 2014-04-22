@@ -78,7 +78,12 @@ passport.use('githubNonDomain', new GitHubStrategy(nonDomainGithubConfig, github
 passport.use('githubDomain', new GitHubStrategy(domainGithubConfig, githubTokenHandler));
 //END of Passport SSO
 
-app.use(base());
+app.use(base({
+  host: 'x-orig-host',
+  port: 'x-orig-port',
+  path: 'x-orig-base',
+  proto: 'x-orig-proto'
+}));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(stylus.middleware(__dirname + '/assets'));
