@@ -12,7 +12,7 @@
     function($document, $q, $rootScope) {
       var dfd = $q.defer();
 
-      var scripts = [ 'http://d3js.org/d3.v3.min.js', assetPath + 'vendor/rickshaw.min.js' ];
+      var scripts = [ assetPath + 'vendor/d3.v3.min.js', assetPath + 'vendor/rickshaw.min.js' ];
 
       var dfds = scripts.map(function(path) {
         var dfd = $q.defer()
