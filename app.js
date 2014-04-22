@@ -93,7 +93,8 @@ app.use(function(req, res, next) {
     , loginPath = '/auth/github'
     , origHost = req.headers['x-orig-host'];
   if (origHost) {
-    console.log(origHost);
+    console.warn(origHost);
+    console.warn(req.base);
     mountPath = domainMountPath;
     loginPath = '/authenticate/github';
   }
