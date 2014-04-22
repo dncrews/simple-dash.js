@@ -95,13 +95,23 @@ app.set('view engine', 'ejs');
 
 // Set req.mountPath for use as Heroku app and HAProxy reversed app
 app.use(function(req, res, next) {
+  req.resolvePath = function(dest) {
+    debug(req.base + " -> " + dest);
+
+    // If it has a proto just return the path
+    if(dest.match(/^http/)) return dest;
+
+    // Concatenate the paths
+    var href = req.base + dest;
+    debug(href);
+    return href;
+  };
+
   var mountPath = defaultMountPath
-    , redirectPath = mountPath
     , loginPath = '/auth/github'
     , origHost = req.headers['x-orig-host'];
+
   if (origHost) {
-    console.warn(origHost);
-    console.warn(req.base);
     mountPath = domainMountPath;
     loginPath = '/authenticate/github';
   }
@@ -207,22 +217,23 @@ app.get('/authenticate/github', passport.authenticate('githubNonDomain', { scope
 
 var callbackHandler = function(req, res) {
   // Successful authentication, redirect home.
-  var mountPath = req.mountPath;
+  var mountPath = req.mountPath
+    , redirectUrl = req.resolvePath('/');
 
   //if no user obj, try to login
-  if (!req.user) return res.redirect(mountPath + "/login");
+  if (!req.user) return res.redirect(redirectUrl + 'login');
 
   //am I a fs-webdev member?
   GitHubApi.isMember(req, res, 'fs-webdev', req.user.profile.username, function(err, status) {
-    if(status === 204) return res.redirect(mountPath + '/'); //yes
+    if(status === 204) return res.redirect(redirectUrl); //yes
 
     //am I an fs-eng member?
     GitHubApi.isMember(req, res, 'fs-eng', req.user.profile.username, function(err, eng_status) {
-      if(eng_status === 204) return res.redirect(mountPath + '/'); //yes
+      if(eng_status === 204) return res.redirect(redirectUrl); //yes
 
       req.logout(); //sign me out, since I am not a member of fs-eng or fs-webdev
       res.clearCookie('accessToken');
-      res.redirect(mountPath + '/?signin_failed=true'); //redirect and show banner
+      res.redirect(redirectUrl + '?signin_failed=true'); //redirect and show banner
     }); //isMember() fs-eng
     //TODO: move this code out of app.js?
   });//isMember() fs-webdev
@@ -233,13 +244,13 @@ app.get('/auth/github/callback', passport.authenticate('githubNonDomain', { fail
 app.get('/authenticate/github/callback', passport.authenticate('githubDomain', { failureRedirect: '/' }), callbackHandler);
 
 app.get('/login', function(req, res){
-  res.redirect(req.loginPath);
+  res.redirect(req.resolvePath(req.loginPath));
 });
 
 app.get('/logout', function(req, res){
   req.logout();
   res.clearCookie('accessToken');
-  res.redirect(req.mountPath + '/');
+  res.redirect(req.resolvePath('/'));
 });
 
 app.use(angularDashboard);
