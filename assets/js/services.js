@@ -1,10 +1,10 @@
-(function(angular) {
+(function(angular, mountPath) {
 
   'use strict';
 
   // No [] here to make sure we're getting and not creating
   var app = angular.module('fsDashboard')
-    , ENDPOINT = '/api/';
+    , ENDPOINT = mountPath + 'api/';
 
   app.factory('changeService', [
     '$http',
@@ -106,4 +106,4 @@
 
   ]);
 
-})(window.angular);
+})(window.angular, window.assetPath);
