@@ -155,7 +155,7 @@ UpstreamSchema.statics.haFromSplunk = function(data) {
   };
 
   if (data['status:5xx'] && data['status:total']) {
-    error_rate = upstream.meta.error_rate = Math.ceil((data['status:5xx'] / data['status:total'] * 100));
+    error_rate = upstream.meta.error_rate = Math.ceil(((data['status:5xx'] * 100) / data['status:total']));
   }
 
   debug('HA Proxy Status: ' + upstream.status);

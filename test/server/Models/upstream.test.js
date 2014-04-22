@@ -367,28 +367,28 @@ function getMockData(src, type) {
         "status:2xx": "500",
         "status:3xx": "300",
         "status:4xx": "100",
-        "status:5xx": "490",
+        "status:5xx": "90",
         "status:total": "1000"
       },
       warning : {
         "status:2xx": "500",
         "status:3xx": "300",
         "status:4xx": "100",
-        "status:5xx": "491",
+        "status:5xx": "91",
         "status:total": "1000"
       },
       almostDown : {
         "status:2xx": "500",
         "status:3xx": "300",
         "status:4xx": "100",
-        "status:5xx": "740",
+        "status:5xx": "140",
         "status:total": "1000"
       },
       down : {
         "status:2xx": "500",
         "status:3xx": "300",
         "status:4xx": "100",
-        "status:5xx": "741",
+        "status:5xx": "141",
         "status:total": "1000"
       }
     }
