@@ -80,6 +80,10 @@ function angularDashboard(req, res, next) {
     , pushState = process.env.PUSH_STATE === 'true'
     , basePath = mountPath + (pushState ? '/' : '#/');
 
+  if (req.headers['x-orig-host']) {
+    console.log(req.headers['x-orig-host']);
+  }
+
   if (req.query.desktop === 'true' || req.query.desktop === '') {
     forceDesktop = true;
   }
