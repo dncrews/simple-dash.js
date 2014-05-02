@@ -193,8 +193,8 @@ app.post('/change', function(req, res){
   if (ua.match("GitHub Hookshot")) src = "github"; //TODO: add the IP Address
   if (ua.match("Java")) src = "jenkins"; //TODO: add the IP Address
 
-  // if (! src) return res.send(507);
-  if (! src) src = 'github';
+  if (! src) return res.send(507);
+  // if (! src) src = 'github';
   // Not returning. We want to parse after sending response
   res.send(200);
 
