@@ -188,7 +188,10 @@ ChangeSchema.statics.fromEC = function(data, action) {
       repo_name: data.name,
       type : 'electricCommander',
       action: action || 'build',
-      name : data.name
+      meta : {
+        url : data.build.url,
+        git_commit : data.build.git_commit,
+      },
     };
 
   debug('FromEC: ', config);

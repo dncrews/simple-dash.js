@@ -212,6 +212,48 @@ describe('Changes interface:', function() {
     });
   });
 
+  describe('fromEC:', function() {
+    var data = getMockData('electricCommander');
+    describe('Given ElectricCommander build data, fromEC', function() {
+      var change = Model.fromEC(data);
+      it('should save the raw data as _raw', function() {
+        expect(change._raw).to.eql(data);
+      });
+      it('should set the name and repo_name', function() {
+        expect(change.repo_name).to.be('newAppName');
+      });
+      it('should set created_at', function() {
+        expect(change.created_at).to.be.a(Date);
+      });
+      it('should set the type to "electricCommander"', function() {
+        expect(change.type).to.be('electricCommander');
+      });
+      it('should set the action to "build"', function() {
+        expect(change.action).to.be('build');
+      });
+      it('should set the url', function() {
+        expect(change.meta.url).to.be('https://build.fsglobal.net');
+      });
+      it('should set the git_commit', function() {
+        expect(change.meta.git_commit).to.be('dsjk2u834jkkdsfjkwer394324');
+      });
+    });
+
+    describe('Given EC data and an action, fromEC', function() {
+      var change = Model.fromEC(data, 'anotherType');
+      it('should set the action passed', function() {
+        expect(change.action).to.be('anotherType');
+      });
+    });
+
+    describe('Given no data, fromEC', function() {
+      var change = Model.fromEC();
+      it('should return an Error', function() {
+        expect(change).to.be.an(Error);
+      });
+    });
+  });
+
 });
 
 
@@ -246,6 +288,16 @@ function getMockData(type) {
         "phase":"FINISHED",
         "status":"SUCCESS",
         "url":"job/fs-newAppName/356/"
+      }
+    },
+    electricCommander : {
+      "name" : "newAppName",
+      "build" : {
+        "url" : "https://build.fsglobal.net",
+        "number" : 2,
+        "status" : "Success",
+        "date_completed" : "1399308143",
+        "git_commit" : "dsjk2u834jkkdsfjkwer394324"
       }
     }
   };
