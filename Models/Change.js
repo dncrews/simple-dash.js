@@ -173,6 +173,30 @@ ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
 };
 
 /**
+ * Report a change from an ElectricCommander build (or other action)
+ *
+ * @param  {Object} data   req.body
+ * @param  {String} action (build) The action taken that should be logged
+ * @return {Change}        Instance of ChangeSchema (not saved)
+ */
+ChangeSchema.statics.fromEC = function(data, action) {
+  if (! data) return new Error('No EC data supplied');
+
+  var Change = this
+    , config = {
+      _raw : data,
+      repo_name: data.name,
+      type : 'electricCommander',
+      action: action || 'build',
+      name : data.name
+    };
+
+  debug('FromEC: ', config);
+
+  return new Change(config);
+};
+
+/**
  * Used for Testing. Allows us to mock restart to prevent testing
  * Heroku functionality
  *

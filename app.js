@@ -27,12 +27,12 @@ var app = module.exports = express()
   , nonDomainGithubConfig = {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: process.env.PASSPORT_CALLBACK_HOST + "/auth/github/callback"
+      callbackURL: process.env.PASSPORT_CALLBACK_HOST + '/auth/github/callback'
     }
   , domainGithubConfig = {
       clientID: process.env.DOMAIN_GITHUB_CLIENT_ID,
       clientSecret: process.env.DOMAIN_GITHUB_CLIENT_SECRET,
-      callbackURL: process.env.DOMAIN_PASSPORT_CALLBACK_HOST + "/authenticate/github/callback"
+      callbackURL: process.env.DOMAIN_PASSPORT_CALLBACK_HOST + '/authenticate/github/callback'
     };
 
 /**
@@ -53,7 +53,7 @@ var rtg = require('url').parse(process.env.REDISTOGO_URL)
 
 app.use(express.cookieParser(process.env.COOKIE_SECRET || 'what does the fox say?'));
 app.use(express.session({
-  secret: process.env.SESSION_SECRET || "ringydingidyindingdindga ding",
+  secret: process.env.SESSION_SECRET || 'ringydingidyindingdindga ding',
   store : new RedisStore({
     host : rtg.hostname,
     port : rtg.port,
@@ -67,9 +67,9 @@ app.use(passport.session());
 var githubTokenHandler = function(accessToken, refreshToken, profile, done) {
   process.nextTick(function () {
     return done(null, {
-      "accessToken": accessToken,
-      "refreshToken": refreshToken,
-      "profile": profile
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
+      'profile': profile
     });
   });
 };
@@ -96,7 +96,7 @@ app.set('view engine', 'ejs');
 // Set req.mountPath for use as Heroku app and HAProxy reversed app
 app.use(function(req, res, next) {
   req.resolvePath = function(dest) {
-    debug(req.base + " -> " + dest);
+    debug(req.base + ' -> ' + dest);
 
     // If it has a proto just return the path
     if(dest.match(/^http/)) return dest;
@@ -182,19 +182,19 @@ app.post('/', function(req, res){
  * Should alwasy return a responseCode
  */
 app.post('/change', function(req, res){
-  debug('POST /change: ', req);
+  debug('POST /change');
   var src = false;
   //TODO: have a  lookup table or something that matches up repos to appName in heroku...
   var ua = req.headers['user-agent'];
-  debug("headers", req.headers);
-  debug("user-agent", ua);
+  debug('headers', req.headers);
+  debug('user-agent', ua);
 
 
-  if (ua.match("GitHub Hookshot")) src = "github"; //TODO: add the IP Address
-  if (ua.match("Java")) src = "jenkins"; //TODO: add the IP Address
+  if (ua.match('GitHub Hookshot')) src = 'github'; //TODO: add the IP Address
+  if (ua.match('Java')) src = 'jenkins'; //TODO: add the IP Address
+  if (ua.match('ecBuildHook')) src = 'ec'; //TODO: add the IP Address?
 
   if (! src) return res.send(507);
-  // if (! src) src = 'github';
   // Not returning. We want to parse after sending response
   res.send(200);
 
@@ -257,5 +257,5 @@ app.use(angularDashboard);
 
 
 app.listen(PORT, function() {
-  console.info("Listening on " + PORT);
+  console.info('Listening on ' + PORT);
 });
