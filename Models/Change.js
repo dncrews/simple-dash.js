@@ -19,9 +19,14 @@ var mongoose = require('mongoose')
   , sendgrid = require('sendgrid')(process.env.SENDGRID_USERNAME, process.env.SENDGRID_PASSWORD);
 
 /**
+ * Local Dependencies
+ */
+var utils = require('../lib/utils');
+/**
  * Local Declarations
  */
-var heroku, restart;
+var heroku
+  , restart = utils.restartApp;
 
 /**
  * Changelog Schema Declaration
@@ -64,27 +69,21 @@ ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
   var dfd = Q.defer()
     , Change = this;
 
-  restart(app_name, reason, function(restarted) {
-    var change;
-    if (restarted instanceof Error) return dfd.reject(restarted);
+  restart(app_name, reason)
+    .then(function success() {
+      return successHandler('restart');
+    }, function failure(err) {
+      if (err.name === 'notConfigured') return successHandler('restart.not_configured');
+      return dfd.reject(err);
+    });
 
-    if (typeof restarted !== 'boolean') {
-      dfd.reject();
-      throw new Error('Restart returned unknown value', restarted);
-    }
-
-    if (restarted) {
-      // App successfully restarted
-      change = Change.fromMarrow(app_name, 'restart', reason);
-    } else {
-      // App would've restarted, but wasn't configured
-      change = Change.fromMarrow(app_name, 'restart.not_configured', reason);
-    }
+  function successHandler(action) {
+    var change = Change.fromMarrow(app_name, action, reason);
     return change.save(function(err, doc) {
       if (err) return dfd.reject(err);
       dfd.resolve(doc);
     });
-  });
+  }
 
   return dfd.promise;
 };
@@ -213,59 +212,7 @@ ChangeSchema.statics.mockRestart = function(fn) {
  * Used for Testing. Allows us to undo our mocking.
  */
 ChangeSchema.statics.restore = function() {
-  restart = doRestart;
+  restart = utils.restartApp;
 };
-
-restart = doRestart;
-
-/**
- * Perform restart of Heroku Application
- *
- * Returns information, so requires cb instead of returning a promise
- * Return of `true`: Heroku app was restarted
- * Return of `false`: Heroku credentials are not configured
- * Return of `Error`: Heroku app was not able to restart
- *
- * @param  {String}   app_name Name of the Heroku app to restart
- * @param  {String}   reason   The reason for restarting the Heroku app
- * @param  {Function} cb       Function to be perfored on completion
- * @return {Boolean}
- */
-function doRestart(app_name, reason, cb) {
-  if (! app_name) {
-    return cb && cb(new Error('No Marrow app_name supplied'));
-  }
-
-  if (! heroku) {
-    console.error('Restart Requested; Heroku not configured. Cause: ' + reason);
-    return cb(false);
-  }
-
-  heroku.restart(app_name, restartHandler);
-
-  function restartHandler(err, resp) {
-    if (err) {
-      console.error(err);
-      return cb(err);
-    }
-
-    if (! sendgrid) {
-      console.error('Restart occurred. Sendgrid not configured. Cause: ' + reason);
-      return cb(true);
-    }
-
-    sendgrid.send({
-      to: process.env.RESTART_EMAIL_TO,
-      from: process.env.RESTART_EMAIL_FROM,
-      subject: 'Automatic app restart',
-      text: 'The Heroku app "' + app_name + '" has been automatically restarted. Be advised. Cause: ' + reason
-    }, function(err, json) {
-      if (err) {
-        console.error('Restart occurred. Sendgrid error', err);
-      }
-      return cb(true);
-    });
-  }
-}
 
 module.exports = mongoose.model('Change', ChangeSchema);

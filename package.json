@@ -39,7 +39,7 @@
   "repository": "git://github.com/jamischarles/simple-dash.js",
   "main": "app.js",
   "scripts": {
-    "test": "NODE_ENV=test `pwd`/node_modules/.bin/mocha --reporter spec --globals page,assets,showingChat test/server/Models"
+    "test": "NODE_ENV=test `pwd`/node_modules/.bin/mocha --reporter spec --globals page,assets,showingChat test/server/*"
   },
   "engines": {
     "node": "0.10.x",

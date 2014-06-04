@@ -1,6 +1,7 @@
 var expect = require('expect.js')
   , db = require('../../db')
-  , Model = require('../../../Models/Change');
+  , Model = require('../../../Models/Change')
+  , Q = require('q');
 
 
 describe('Changes interface:', function() {
@@ -22,7 +23,8 @@ describe('Changes interface:', function() {
         Model.mockRestart(function(app_name, reason, cb) {
           restartCalled++;
           appRestarted = app_name;
-          cb(true);
+          if (cb) cb(true);
+          return Q.resolve();
         });
 
         Model.restartHerokuApp(appName, reason).then(function(doc) {
