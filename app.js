@@ -25,15 +25,15 @@ var app = module.exports = express()
   , defaultMountPath = process.env.MOUNT_PATH || ''
   , domainMountPath = process.env.DOMAIN_MOUNT_PATH || ''
   , nonDomainGithubConfig = {
-      clientID: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: process.env.PASSPORT_CALLBACK_HOST + '/auth/github/callback'
-    }
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: process.env.PASSPORT_CALLBACK_HOST + '/auth/github/callback'
+  }
   , domainGithubConfig = {
-      clientID: process.env.DOMAIN_GITHUB_CLIENT_ID,
-      clientSecret: process.env.DOMAIN_GITHUB_CLIENT_SECRET,
-      callbackURL: process.env.DOMAIN_PASSPORT_CALLBACK_HOST + '/authenticate/github/callback'
-    };
+    clientID: process.env.DOMAIN_GITHUB_CLIENT_ID,
+    clientSecret: process.env.DOMAIN_GITHUB_CLIENT_SECRET,
+    callbackURL: process.env.DOMAIN_PASSPORT_CALLBACK_HOST + '/authenticate/github/callback'
+  };
 
 /**
  * Express Configuration
