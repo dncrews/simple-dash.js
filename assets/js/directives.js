@@ -48,9 +48,9 @@
         }
 
         //Determine and set new color
-        currentColor = statusToColor(item.status);
-        newColor = shadeColor(currentColor, percent);
-        $(element).css('background-color', newColor);
+        // currentColor = statusToColor(item.status);
+        // newColor = shadeColor(currentColor, percent);
+        // $(element).css('background-color', newColor);
 
         //Shade the color with a magnitude of SHADE_MAGNITUDE by shifting bits
         //Based upon: http://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color
