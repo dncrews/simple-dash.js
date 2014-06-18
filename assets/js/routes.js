@@ -11,31 +11,31 @@
     function($routeProvider, $locationProvider) {
       $routeProvider
         .when('/', {
-          templateUrl: assetPath + 'partials/dashboard',
+          templateUrl: assetPath + 'templates/dashboard.html',
           controller: 'IndexCtrl'
         })
         .when('/app/:name', {
-          templateUrl: assetPath + 'partials/details',
+          templateUrl: assetPath + 'templates/details.html',
           controller: 'AppDetailsCtrl'
         })
         .when('/app/:name/uptime', {
-          templateUrl: assetPath + 'partials/details',
+          templateUrl: assetPath + 'templates/details.html',
           controller: 'AppDetailsCtrl'
         })
         .when('/performance/:name', {
-          templateUrl: assetPath + 'partials/performance',
+          templateUrl: assetPath + 'templates/performance.html',
           controller: 'AppPerformanceCtrl'
         })
         .when('/service/:name', {
-          templateUrl: assetPath + 'partials/details',
+          templateUrl: assetPath + 'templates/details.html',
           controller: 'ServiceDetailsCtrl'
         })
         .when('/upstream/:name', {
-          templateUrl: assetPath + 'partials/details',
+          templateUrl: assetPath + 'templates/details.html',
           controller: 'UpstreamDetailsCtrl'
         })
         .when('/change', {
-          templateUrl: assetPath + 'partials/change_log',
+          templateUrl: assetPath + 'templates/change_log.html',
           controller: 'ChangeLogCtrl'
         });
 

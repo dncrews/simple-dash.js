@@ -92,6 +92,7 @@ app.use('/status', stylus.middleware(__dirname + '/assets'));
 app.use('/status', express.static(__dirname + '/assets'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
+if ('development' === app.get('env')) app.use(express.logger('dev'));
 
 // Set req.mountPath for use as Heroku app and HAProxy reversed app
 app.use(function(req, res, next) {
@@ -145,22 +146,6 @@ function angularDashboard(req, res, next) {
  * Angular Dashboard
  */
 app.get('/', angularDashboard);
-
-
-app.get('/partials/:partial', function(req, res) {
-  var partial = req.params.partial;
-  res.render('partials/' + partial, function(err, html) {
-    debug('Attempting partial load: ' + partial);
-    if (err) {
-      debug('partial failed');
-      res.send(404);
-    } else {
-      debug('sending partial');
-      res.end(html);
-    }
-  });
-});
-
 app.use('/api', require('./lib/api'));
 
 /**
