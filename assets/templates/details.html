@@ -3,13 +3,18 @@
   <div class="mast_head section">
     <h1 class="page_title" data-ng-bind="pageTitle"></h1>
     <div data-detail-tabs data-ng-show="hasPeformanceTabs"></div>
+  </div>
+
+  <div class="health section cf" data-ng-show="loading.main">
+    <h2>
+      <loading status="loading.main"></loading>
+    </h2>
+  </div>
+  <div class="health section cf" data-ng-hide="loading.main">
     <div class="curr_status" data-ng-class="statusClass">
       <span class="glyphicon" data-ng-class="glyph" style="top: 4px;"></span>
       <span style="text-transform: capitalize;" data-ng-bind="status" class="stats_fld"></span>
     </div>
-  </div>
-
-  <div class="health section cf">
     <h2 class="section_heading">Health @ <span data-ng-bind="updated.formatted"></span> (<span class="stats_fld" data-ng-bind="updated.delta"></span>)</h2>
 
     <div class="item throughput" data-ng-show="hasThroughput">

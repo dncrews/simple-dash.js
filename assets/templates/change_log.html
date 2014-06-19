@@ -41,6 +41,12 @@
       </div>
     </div>
 
+    <div class="health section cf" data-ng-show="loading.main">
+      <h2>
+        <loading status="loading.main"></loading>
+      </h2>
+    </div>
+
     <div
       data-ng-repeat="event in events | filter:search | filter:timeFilter"
       data-event-item></div>

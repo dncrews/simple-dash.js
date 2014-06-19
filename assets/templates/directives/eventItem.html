@@ -1,0 +1,13 @@
+<div class="item cf">
+  <span class="icon {{ event.type }}"></span>
+  <div class="change_detail">
+    <span class="commit_msg">
+      <span class="repo_name">{{ event.name }}</span>
+      <a target="_blank" data-ng-show="msg" class="commit_link" data-ng-href="{{ event.meta.url }}">{{ msg }}</a>
+    </span>
+  </div>
+  <div class="change_meta">
+    <span title="{{ time.formatted }}" data-ng-show="time.formatted">{{ time.delta }}</span>
+    <span data-ng-show="event.meta.author">by {{ event.meta.author.name }}</span>
+  </div>
+</div>

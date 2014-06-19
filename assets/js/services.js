@@ -6,6 +6,31 @@
   var app = angular.module('fsDashboard')
     , ENDPOINT = mountPath + 'api/';
 
+  app.factory('httpInterceptors', [
+    '$location',
+
+    function($location) {
+      return function(promise) {
+        return promise.then(function(response) {
+          if (response.status > 399) {
+            return promise.reject(response);
+          }
+          return response;
+        }, function(response) {
+          return response;
+        });
+      };
+    }
+  ]);
+
+  app.config([
+    '$httpProvider',
+
+    function($httpProvider) {
+      $httpProvider.responseInterceptors.push('httpInterceptors');
+    }
+  ]);
+
   app.factory('changeService', [
     '$http',
     '$q',
@@ -98,7 +123,7 @@
               .error(dfd.reject);
 
             return dfd.promise;
-          }
+          };
         }
 
       }

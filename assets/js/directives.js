@@ -1,4 +1,4 @@
-(function(angular, moment, $) {
+(function(angular, assetPath, moment, $) {
 
   'use strict';
 
@@ -82,20 +82,7 @@
   app.directive('eventItem', function() {
     return {
       restrict: 'A',
-      template: ''+
-      '<div class="item cf">' +
-      '  <span class="icon {{ event.type }}"></span>' +
-      '  <div class="change_detail">' +
-      '    <span class="commit_msg">' +
-      '      <span class="repo_name">{{ event.name }}</span>' +
-      '      <a target="_blank" data-ng-show="msg" class="commit_link" data-ng-href="{{ event.meta.url }}">{{ msg }}</a>' +
-      '    </span>' +
-      '  </div>' +
-      '  <div class="change_meta">' +
-      '    <span title="{{ time.formatted }}" data-ng-show="time.formatted">{{ time.delta }}</span>' +
-      '    <span data-ng-show="event.meta.author">by {{ event.meta.author.name }}</span>' +
-      '  </div>' +
-      '</div>',
+      templateUrl: assetPath + 'templates/directives/eventItem.html',
       replace: true,
       link: function(scope, element, attrs) {
         var event = scope.event
@@ -127,12 +114,7 @@
         restrict: 'A',
         replace: true,
         scope: true,
-        template: '' +
-          '<a class="app_link btn col-xs-12">'+
-          ' <span'+
-          '   class="glyphicon {{ glyph }}"></span>' +
-          '   <span>{{ name }}</span>' +
-          '</a>',
+        templateUrl : assetPath + 'templates/directives/statusBtn.html',
         link: function(scope, element, attrs) {
           var item = scope.item
             , type = attrs.statusType
@@ -174,6 +156,76 @@
     }
   ]);
 
+  app.directive('loading', [
+    function() {
+      return {
+        restrict: 'E',
+        template: '<div class="loadingStatus"></div>',
+        replace: true,
+        scope: {
+          status: '=status'
+        },
+        link: function(scope, element, attrs) {
+          var interval, msgs = [
+            'Locating the required gigapixels to render',
+            'Spinning up the hamster',
+            'Shovelling coal into the server',
+            'Programming the flux capacitor',
+            '640K ought to be enough for anybody',
+            'Would you prefer chicken, steak, or tofu?',
+            'Pay no attention to the man behind the curtain',
+            'Would you like fries with that?',
+            'Checking the gravitational constant in your locale',
+            'At least you\'re not on hold',
+            'The server is powered by a lemon and two electrodes',
+            'We love you just the way you are',
+            'Take a moment to sign up for our lovely prizes',
+            'Don\'t think of purple hippos',
+            'Wait while the satellite moves into position',
+            'It\'s still faster than you could draw it',
+            'My other load screen is much faster. You should try that one instead.',
+            'The version I have of this in testing has much funnier load screens',
+            'Loading humorous message',
+            'Warming up Large Hadron Collider',
+            'The magic elves are working frantically in here',
+            'Happy Elf and Sad Elf are talking about your data',
+            'All the relevant elves are on break',
+            'Elf down! We\'re cloning the elf that was supposed to get you the data',
+            'Time is an illusion. Loading time doubly so',
+            'Are we there yet?',
+            'Please insert 25¢',
+            'Hang on a sec, I know your data is here somewhere',
+            'HELP!, I\'m being held hostage, and forced to write the stupid lines!',
+            'Searching for Answer to Life, the Universe, and Everything',
+            'Waiting for the system admin to hit enter',
+            'Paging for the system admin',
+            'Warming up the processors',
+            'RE-calibrating the internet',
+            'We apologise for the fault in the subtitles. Those responsible have been sacked',
+            'Counting backwards from infinity',
+            'Scanning your hard drive for credit card details. Please be patient',
+            'Don\'t panic',
+            'Loading the loading message',
+            'Potent potables'
+          ];
+          scope.$watch('status', function(newVal, oldVal) {
+            if (newVal === false) window.clearInterval(interval);
+            if (newVal === 'failed') {
+              window.clearInterval(interval);
+              element.html('Query failed... Please try again');
+            }
+          });
+
+          interval = window.setInterval(function() {
+            var msg = msgs[Math.round(Math.random()*(msgs.length-1))];
+            element.html(element.html() + '<br />' + msg + '...');
+          }, 1500);
+          element.text('Loading...');
+        }
+      };
+    }
+  ]);
+
   app.directive('detailTabs', [
     '$location',
 
@@ -182,11 +234,7 @@
         restrict: 'A',
         replace: true,
         scope: true,
-        template: '' +
-          '<ul class="nav nav-tabs">' +
-          '  <li class="uptime"><a data-ng-href="/app/{{ appName }}">Uptime</a></li>' +
-          '  <li class="performance"><a data-ng-href="/performance/{{ appName }}">Performance</a></li>' +
-          '</ul>',
+        templateUrl : assetPath + 'templates/directives/detailTabs.html',
         link: function(scope, element, attrs) {
           var typeMap = {
               app : 'uptime',
@@ -211,8 +259,8 @@
 
           });
         }
-      }
+      };
     }
   ]);
 
-})(window.angular, window.moment, window.jQuery);
+})(window.angular, window.assetPath, window.moment, window.jQuery);

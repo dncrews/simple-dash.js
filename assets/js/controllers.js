@@ -484,6 +484,10 @@
       function load() {
         $rootScope.updated = {};
         service.change.index().then(function(eventList) {
+          if (typeof eventList === 'string') {
+            $scope.loading.main = 'failed';
+            return;
+          }
           $scope.events = eventList;
           $scope.loading.events = false;
           last_id = eventList[eventList.length - 1]._id;
@@ -491,6 +495,7 @@
           $rootScope.updated = {
             formatted: moment(eventList[0].created_at).format('h:mm a')
           };
+          $scope.loading.main = false;
         });
         changeService.repos().then(function(repos) {
           $scope.repos = repos.sort();
