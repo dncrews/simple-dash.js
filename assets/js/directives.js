@@ -206,7 +206,8 @@
             'Scanning your hard drive for credit card details. Please be patient',
             'Don\'t panic',
             'Loading the loading message',
-            'Potent potables'
+            'Potent potables',
+            'Articulating splines'
           ];
           scope.$watch('status', function(newVal, oldVal) {
             if (newVal === false) window.clearInterval(interval);
