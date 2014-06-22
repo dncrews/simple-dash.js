@@ -207,7 +207,7 @@
             'Don\'t panic',
             'Loading the loading message',
             'Potent potables',
-            'Articulating splines'
+            'Reticulating Splines'
           ];
           scope.$watch('status', function(newVal, oldVal) {
             if (newVal === false) window.clearInterval(interval);
