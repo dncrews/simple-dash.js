@@ -219,7 +219,8 @@
 
           interval = window.setInterval(function() {
             var msg = msgs[Math.round(Math.random()*(msgs.length-1))];
-            element.html(element.html() + '<br />' + msg + '...');
+            element.text(msg + '...');
+            // element.html(element.html() + '<br />' + msg + '...');
           }, 1500);
           element.text('Loading...');
         }
