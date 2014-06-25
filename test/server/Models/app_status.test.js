@@ -199,6 +199,12 @@ describe('Apps interface:', function() {
   });
 
   describe('Given a 30s p75 response time, fromSplunk', function() {
+    before(function() {
+      Change.mock();
+    });
+    after(function() {
+      Change.restore();
+    });
     it('should trigger a Heroku restart', function(done) {
       Model.fromSplunk(getMockData('restart')).then(function() {
         Change.find(function(err, docs) {

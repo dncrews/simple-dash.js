@@ -20,10 +20,10 @@ describe('Changes interface:', function() {
         , appRestarted, change;
 
       before(function(done) {
-        Model.mockRestart(function(app_name, reason, cb) {
+        Model.mock(function(app_name, reason, cb) {
           restartCalled++;
           appRestarted = app_name;
-          if (cb) cb(true);
+          if (cb) cb(null, true);
           return Q.resolve();
         });
 
@@ -50,6 +50,60 @@ describe('Changes interface:', function() {
         Model.find(function(err, docs) {
           expect(docs.length).to.be(1);
           expect(docs[0].name).to.be('fs-testName-prod');
+          done();
+        });
+      });
+    });
+
+    describe('Given multiple restart attempts, restartHerokuApp', function() {
+      var appName = 'fs-new-test-name-prod'
+        , reason = 'Because I wanna.'
+        , restartCalled = false
+        , notifyCalled = false;
+
+      before(function() {
+        Model.mockRestart(function(appName, resaon, cb) {
+          restartCalled = true;
+          if (cb) cb();
+          return Q.resolve();
+        });
+        Model.mockNotify(function(appName, type, description, cb) {
+          notifyCalled = type;
+          if (cb) cb();
+          return Q.resolve();
+        });
+      });
+
+      beforeEach(function() {
+        restartCalled = false;
+        notifyCalled = false;
+      });
+
+      after(function(done) {
+        Model.restore();
+        Model.remove(done);
+      });
+
+      it('should restart and send a "restart" notification on first attempt', function(done) {
+        Model.restartHerokuApp(appName, reason).then(function() {
+          expect(restartCalled).to.be(true);
+          expect(notifyCalled).to.be('restart');
+          done();
+        });
+      });
+
+      it('should restart but not notify on second attempt', function(done) {
+        Model.restartHerokuApp(appName, reason).then(function() {
+          expect(restartCalled).to.be(true);
+          expect(notifyCalled).to.be(false);
+          done();
+        });
+      });
+
+      it('should restart and send a "restarts" notification on the third attempt', function(done) {
+        Model.restartHerokuApp(appName, reason).then(function() {
+          expect(restartCalled).to.be(true);
+          expect(notifyCalled).to.be('restarts');
           done();
         });
       });

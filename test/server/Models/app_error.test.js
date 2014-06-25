@@ -1,4 +1,5 @@
 var expect = require('expect.js')
+  , Q = require('q')
   , db = require('../../db')
   , Model = require('../../../Models/App_Error')
   , Bucket = require('../../../Models/App_Bucket')
@@ -105,14 +106,23 @@ describe('App Errors interface:', function() {
   });
 
   describe('Given a code of "R14", fromSplunk', function() {
+    var restartCalled = 0;
+    before(function() {
+      Change.mock(function(app_name, reason, cb) {
+        restartCalled++;
+        if (cb) cb(null, true);
+        return Q.resolve();
+      });
+    });
+    after(function() {
+      Change.restore();
+      clearDB();
+    });
     after(clearDB);
     it('should trigger a Heroku restart', function(done) {
       Model.fromSplunk(getMockData('restart')).then(function() {
-        Change.find(function(err, docs) {
-          expect(docs.length).to.be(1);
-          expect(docs[0].meta.reason).to.be('Memory quota exceeded');
-          done();
-        });
+        expect(restartCalled).to.be(1);
+        done();
       });
     });
   });

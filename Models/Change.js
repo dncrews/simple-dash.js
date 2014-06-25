@@ -26,7 +26,8 @@ var utils = require('../lib/utils');
  * Local Declarations
  */
 var heroku
-  , restart = utils.restartApp;
+  , restart = utils.restartApp
+  , notify = utils.sendNotification;
 
 /**
  * Changelog Schema Declaration
@@ -59,6 +60,11 @@ try {
 /**
  * Restarts the Heroku app if heroku information is set
  *
+ * If there have been 0 restart attempts in the last 15 minutes, we restart and trigger a single restart alert
+ * If there has been 1 restart attempt in the last 15 minutes, we do nothing (It could just be an echo from the first)
+ * If there have been 2 restart attempts in the last 15 minutes, we trigger a multiple restarts alert (Definitely not an echo)
+ * Over 2, we do nothing (too much noise)
+ *
  * @param  {String} app_name Name of the Heroku app
  * @return null
  */
@@ -66,26 +72,59 @@ ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
   if (! app_name) return Q.reject(new Error('No Marrow app_name supplied'));
   if (! reason) return Q.reject(new Error('No restart reason supplied'));
 
-  var dfd = Q.defer()
-    , Change = this;
+  var _dfd = Q.defer()
+    , Change = this
+    , currPromise;
 
-  restart(app_name, reason)
-    .then(function success() {
-      return successHandler('restart');
-    }, function failure(err) {
-      if (err.name === 'notConfigured') return successHandler('restart.not_configured');
-      return dfd.reject(err);
-    });
+  Change.count({
+    name : app_name,
+    action: 'restart',
+  }, function(err, count) {
+    var err;
+    // If this fails for some reason, we'd rather do the actions than not
+    if (err) count = 0;
 
-  function successHandler(action) {
-    var change = Change.fromMarrow(app_name, action, reason);
-    return change.save(function(err, doc) {
-      if (err) return dfd.reject(err);
-      dfd.resolve(doc);
-    });
-  }
 
-  return dfd.promise;
+    restart(app_name, reason)
+      .then(function success() {
+        return successHandler('restart');
+      }, function failure(err) {
+        if (err.name === 'notConfigured') return successHandler('restart.not_configured');
+        return _dfd.reject(err);
+      });
+
+    function successHandler(action) {
+      var dfds = [ Q.defer() ];
+      var promises = [ dfds[0].promise ];
+
+      var change = Change.fromMarrow(app_name, action, reason);
+      change.save(function(err, doc) {
+        var dfd = dfds[0];
+
+        if (err) return dfd.reject(err);
+        dfd.resolve(doc);
+      });
+
+      var msgTypes = {
+          0 : 'restart',
+          2 : 'restarts'
+        }
+        , msgType = msgTypes[count];
+
+      if (! msgType) {
+        promises[1] = Q.resolve();
+      } else {
+        promises[1] = notify(app_name, msgType, reason);
+      }
+
+      return Q.all(promises).then(function(results) {
+        // Return the change document
+        _dfd.resolve(results[0]);
+      }, _dfd.reject);
+    }
+  });
+
+  return _dfd.promise;
 };
 
 /**
@@ -133,7 +172,7 @@ ChangeSchema.statics.fromJenkins = function(data, action) {
       name : data.name
     };
 
-  config.repo_name = data.name.replace('fs-', '').replace('-prod', '').replace('-test','');
+  config.repo_name = getRepoName(data.name);
 
   debug('FromJenkins: ', config);
 
@@ -162,9 +201,7 @@ ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
     config.meta = { reason : reason };
   }
 
-  config.repo_name = app_name
-    .replace('fs-','')
-    .replace('-prod','');
+  config.repo_name = getRepoName(app_name);
 
   debug('FromMarrow: ', config);
 
@@ -207,12 +244,40 @@ ChangeSchema.statics.fromEC = function(data, action) {
 ChangeSchema.statics.mockRestart = function(fn) {
   restart = fn;
 };
+ChangeSchema.statics.mockNotify = function(fn) {
+  notify = fn;
+};
+ChangeSchema.statics.mock = function(restartFn, notifyFn) {
+  var genericFn = function() {
+    var args = [];
+    Array.prototype.pop.apply(args, arguments);
+
+    var cb = args.pop();
+    if (typeof cb === 'function') cb();
+    return Q.resolve();
+  };
+  if (! restartFn) restartFn = genericFn;
+  if (! notifyFn) notifyFn = genericFn;
+
+  restart = restartFn;
+  notify = notifyFn;
+};
 
 /**
  * Used for Testing. Allows us to undo our mocking.
  */
 ChangeSchema.statics.restore = function() {
   restart = utils.restartApp;
+  notify = utils.sendNotification;
 };
 
 module.exports = mongoose.model('Change', ChangeSchema);
+
+function getRepoName(appName) {
+  var repoName = appName
+    .replace('fs-', '')
+    .replace('-test', '')
+    .replace('-prod', '');
+
+  return repoName;
+}

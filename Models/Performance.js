@@ -60,12 +60,12 @@ PerformanceSchema.statics.fromSplunkPageReady = function(data) {
 
     self.create(config, function(err, doc) {
       if (err) {
-        dfd.resolve();
+        _dfd.resolve();
         return debug('Performance save failed');
       }
 
       created.push(doc);
-      dfd.resolve();
+      _dfd.resolve();
     });
   });
 
@@ -82,7 +82,6 @@ PerformanceSchema.statics.fromSplunkPageReadyByPage = function(data) {
   if (! data instanceof Array) return Q.reject(new Error('Improper splunk data supplied'));
 
   var dfd = Q.defer()
-    , dfds = []
     , created = []
     , self = this
     , appData = {}
