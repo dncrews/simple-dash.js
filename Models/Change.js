@@ -74,11 +74,14 @@ ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
 
   var _dfd = Q.defer()
     , Change = this
-    , currPromise;
+    , currPromise
+    , date = new Date()
+    , then = date.setMinutes(date.getMinutes() - 20);
 
   Change.count({
     name : app_name,
     action: 'restart',
+    created_at : { $gte : then }
   }, function(err, count) {
     var err;
     // If this fails for some reason, we'd rather do the actions than not
