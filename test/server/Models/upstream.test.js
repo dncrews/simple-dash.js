@@ -1,4 +1,5 @@
 var expect = require('expect.js')
+  , Q = require('q')
   , db = require('../../db')
   , Model = require('../../../Models/Upstream');
 
@@ -101,7 +102,7 @@ describe('Upstream interface:', function() {
         expect(upstream.status).to.be('red');
       });
     });
-    describe('Given no data, haFromSplunk', function() {
+    describe('Given no data, fromHeroku', function() {
       it('should reject with an error', function(done) {
         Model.fromHeroku().then(
           function doNotWant() {},
@@ -109,6 +110,31 @@ describe('Upstream interface:', function() {
             expect(err).to.be.an(Error);
             done();
           });
+      });
+    });
+
+    describe('Given a status change, fromHeroku', function() {
+      var notified = false;
+
+      before(function(done) {
+        Model.mock(function(appName, type, description, cb) {
+          notified = type;
+          if (cb) cb();
+          return Q.resolve();
+        });
+        Model.fromHeroku(getMockData('heroku', 'green')).then(function() {
+          Model.fromHeroku(getMockData('heroku','red')).then(function() {
+            done();
+          });
+        });
+      });
+      after(function(done) {
+        Model.restore();
+        Model.remove(done);
+      });
+
+      it('should send a notification', function() {
+        expect(notified).to.be('toRed');
       });
     });
   });
@@ -251,6 +277,30 @@ describe('Upstream interface:', function() {
         expect(upstream.status).to.be('down');
       });
     });
+    describe('Given a status change, haFromSplunk', function() {
+      var notified = false;
+
+      before(function(done) {
+        Model.mock(function(appName, type, description, cb) {
+          notified = type;
+          if (cb) cb();
+          return Q.resolve();
+        });
+        Model.haFromSplunk(getMockData('haProxy', 'good')).then(function() {
+          Model.haFromSplunk(getMockData('haProxy','down')).then(function() {
+            done();
+          });
+        });
+      });
+      after(function(done) {
+        Model.restore();
+        Model.remove(done);
+      });
+
+      it('should send a notification', function() {
+        expect(notified).to.be('toDown');
+      });
+    });
   });
 
 });
@@ -258,6 +308,13 @@ describe('Upstream interface:', function() {
 function getMockData(src, type) {
   var mocks = {
     heroku : {
+      green : {
+        "status": {
+          "Production": "green",
+          "Development": "green"
+        },
+        "issues": []
+      },
       greenYellow : {
         "status": {
           "Production": "green",

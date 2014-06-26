@@ -56,7 +56,7 @@ PerformanceSchema.statics.fromSplunkPageReady = function(data) {
       }
     };
 
-    dfds.push(_dfd);
+    dfds.push(_dfd.promise);
 
     self.create(config, function(err, doc) {
       if (err) {

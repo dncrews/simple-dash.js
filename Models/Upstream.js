@@ -14,12 +14,19 @@ var mongoose = require('mongoose')
   , _debug = require('debug');
 
 /**
+ * Local Dependencies
+ */
+var utils = require('../lib/utils');
+
+/**
  * Local Declarations
  */
 var debug = _debug('marrow:models:upstream')
   , verbose = _debug('marrow:models:upstream-verbose')
   , DOWN_RATE = 15
-  , WARNING_RATE = 10;
+  , WARNING_RATE = 10
+  , notify = utils.sendNotification
+  , Upstream;
 
 /**
  * Schema Declaration
@@ -37,6 +44,37 @@ var UpstreamSchema = new Schema({
     }
   });
 
+/**
+ * Pre Save Status Change check
+ *
+ * When saving a status, we want to check to see if it's gone "From Down"
+ * or "To Down", so that we can register a Change
+ */
+UpstreamSchema.pre('save', function(next) {
+
+  var current = this.status;
+
+  Upstream
+    .findOne({ name : this.name })
+    .sort({ created_at : -1 })
+    .exec(function(err, doc) {
+      if (! doc) return next();
+
+      var previous = doc.status;
+      if (current === previous) return next();
+
+      var msgType = current.charAt(0).toUpperCase() + current.slice(1);
+
+      // On success, done prevents call with arguments
+      // On failure, next may accept an argument
+      notify(this.name, 'to' + msgType, 'Status changed from "' + previous + '" to "' + current +'"')
+        .then(done, done);
+    });
+
+  function done() {
+    next();
+  }
+});
 
 /**
  * We could decide to store this again instead of virtuals.
@@ -102,7 +140,6 @@ UpstreamSchema.statics.fromHeroku = function(data) {
   if (! data) return Q.reject(new Error('No data provided!'));
 
   var dfd = Q.defer()
-    , Upstream = this
     , prod, dev;
 
   prod = new Upstream({
@@ -136,7 +173,6 @@ UpstreamSchema.statics.haFromSplunk = function(data) {
   if (! data) return Q.reject(new Error('No data provided!'));
 
   var dfd = Q.defer()
-    , Upstream = this
     , config, upstream, error_rate;
 
   upstream = new Upstream({
@@ -210,4 +246,17 @@ UpstreamSchema.statics.findCurrent = function(cb) {
 
 };
 
-module.exports = mongoose.model('Upstream', UpstreamSchema);
+UpstreamSchema.statics.mock = function(notifyFn) {
+  if (! notifyFn) notifyFn = function(appName, type, description, cb) {
+    if (cb) cb();
+    return Q.resolve();
+  }
+
+  notify = notifyFn;
+};
+
+UpstreamSchema.statics.restore = function() {
+  notify = utils.sendNotification;
+};
+
+module.exports = Upstream = mongoose.model('Upstream', UpstreamSchema);

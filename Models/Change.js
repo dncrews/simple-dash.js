@@ -112,11 +112,11 @@ ChangeSchema.pre('save', function(next) {
     if (! msgType) return next();
 
     notify(item.name, msgType, item.meta.reason)
-      // On success, done prevents call with arguments
-      // On failure, next may accept an argument
-      .then(function done() {
-        next();
-      }, next);
+      // On success or failure of notification we want to save our data
+      .then(done, done);
+  }
+  function done() {
+    next();
   }
 });
 
