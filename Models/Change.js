@@ -27,7 +27,8 @@ var utils = require('../lib/utils');
  */
 var heroku
   , restart = utils.restartApp
-  , notify = utils.sendNotification;
+  , notify = utils.sendNotification
+  , Change;
 
 /**
  * Changelog Schema Declaration
@@ -58,6 +59,68 @@ try {
 }
 
 /**
+ * Pre Save Notifications Handler
+ */
+ChangeSchema.pre('save', function(next) {
+  // Only send notifications for marrow things
+  if (this.type !== 'marrow') return next();
+  // So far, I only care about restarts and status changes
+  if (['restart', 'status.change'].indexOf(this.action) === -1) return next();
+
+  var item = this;
+
+  // If this.type isn't one of these, we're moving along.
+  var notifyHandlers = {
+
+    restart : function() {
+      var date = new Date()
+        , then = date.setMinutes(date.getMinutes() - 20);
+
+      Change.count({
+        name : item.name,
+        action : item.action,
+        created_at : { $gte : then }
+      }, function(err, count) {
+        // If the count fails for some reason, we'd rather do all of the actions than none
+        if (err) count = 0;
+        var newErr;
+
+        var msgTypes = {
+            0 : 'restart',
+            2 : 'restarts'
+          };
+
+        return sendNotify(msgTypes[count]);
+      });
+    },
+
+    'status.change' : function() {
+      var msgTypes = {
+          'to "down"': 'toDown',
+          'to "slow"': 'toSlow',
+          'to "good"': 'toGood'
+        };
+
+      return sendNotify(msgTypes[item.meta.reason.match(/to "\w+"/)]);
+    }
+  }
+
+  // If this isn't "restart" || "status.change", I don't care
+  return (notifyHandlers[this.action] || next)();
+
+  function sendNotify(msgType) {
+    if (! msgType) return next();
+
+    notify(item.name, msgType, item.meta.reason)
+      // On success, done prevents call with arguments
+      // On failure, next may accept an argument
+      .then(function done() {
+        next();
+      }, next);
+  }
+});
+
+/**
  * Restarts the Heroku app if heroku information is set
  *
  * If there have been 0 restart attempts in the last 15 minutes, we restart and trigger a single restart alert
@@ -72,8 +135,7 @@ ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
   if (! app_name) return Q.reject(new Error('No Marrow app_name supplied'));
   if (! reason) return Q.reject(new Error('No restart reason supplied'));
 
-  var _dfd = Q.defer()
-    , Change = this
+  var dfd = Q.defer()
     , currPromise
     , date = new Date()
     , then = date.setMinutes(date.getMinutes() - 20);
@@ -93,41 +155,20 @@ ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
         return successHandler('restart');
       }, function failure(err) {
         if (err.name === 'notConfigured') return successHandler('restart.not_configured');
-        return _dfd.reject(err);
+        return dfd.reject(err);
       });
 
     function successHandler(action) {
-      var dfds = [ Q.defer() ];
-      var promises = [ dfds[0].promise ];
 
       var change = Change.fromMarrow(app_name, action, reason);
       change.save(function(err, doc) {
-        var dfd = dfds[0];
-
         if (err) return dfd.reject(err);
         dfd.resolve(doc);
       });
-
-      var msgTypes = {
-          0 : 'restart',
-          2 : 'restarts'
-        }
-        , msgType = msgTypes[count];
-
-      if (! msgType) {
-        promises[1] = Q.resolve();
-      } else {
-        promises[1] = notify(app_name, msgType, reason);
-      }
-
-      return Q.all(promises).then(function(results) {
-        // Return the change document
-        _dfd.resolve(results[0]);
-      }, _dfd.reject);
     }
   });
 
-  return _dfd.promise;
+  return dfd.promise;
 };
 
 /**
@@ -140,8 +181,7 @@ ChangeSchema.statics.restartHerokuApp = function(app_name, reason) {
 ChangeSchema.statics.fromGithub = function(data, action) {
   if (! data) return new Error('No Github data supplied');
 
-  var Change = this
-    , config = {
+  var config = {
       _raw : data,
       type : 'github',
       action : action || 'merge',
@@ -167,8 +207,7 @@ ChangeSchema.statics.fromGithub = function(data, action) {
 ChangeSchema.statics.fromJenkins = function(data, action) {
   if (! data) return new Error('No Jenkins data supplied');
 
-  var Change = this
-    , config = {
+  var config = {
       _raw : data,
       type : 'jenkins',
       action: action || 'build',
@@ -193,8 +232,7 @@ ChangeSchema.statics.fromJenkins = function(data, action) {
 ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
   if (! app_name) return new Error('No Marrow app_name supplied');
 
-  var Change = this
-    , config = {
+  var config = {
       type : 'marrow',
       action : action || 'restart',
       name : app_name
@@ -221,8 +259,7 @@ ChangeSchema.statics.fromMarrow = function(app_name, action, reason) {
 ChangeSchema.statics.fromEC = function(data, action) {
   if (! data) return new Error('No EC data supplied');
 
-  var Change = this
-    , config = {
+  var config = {
       _raw : data,
       repo_name: data.name,
       type : 'electricCommander',
@@ -274,7 +311,7 @@ ChangeSchema.statics.restore = function() {
   notify = utils.sendNotification;
 };
 
-module.exports = mongoose.model('Change', ChangeSchema);
+module.exports = Change = mongoose.model('Change', ChangeSchema);
 
 function getRepoName(appName) {
   var repoName = appName

@@ -1,4 +1,5 @@
 var expect = require('expect.js')
+  , Q = require('q')
   , db = require('../../db')
   , Model = require('../../../Models/App_Status')
   , Bucket = require('../../../Models/App_Bucket')
@@ -156,45 +157,77 @@ describe('Apps interface:', function() {
 
   describe('When status changes to "down",', function() {
 
-    after(function(done) {
-      Change.remove(done);
-    });
+    var notified = false, docs;
 
-    it('should register a Change', function(done) {
+    before(function(done) {
+      Change.mock(null, function fakeNotify(appName, type, description, cb) {
+        notified = type;
+        if (cb) cb();
+        return Q.resolve();
+      });
       Model.fromSplunk(getMockData('good')).then(function() {
         Model.fromSplunk(getMockData('down')).then(function() {
-          Change.find().exec(function(err, docs) {
-            var doc = docs[0];
-            expect(docs.length).to.be(1);
-            expect(doc.type).to.be('marrow');
-            expect(doc.action).to.be('status.change');
-            expect(doc.meta.reason).to.be('Status changed from "good" to "down"');
+          Change.find().exec(function(err, _docs) {
+            docs = _docs;
             done();
           });
         });
       });
+    });
+
+    after(function(done) {
+      Change.remove(done);
+      Change.restore();
+    });
+
+    it('should register a Change', function() {
+      var doc = docs[0];
+      expect(docs.length).to.be(1);
+      expect(doc.type).to.be('marrow');
+      expect(doc.action).to.be('status.change');
+      expect(doc.meta.reason).to.be('Status changed from "good" to "down"');
+    });
+
+    it('should send a "toDown" notification', function() {
+      expect(notified).to.be('toDown');
     });
   });
 
   describe('When status changes from "down",', function() {
 
-    after(function(done) {
-      Change.remove(done);
-    });
+    var notified = false, docs;
 
-    it('should register a Change', function(done) {
+    before(function(done) {
+      Change.mock(null, function fakeNotify(appName, type, description, cb) {
+        notified = type;
+        if (cb) cb();
+        return Q.resolve();
+      });
       Model.fromSplunk(getMockData('down')).then(function() {
         Model.fromSplunk(getMockData('slow')).then(function() {
-          Change.find().exec(function(err, docs) {
-            var doc = docs[0];
-            expect(docs.length).to.be(1);
-            expect(doc.type).to.be('marrow');
-            expect(doc.action).to.be('status.change');
-            expect(doc.meta.reason).to.be('Status changed from "down" to "slow"');
+          Change.find().exec(function(err, _docs) {
+            docs = _docs;
             done();
           });
         });
       });
+    });
+
+    after(function(done) {
+      Change.remove(done);
+      Change.restore();
+    });
+
+    it('should register a Change', function() {
+      var doc = docs[0];
+      expect(docs.length).to.be(1);
+      expect(doc.type).to.be('marrow');
+      expect(doc.action).to.be('status.change');
+      expect(doc.meta.reason).to.be('Status changed from "down" to "slow"');
+    });
+
+    it('should send a "toSlow" notification', function() {
+      expect(notified).to.be('toSlow');
     });
   });
 
