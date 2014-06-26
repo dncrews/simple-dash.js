@@ -149,7 +149,7 @@ AppSchema.pre('save', function(next) {
 
       var previous = doc.status;
       if (current === previous) return next();
-      if (current !== 'down' && previous !== 'down') return next();
+      // if (current !== 'down' && previous !== 'down') return next();
 
       Change
         .fromMarrow(doc.name, 'status.change', 'Status changed from "' + previous + '" to "' + current + '"')
