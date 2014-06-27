@@ -48,7 +48,7 @@ var UpstreamSchema = new Schema({
  * Pre Save Status Change check
  *
  * When saving a status, we want to check to see if it's gone "From Down"
- * or "To Down", so that we can register a Change
+ * or "To Down", so that we can send a notification
  */
 UpstreamSchema.pre('save', function(next) {
 
