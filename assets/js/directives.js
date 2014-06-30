@@ -119,7 +119,7 @@
           var item = scope.item
             , type = attrs.statusType
             , name = getName()
-            , shortName = name.length > 20 ? name.substr(0, 17) + '...' : name
+            , shortName = name.length > 36 ? name.substr(0, 33) + '...' : name
             , status = getStatus()
             , glyphs = {
               "success" : "ok-sign",
