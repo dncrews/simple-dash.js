@@ -119,6 +119,7 @@
           var item = scope.item
             , type = attrs.statusType
             , name = getName()
+            , shortName = name.length > 20 ? name.substr(0, 17) + '...' : name
             , status = getStatus()
             , glyphs = {
               "success" : "ok-sign",
@@ -127,12 +128,13 @@
               "default" : "question-sign"
             };
           element
-            .addClass('col-sm-' + (Math.ceil(name.length/7) + 1))
-            .addClass('col-md-' + (Math.ceil(name.length/10) + 1))
+            .addClass('col-sm-' + (Math.ceil(shortName.length/7) + 1))
+            .addClass('col-md-' + (Math.ceil(shortName.length/10) + 1))
             .addClass('btn-' + status)
             .bind('click', goTo);
 
-          scope.name = name;
+          scope.shortName = shortName;
+          if (shortName !== name) scope.name = name;
           scope.glyph = 'glyphicon-' + glyphs[status] || 'question-sign';
 
           function getName() {
