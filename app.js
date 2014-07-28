@@ -180,8 +180,6 @@ app.post('/change', function(req, res){
   if (ua.match('ecBuildHook')) src = 'ec'; //TODO: add the IP Address?
 
   if (! src) return res.send(507);
-  // Not returning. We want to parse after sending response
-  res.send(200);
 
   //save the data
   change_logger(req.body, src).then(function success(stuff) {
