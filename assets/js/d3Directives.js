@@ -420,6 +420,7 @@
               events.map(function(event) {
                 if (! (
                   (event.type === 'jenkins' && event.action === 'build') ||
+                  (event.type === 'electricCommander' && event.action === 'build') ||
                   (event.type === 'marrow' && /restart/.test(event.action))
                 )) return;
 
