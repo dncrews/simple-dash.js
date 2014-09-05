@@ -2,7 +2,7 @@
   <span class="icon {{ event.type }}"></span>
   <div class="change_detail">
     <span class="commit_msg">
-      <span class="repo_name">{{ event.name }}</span>
+      <span class="repo_name">{{ event.name || event.repo_name }}</span>
       <a target="_blank" data-ng-show="msg" class="commit_link" data-ng-href="{{ event.meta.url }}">{{ msg }}</a>
     </span>
   </div>

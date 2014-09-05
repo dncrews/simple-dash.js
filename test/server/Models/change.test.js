@@ -276,6 +276,7 @@ describe('Changes interface:', function() {
         expect(change._raw).to.eql(data);
       });
       it('should set the name and repo_name', function() {
+        expect(change.name).to.be('frontier-newAppName');
         expect(change.repo_name).to.be('newAppName');
       });
       it('should set created_at', function() {
@@ -347,7 +348,7 @@ function getMockData(type) {
       }
     },
     electricCommander : {
-      "name" : "newAppName",
+      "name" : "frontier-newAppName",
       "build" : {
         "url" : "https://build.fsglobal.net",
         "number" : 2,

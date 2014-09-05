@@ -261,7 +261,7 @@ ChangeSchema.statics.fromEC = function(data, action) {
 
   var config = {
       _raw : data,
-      repo_name: data.name,
+      name: data.name,
       type : 'electricCommander',
       action: action || 'build',
       meta : {
@@ -269,6 +269,8 @@ ChangeSchema.statics.fromEC = function(data, action) {
         git_commit : data.build.git_commit,
       },
     };
+
+  config.repo_name = data.name.replace('frontier-', '');
 
   debug('FromEC: ', config);
 

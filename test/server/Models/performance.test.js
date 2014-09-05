@@ -24,7 +24,8 @@ describe('Performance Statistics interface:', function() {
             stats = docs;
             stat = docs[0];
             done();
-          });
+            // Pass done for error callback
+          }, done);
         });
       });
 
