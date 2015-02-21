@@ -7,7 +7,8 @@ var express = require('express')
   , GitHubStrategy = require('passport-github').Strategy
   , debug = require('debug')('marrow:routing')
   , RedisStore = require('connect-redis')(express)
-  , base = require('connect-base');
+  , base = require('connect-base')
+  , manifest = require('./assets/dist/rev-manifest.json');
 
 /**
  * Local Dependencies
@@ -84,10 +85,27 @@ app.use(base({
   path: 'x-orig-base',
   proto: 'x-orig-proto'
 }));
+/* compress responses */
+app.use(express.compress({filter: shouldCompress}));
+function shouldCompress(req, res) {
+  if (req.headers['x-no-compression']) {
+    // don't compress responses with this request header
+    return false;
+  }
+  // fallback to standard filter function
+  return express.compress.filter(req, res);
+}
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(stylus.middleware(__dirname + '/assets'));
 app.use(express.static(__dirname + '/assets'));
+/* serve the bundled, fingerprinted asset files with bulletproof caching */
+app.use(express.static(__dirname + '/dist', {
+  etag: true,
+  setHeaders: function (res, path, stat) {
+    res.set('x-timestamp', Date.now());
+  }
+}));
 app.use('/status', stylus.middleware(__dirname + '/assets'));
 app.use('/status', express.static(__dirname + '/assets'));
 app.set('views', __dirname + '/views');
@@ -137,7 +155,8 @@ function angularDashboard(req, res, next) {
     desktop : forceDesktop,
     assetPath : assetPath,
     basePath : basePath,
-    pushState : pushState
+    pushState : pushState,
+    manifest: manifest
   });
 }
 

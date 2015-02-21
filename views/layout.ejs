@@ -3,10 +3,12 @@
 <head>
   <title>FamilySearch Status</title>
   <base href="<%- assetPath %>" />
-  <link rel="stylesheet" href="<%- assetPath %>vendor/bootstrap/css/bootstrap.min.css">
+  <!-- bundled by gulpscript -->
+  <link rel="stylesheet" href="<%- assetPath + 'dist/' + manifest['styles.css'] %>">
+  <!-- <link rel="stylesheet" href="<%- assetPath %>vendor/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="<%- assetPath %>vendor/bootstrap/css/bootstrap-theme.min.css">
   <link rel="stylesheet" href="<%- assetPath %>vendor/rickshaw.min.css">
-  <link rel="stylesheet" href="<%- assetPath %>css/dashboard.css">
+  <link rel="stylesheet" href="<%- assetPath %>css/dashboard.css"> -->
   <% if (desktop) { %>
   <meta name="viewport" content="width=992">
   <% } else { %>
@@ -75,15 +77,17 @@
   </div>
   <% } %>
 
-  <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
-  <script src="<%- assetPath %>vendor/bootstrap/js/bootstrap.min.js"></script>
+  <!--<script src="//code.jquery.com/jquery-2.1.0.min.js"></script>-->
+  <!--<script src="<%- assetPath %>vendor/bootstrap/js/bootstrap.min.js"></script>-->
   <script>
     window.assetPath = "<%- assetPath %>";
   </script>
 
   <% if (req.user) { %>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-    <script src="<%- assetPath %>vendor/moment.min.js"></script>
+    <!-- bundled by gulpscript -->
+    <script src="<%- assetPath + 'dist/' + manifest['app.js'] %>"></script>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>-->
+    <!--<script src="<%- assetPath %>vendor/moment.min.js"></script>
     <script src="<%- assetPath %>js/routes.js"></script>
     <% if (pushState) { %>
     <script src="<%- assetPath %>js/routesHTML5.js"></script>
@@ -92,7 +96,7 @@
     <script src="<%- assetPath %>js/directives.js"></script>
     <script src="<%- assetPath %>js/services.js"></script>
     <script src="<%- assetPath %>js/d3Service.js"></script>
-    <script src="<%- assetPath %>js/d3Directives.js"></script>
+    <script src="<%- assetPath %>js/d3Directives.js"></script>-->
     <% if (desktop) { %>
     <script>
       window.forceDesktop = true;
