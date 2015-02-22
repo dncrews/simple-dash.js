@@ -8,7 +8,7 @@ var express = require('express')
   , debug = require('debug')('marrow:routing')
   , RedisStore = require('connect-redis')(express)
   , base = require('connect-base')
-  , manifest = require('./assets/dist/rev-manifest.json');
+  , manifest = require('./dist/rev-manifest.json');
 
 /**
  * Local Dependencies
@@ -97,17 +97,25 @@ function shouldCompress(req, res) {
 }
 app.use(express.json());
 app.use(express.urlencoded());
+/* settings for heroku-mounted url */
 app.use(stylus.middleware(__dirname + '/assets'));
 app.use(express.static(__dirname + '/assets'));
 /* serve the bundled, fingerprinted asset files with bulletproof caching */
-app.use(express.static(__dirname + '/dist', {
+var oneDay = 86400000;
+var distConfig = {
   etag: true,
+  maxage: '2h',
   setHeaders: function (res, path, stat) {
     res.set('x-timestamp', Date.now());
+    // res.set('Cache-Control', 'public, max-age=' + oneDay);
   }
-}));
+};
+app.use(express.static(__dirname + '/dist', distConfig));
+/* duplicate settings for familysearch.org/status mounting */
 app.use('/status', stylus.middleware(__dirname + '/assets'));
 app.use('/status', express.static(__dirname + '/assets'));
+app.use('/status',express.static(__dirname + '/dist', distConfig));
+
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 if ('development' === app.get('env')) app.use(express.logger('dev'));
