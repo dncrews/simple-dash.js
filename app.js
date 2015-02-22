@@ -9,7 +9,8 @@ var express = require('express')
   , RedisStore = require('connect-redis')(express)
   , base = require('connect-base')
   , manifest = require('./dist/rev-manifest.json')
-  , compression = require('compression');
+  , compression = require('compression')
+  , staticCache = require('express-static-cache');
 
 /**
  * Local Dependencies
@@ -91,6 +92,7 @@ var oneDay = 86400000;
 var distConfig = {
   etag: true,
   maxage: process.env.ASSET_EXPIRES || '2h',
+  maxAge: 365 * 24 * 60 * 60,// 1 Year
   setHeaders: function (res, path, stat) {
     res.set('x-timestamp', Date.now());
     // res.set('Cache-Control', 'public, max-age=' + oneDay);
@@ -103,13 +105,13 @@ app.use(express.json());
 app.use(express.urlencoded());
 /* settings for heroku-mounted url */
 app.use(stylus.middleware(__dirname + '/assets'));
-app.use(express.static(__dirname + '/assets', distConfig));
+app.use(staticCache(__dirname + '/assets', distConfig));
 /* serve the bundled, fingerprinted asset files with bulletproof caching */
-app.use(express.static(__dirname + '/dist', distConfig));
+app.use(staticCache(__dirname + '/dist', distConfig));
 /* duplicate settings for familysearch.org/status mounting */
 app.use('/status', stylus.middleware(__dirname + '/assets'));
-app.use('/status', express.static(__dirname + '/assets', distConfig));
-app.use('/status', express.static(__dirname + '/dist', distConfig));
+app.use('/status', staticCache(__dirname + '/assets', distConfig));
+app.use('/status', staticCache(__dirname + '/dist', distConfig));
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
