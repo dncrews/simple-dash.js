@@ -1,5 +1,9 @@
 [![Build Status](https://travis-ci.org/dncrews/simple-dash.js.png)](https://travis-ci.org/dncrews/simple-dash.js)
 
+# Important:
+- **This app uses gulp to bundle and process client-side assets**
+- When developing, keep ```gulp watch``` running, so that the bundled app js and css file updates make it to the view.
+
 ## Contributors
 Ordered by date of first contribution. [Auto-generated](https://github.com/dtrejo/node-authors) on Mon, 23 Feb 2015 00:05:38 GMT.
 
