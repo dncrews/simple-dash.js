@@ -97,6 +97,8 @@ var distConfig = {
     res.set('x-timestamp', Date.now());
   }
 };
+/* set distconfig to empty when in localdev, so dev isn't troubled by old cached content */
+distConfig = process.env.NODE_ENV !== 'development' ? distConfig : {};
 /* compress responses */
 app.use(compression());
 
