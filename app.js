@@ -37,6 +37,7 @@ var app = module.exports = express()
     callbackURL: process.env.DOMAIN_PASSPORT_CALLBACK_HOST + '/authenticate/github/callback'
   };
 
+
 /**
  * Express Configuration
  */
@@ -86,36 +87,29 @@ app.use(base({
   path: 'x-orig-base',
   proto: 'x-orig-proto'
 }));
-/* compress responses */
-app.use(compression({filter: shouldCompress}));
-function shouldCompress(req, res) {
-  if (req.headers['x-no-compression']) {
-    // don't compress responses with this request header
-    return false;
-  }
-  // fallback to standard filter function
-  return compression.filter(req, res);
-}
-app.use(express.json());
-app.use(express.urlencoded());
-/* settings for heroku-mounted url */
-app.use(stylus.middleware(__dirname + '/assets'));
-app.use(express.static(__dirname + '/assets'));
-/* serve the bundled, fingerprinted asset files with bulletproof caching */
 var oneDay = 86400000;
 var distConfig = {
   etag: true,
-  maxage: '2h',
+  maxage: process.env.ASSET_EXPIRES || '2h',
   setHeaders: function (res, path, stat) {
     res.set('x-timestamp', Date.now());
     // res.set('Cache-Control', 'public, max-age=' + oneDay);
   }
 };
+/* compress responses */
+app.use(compression());
+
+app.use(express.json());
+app.use(express.urlencoded());
+/* settings for heroku-mounted url */
+app.use(stylus.middleware(__dirname + '/assets'));
+app.use(express.static(__dirname + '/assets', distConfig));
+/* serve the bundled, fingerprinted asset files with bulletproof caching */
 app.use(express.static(__dirname + '/dist', distConfig));
 /* duplicate settings for familysearch.org/status mounting */
 app.use('/status', stylus.middleware(__dirname + '/assets'));
-app.use('/status', express.static(__dirname + '/assets'));
-app.use('/status',express.static(__dirname + '/dist', distConfig));
+app.use('/status', express.static(__dirname + '/assets', distConfig));
+app.use('/status', express.static(__dirname + '/dist', distConfig));
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');

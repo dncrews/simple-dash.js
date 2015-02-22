@@ -15,9 +15,9 @@ var appCSS = [
   './assets/css/dashboard.styl'
 ];
 var appJS = [
-  './assets/vendor/jquery-2.1.0.min.js',
+  // './assets/vendor/jquery-2.1.0.min.js',
   './assets/vendor/angular.min.js',
-  './assets/vendor/bootstrap/js/bootstrap.js',
+  // './assets/vendor/bootstrap/js/bootstrap.js',
   './assets/vendor/moment.min.js',
   './assets/js/routes.js',
   './assets/js/routesHTML5.js',
@@ -48,7 +48,7 @@ gulp.task('css', function () {
 gulp.task('js', function () {
   return gulp.src(appJS)
     .pipe(ngmin())
-    .pipe(uglify())
+    // .pipe(uglify())
     .pipe(concat('app.js'))
     .pipe(gulp.dest("./dist/"));
 });
