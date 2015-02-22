@@ -7,7 +7,10 @@ var express = require('express')
   , GitHubStrategy = require('passport-github').Strategy
   , debug = require('debug')('marrow:routing')
   , RedisStore = require('connect-redis')(express)
-  , base = require('connect-base');
+  , base = require('connect-base')
+  , manifest = require('./dist/rev-manifest.json')
+  , compression = require('compression')
+  , staticCache = require('express-static-cache');
 
 /**
  * Local Dependencies
@@ -34,6 +37,7 @@ var app = module.exports = express()
     clientSecret: process.env.DOMAIN_GITHUB_CLIENT_SECRET,
     callbackURL: process.env.DOMAIN_PASSPORT_CALLBACK_HOST + '/authenticate/github/callback'
   };
+
 
 /**
  * Express Configuration
@@ -84,12 +88,41 @@ app.use(base({
   path: 'x-orig-base',
   proto: 'x-orig-proto'
 }));
+var oneDay = 86400000;
+var distConfig = {
+  etag: true,
+  maxage: process.env.ASSET_EXPIRES || '1D', // express.static param
+  maxAge: process.env.ASSET_EXPIRES || 86400000, // staticCache param
+  setHeaders: function (res, path, stat) {
+    res.set('x-timestamp', Date.now());
+  }
+};
+/* set distconfig to empty when in localdev, so dev isn't troubled by old cached content */
+distConfig = process.env.NODE_ENV !== 'development' ? distConfig : {};
+/* compress responses */
+app.use(compression());
+
 app.use(express.json());
 app.use(express.urlencoded());
+
+/* settings for heroku-mounted url */
 app.use(stylus.middleware(__dirname + '/assets'));
 app.use(express.static(__dirname + '/assets'));
+
+/* serve the bundled, fingerprinted asset files and vendor libs with bulletproof caching */
+/**
+ * TODO: put these routes under /assets instead of mounting at the root. Was temp. to control
+ *       caching params separately between templates, vendor, and app code.
+ */
+app.use(staticCache(__dirname + '/dist', distConfig));
+app.use('/vendor',staticCache(__dirname + '/vendor', distConfig));
+
+/* duplicate settings for familysearch.org/status mounting */
 app.use('/status', stylus.middleware(__dirname + '/assets'));
 app.use('/status', express.static(__dirname + '/assets'));
+app.use('/status', staticCache(__dirname + '/dist', distConfig));
+app.use('/status/vendor',staticCache(__dirname + '/vendor', distConfig));
+
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 if ('development' === app.get('env')) app.use(express.logger('dev'));
@@ -137,7 +170,8 @@ function angularDashboard(req, res, next) {
     desktop : forceDesktop,
     assetPath : assetPath,
     basePath : basePath,
-    pushState : pushState
+    pushState : pushState,
+    manifest: manifest
   });
 }
 

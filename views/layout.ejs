@@ -3,10 +3,8 @@
 <head>
   <title>FamilySearch Status</title>
   <base href="<%- assetPath %>" />
-  <link rel="stylesheet" href="<%- assetPath %>vendor/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="<%- assetPath %>vendor/bootstrap/css/bootstrap-theme.min.css">
-  <link rel="stylesheet" href="<%- assetPath %>vendor/rickshaw.min.css">
-  <link rel="stylesheet" href="<%- assetPath %>css/dashboard.css">
+  <!-- bundled by gulpscript -->
+  <link rel="stylesheet" href="<%- assetPath + manifest['styles.css'] %>">
   <% if (desktop) { %>
   <meta name="viewport" content="width=992">
   <% } else { %>
@@ -82,17 +80,8 @@
   </script>
 
   <% if (req.user) { %>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-    <script src="<%- assetPath %>vendor/moment.min.js"></script>
-    <script src="<%- assetPath %>js/routes.js"></script>
-    <% if (pushState) { %>
-    <script src="<%- assetPath %>js/routesHTML5.js"></script>
-    <% } %>
-    <script src="<%- assetPath %>js/controllers.js"></script>
-    <script src="<%- assetPath %>js/directives.js"></script>
-    <script src="<%- assetPath %>js/services.js"></script>
-    <script src="<%- assetPath %>js/d3Service.js"></script>
-    <script src="<%- assetPath %>js/d3Directives.js"></script>
+    <!-- bundled by gulpscript -->
+    <script src="<%- assetPath + manifest['app.js'] %>"></script>
     <% if (desktop) { %>
     <script>
       window.forceDesktop = true;
