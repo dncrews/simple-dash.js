@@ -9,8 +9,7 @@ var express = require('express')
   , RedisStore = require('connect-redis')(express)
   , base = require('connect-base')
   , manifest = require('./dist/rev-manifest.json')
-  , compression = require('compression')
-  , staticCache = require('express-static-cache');
+  , compression = require('compression');
 
 /**
  * Local Dependencies
@@ -91,11 +90,9 @@ app.use(base({
 var oneDay = 86400000;
 var distConfig = {
   etag: true,
-  maxage: process.env.ASSET_EXPIRES || '2h',
-  maxAge: 365 * 24 * 60 * 60,// 1 Year
+  maxage: process.env.ASSET_EXPIRES || '1D',
   setHeaders: function (res, path, stat) {
     res.set('x-timestamp', Date.now());
-    // res.set('Cache-Control', 'public, max-age=' + oneDay);
   }
 };
 /* compress responses */
@@ -103,15 +100,19 @@ app.use(compression());
 
 app.use(express.json());
 app.use(express.urlencoded());
+
 /* settings for heroku-mounted url */
 app.use(stylus.middleware(__dirname + '/assets'));
-app.use(staticCache(__dirname + '/assets', distConfig));
-/* serve the bundled, fingerprinted asset files with bulletproof caching */
-app.use(staticCache(__dirname + '/dist', distConfig));
+app.use(express.static(__dirname + '/assets'));
+/* serve the bundled, fingerprinted asset files and vendor libs with bulletproof caching */
+app.use(express.static(__dirname + '/dist', distConfig));
+app.use('/vendor',express.static(__dirname + '/vendor', distConfig));
+
 /* duplicate settings for familysearch.org/status mounting */
 app.use('/status', stylus.middleware(__dirname + '/assets'));
-app.use('/status', staticCache(__dirname + '/assets', distConfig));
-app.use('/status', staticCache(__dirname + '/dist', distConfig));
+app.use('/status', express.static(__dirname + '/assets'));
+app.use('/status', express.static(__dirname + '/dist', distConfig));
+app.use('/status/vendor',express.static(__dirname + '/vendor', distConfig));
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
