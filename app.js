@@ -8,7 +8,8 @@ var express = require('express')
   , debug = require('debug')('marrow:routing')
   , RedisStore = require('connect-redis')(express)
   , base = require('connect-base')
-  , manifest = require('./dist/rev-manifest.json');
+  , manifest = require('./dist/rev-manifest.json')
+  , compression = require('compression');
 
 /**
  * Local Dependencies
@@ -86,14 +87,14 @@ app.use(base({
   proto: 'x-orig-proto'
 }));
 /* compress responses */
-app.use(express.compress({filter: shouldCompress}));
+app.use(compression({filter: shouldCompress}));
 function shouldCompress(req, res) {
   if (req.headers['x-no-compression']) {
     // don't compress responses with this request header
     return false;
   }
   // fallback to standard filter function
-  return express.compress.filter(req, res);
+  return compression.filter(req, res);
 }
 app.use(express.json());
 app.use(express.urlencoded());

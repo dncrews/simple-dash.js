@@ -31,7 +31,8 @@
     "passport-github": "~0.1.5",
     "connect-redis": "~1.4.6",
     "connect-base": "^0.1.7",
-    "gulp": "~3.8.11"
+    "gulp": "~3.8.11",
+    "compression": "~1.4.1"
   },
   "devDependencies": {
     "mocha": "~1.14.0",
