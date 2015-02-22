@@ -108,7 +108,12 @@ app.use(express.urlencoded());
 /* settings for heroku-mounted url */
 app.use(stylus.middleware(__dirname + '/assets'));
 app.use(express.static(__dirname + '/assets'));
+
 /* serve the bundled, fingerprinted asset files and vendor libs with bulletproof caching */
+/**
+ * TODO: put these routes under /assets instead of mounting at the root. Was temp. to control
+ *       caching params separately between templates, vendor, and app code.
+ */
 app.use(staticCache(__dirname + '/dist', distConfig));
 app.use('/vendor',staticCache(__dirname + '/vendor', distConfig));
 
