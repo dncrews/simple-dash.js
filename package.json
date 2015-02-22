@@ -1,6 +1,6 @@
 {
   "name": "fs-status",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "Frontier Status Dashboard",
   "author": "Jamis Charles",
   "contributors": [
@@ -11,6 +11,11 @@
       "name": "Dan Crews",
       "email": "crewsd@gmail.com",
       "url": "http://github.com/dncrews"
+    },
+    {
+      "name": "Jakob Anderson",
+      "email": "fictionisfiction@gmail.com",
+      "url": "http://github.com/spacerockzero"
     }
   ],
   "dependencies": {
