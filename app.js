@@ -43,6 +43,9 @@ var app = module.exports = express()
  * Express Configuration
  */
 
+/* compress responses */
+app.use(compression());
+
 //set up Passport SSO via github
 passport.serializeUser(function(user, done) {
   done(null, user);
@@ -88,26 +91,24 @@ app.use(base({
   path: 'x-orig-base',
   proto: 'x-orig-proto'
 }));
-var oneDay = 86400000;
 var distConfig = {
   etag: true,
-  maxage: process.env.ASSET_EXPIRES || '1D', // express.static param
-  maxAge: process.env.ASSET_EXPIRES || 86400000, // staticCache param
-  setHeaders: function (res, path, stat) {
-    res.set('x-timestamp', Date.now());
-  }
+  maxage: process.env.DIST_EXPIRES || 60, // express.static param (/assets)
+  maxAge: process.env.DIST_EXPIRES || 60, // staticCache param (/dist and /vendor)
+};
+var assetConfig = {
+  maxage: process.env.ASSET_EXPIRES || 60, // express.static param (/assets)
+  maxAge: process.env.ASSET_EXPIRES || 60, // staticCache param (/dist and /vendor)
 };
 /* set distconfig to empty when in localdev, so dev isn't troubled by old cached content */
-distConfig = process.env.NODE_ENV !== 'development' ? distConfig : {};
-/* compress responses */
-app.use(compression());
+// distConfig = process.env.NODE_ENV !== 'development' ? distConfig : {};
 
 app.use(express.json());
 app.use(express.urlencoded());
 
 /* settings for heroku-mounted url */
 app.use(stylus.middleware(__dirname + '/assets'));
-app.use(express.static(__dirname + '/assets'));
+app.use(staticCache(__dirname + '/assets', assetConfig));
 
 /* serve the bundled, fingerprinted asset files and vendor libs with bulletproof caching */
 /**
@@ -119,7 +120,7 @@ app.use('/vendor',staticCache(__dirname + '/vendor', distConfig));
 
 /* duplicate settings for familysearch.org/status mounting */
 app.use('/status', stylus.middleware(__dirname + '/assets'));
-app.use('/status', express.static(__dirname + '/assets'));
+app.use('/status', staticCache(__dirname + '/assets', assetConfig));
 app.use('/status', staticCache(__dirname + '/dist', distConfig));
 app.use('/status/vendor',staticCache(__dirname + '/vendor', distConfig));
 
