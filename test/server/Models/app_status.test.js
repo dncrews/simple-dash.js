@@ -1,4 +1,4 @@
-var expect = require('expect.js')
+var expect = require('chai').expect
   , Q = require('q')
   , db = require('../../db')
   , Model = require('../../../Models/App_Status')
@@ -38,52 +38,52 @@ describe('Apps interface:', function() {
     });
 
     it('should save the raw data as _raw', function() {
-      expect(sut._raw).to.be.an(Object);
+      expect(sut._raw).to.be.an.instanceof(Object);
       expect(sut._raw).to.eql(mockData);
     });
 
     it('should set the name and repo_name', function() {
-      expect(sut.name).to.be('fs-appName-prod');
-      expect(sut.repo_name).to.be('appName');
+      expect(sut.name).to.equal('fs-appName-prod');
+      expect(sut.repo_name).to.equal('appName');
     });
 
     it('should set created_at', function() {
-      expect(sut.created_at).to.be.a(Date);
+      expect(sut.created_at).to.be.an.instanceof(Date);
     });
 
     it('should create a time object', function() {
-      expect(sut.time.p75).to.be(160);
-      expect(sut.time.p95).to.be(380);
+      expect(sut.time.p75).to.equal(160);
+      expect(sut.time.p95).to.equal(380);
     });
 
     it('should create a memory object', function() {
-      expect(sut.memory.avg).to.be(272);
-      expect(sut.memory.max).to.be(300);
+      expect(sut.memory.avg).to.equal(272);
+      expect(sut.memory.max).to.equal(300);
     });
 
     it('should create a codes object', function() {
-      expect(sut.codes['2xx']).to.be(1000);
-      expect(sut.codes['3xx']).to.be(3);
-      expect(sut.codes['4xx']).to.be(4);
-      expect(sut.codes['5xx']).to.be(5);
-      expect(sut.codes.total).to.be(1012);
+      expect(sut.codes['2xx']).to.equal(1000);
+      expect(sut.codes['3xx']).to.equal(3);
+      expect(sut.codes['4xx']).to.equal(4);
+      expect(sut.codes['5xx']).to.equal(5);
+      expect(sut.codes.total).to.equal(1012);
     });
 
     it('should round up the error_rate', function() {
-      expect(sut.error_rate).to.be(1);
+      expect(sut.error_rate).to.equal(1);
     });
 
     it('should calculate a "good" status', function() {
-      expect(sut.status).to.be('good');
+      expect(sut.status).to.equal('good');
     });
 
     it('should save', function() {
-      expect(statuses.length).to.be(1);
-      expect(statuses[0].repo_name).to.be(sut.repo_name);
+      expect(statuses.length).to.equal(1);
+      expect(statuses[0].repo_name).to.equal(sut.repo_name);
     });
 
     it('should call App_Bucket.addApp with the generated id', function() {
-      expect(buckets.length).to.be(3);
+      expect(buckets.length).to.equal(3);
     });
 
   });
@@ -93,7 +93,7 @@ describe('Apps interface:', function() {
       Model.fromSplunk().then(
         function doNotWant() {},
         function rejected(err) {
-          expect(err).to.be.an(Error);
+          expect(err).to.be.an.instanceof(Error);
           done();
         });
     });
@@ -104,7 +104,7 @@ describe('Apps interface:', function() {
       Model.fromSplunk(getMockData('noName')).then(
         function doNotWant() {},
         function rejected(err) {
-          expect(err).to.be.an(Error);
+          expect(err).to.be.an.instanceof(Error);
           done();
         });
     });
@@ -113,7 +113,7 @@ describe('Apps interface:', function() {
   describe('Given an almost-"slow" sample, fromSplunk', function() {
     it('should calculate a "good" status', function(done) {
       Model.fromSplunk(getMockData('almostSlow')).then(function(sut) {
-        expect(sut.status).to.be('good');
+        expect(sut.status).to.equal('good');
         done();
       });
     });
@@ -122,7 +122,7 @@ describe('Apps interface:', function() {
   describe('Given a "slow" sample, fromSplunk', function() {
     it('should calculate a "slow" status', function(done) {
       Model.fromSplunk(getMockData('slow')).then(function(sut) {
-        expect(sut.status).to.be('slow');
+        expect(sut.status).to.equal('slow');
         done();
       });
     });
@@ -131,7 +131,7 @@ describe('Apps interface:', function() {
   describe('Given an almost-"down" sample, fromSplunk', function() {
     it('should calculate a "good" status', function(done) {
       Model.fromSplunk(getMockData('almostDown')).then(function(sut) {
-        expect(sut.status).to.be('good');
+        expect(sut.status).to.equal('good');
         done();
       });
     });
@@ -140,7 +140,7 @@ describe('Apps interface:', function() {
   describe('Given a "down" sample, fromSplunk', function() {
     it('should calculate a "down" status', function(done) {
       Model.fromSplunk(getMockData('down')).then(function(sut) {
-        expect(sut.status).to.be('down');
+        expect(sut.status).to.equal('down');
         done();
       });
     });
@@ -149,7 +149,7 @@ describe('Apps interface:', function() {
   describe('Given a "slow" and "down", fromSplunk', function() {
     it('should calculate a "down" status', function(done) {
       Model.fromSplunk(getMockData('slowAndDown')).then(function(sut) {
-        expect(sut.status).to.be('down');
+        expect(sut.status).to.equal('down');
         done();
       });
     });
@@ -182,14 +182,14 @@ describe('Apps interface:', function() {
 
     it('should register a Change', function() {
       var doc = docs[0];
-      expect(docs.length).to.be(1);
-      expect(doc.type).to.be('marrow');
-      expect(doc.action).to.be('status.change');
-      expect(doc.meta.reason).to.be('Status changed from "good" to "down"');
+      expect(docs.length).to.equal(1);
+      expect(doc.type).to.equal('marrow');
+      expect(doc.action).to.equal('status.change');
+      expect(doc.meta.reason).to.equal('Status changed from "good" to "down"');
     });
 
     it('should send a "toDown" notification', function() {
-      expect(notified).to.be('toDown');
+      expect(notified).to.equal('toDown');
     });
   });
 
@@ -220,14 +220,14 @@ describe('Apps interface:', function() {
 
     it('should register a Change', function() {
       var doc = docs[0];
-      expect(docs.length).to.be(1);
-      expect(doc.type).to.be('marrow');
-      expect(doc.action).to.be('status.change');
-      expect(doc.meta.reason).to.be('Status changed from "down" to "slow"');
+      expect(docs.length).to.equal(1);
+      expect(doc.type).to.equal('marrow');
+      expect(doc.action).to.equal('status.change');
+      expect(doc.meta.reason).to.equal('Status changed from "down" to "slow"');
     });
 
     it('should send a "toSlow" notification', function() {
-      expect(notified).to.be('toSlow');
+      expect(notified).to.equal('toSlow');
     });
   });
 
@@ -241,8 +241,8 @@ describe('Apps interface:', function() {
     it('should trigger a Heroku restart', function(done) {
       Model.fromSplunk(getMockData('restart')).then(function() {
         Change.find(function(err, docs) {
-          expect(docs.length).to.be(1);
-          expect(docs[0].meta.reason).to.be('p75 response time exceeded 30s');
+          expect(docs.length).to.equal(1);
+          expect(docs[0].meta.reason).to.equal('p75 response time exceeded 30s');
           done();
         });
       });

@@ -1,4 +1,4 @@
-var expect = require('expect.js')
+var expect = require('chai').expect
   , Q = require('q')
   , db = require('../../db')
   , Model = require('../../../Models/Upstream');
@@ -34,33 +34,33 @@ describe('Upstream interface:', function() {
         Model.remove(done);
       });
       it('should create and save a Prod and Dev upstream status', function() {
-        expect(upstreams.prod.length).to.be(1);
-        expect(upstreams.dev.length).to.be(1);
+        expect(upstreams.prod.length).to.equal(1);
+        expect(upstreams.dev.length).to.equal(1);
       });
       it('should set the type as "heroku"', function() {
-        expect(upstream.prod.type).to.be('heroku');
-        expect(upstream.dev.type).to.be('heroku');
+        expect(upstream.prod.type).to.equal('heroku');
+        expect(upstream.dev.type).to.equal('heroku');
       });
       it('should set the names', function() {
-        expect(upstream.prod.name).to.be('Heroku Production');
-        expect(upstream.dev.name).to.be('Heroku Development');
+        expect(upstream.prod.name).to.equal('Heroku Production');
+        expect(upstream.dev.name).to.equal('Heroku Development');
       });
       it('should set the "green" and "yellow" statuses', function() {
-        expect(upstream.prod.status).to.be('green');
-        expect(upstream.dev.status).to.be('yellow');
+        expect(upstream.prod.status).to.equal('green');
+        expect(upstream.dev.status).to.equal('yellow');
       });
       it('should save the issues to both instances', function() {
         expect(upstream.prod.meta.issues).to.be.eql(data.issues);
         expect(upstream.dev.meta.issues).to.be.eql(data.issues);
       });
       it('should set created_at', function() {
-        expect(upstream.prod.created_at).to.be.a(Date);
-        expect(upstream.dev.created_at).to.be.a(Date);
+        expect(upstream.prod.created_at).to.be.an.instanceof(Date);
+        expect(upstream.dev.created_at).to.be.an.instanceof(Date);
       });
       it('should save the raw data as _raw', function() {
-        expect(upstream.prod._raw).to.be.an(Object);
+        expect(upstream.prod._raw).to.be.an.instanceof(Object);
         expect(upstream.prod._raw).to.eql(data);
-        expect(upstream.dev._raw).to.be.an(Object);
+        expect(upstream.dev._raw).to.be.an.instanceof(Object);
         expect(upstream.dev._raw).to.eql(data);
       });
     });
@@ -80,7 +80,7 @@ describe('Upstream interface:', function() {
         Model.remove(done);
       });
       it('should set the status as "blue"', function() {
-        expect(upstream.status).to.be('blue');
+        expect(upstream.status).to.equal('blue');
       });
     });
     describe('Given a "red" sample heroku fetch, fromHeroku', function() {
@@ -99,7 +99,7 @@ describe('Upstream interface:', function() {
         Model.remove(done);
       });
       it('should set the status as "red"', function() {
-        expect(upstream.status).to.be('red');
+        expect(upstream.status).to.equal('red');
       });
     });
     describe('Given no data, fromHeroku', function() {
@@ -107,7 +107,7 @@ describe('Upstream interface:', function() {
         Model.fromHeroku().then(
           function doNotWant() {},
           function rejected(err) {
-            expect(err).to.be.an(Error);
+            expect(err).to.be.an.instanceof(Error);
             done();
           });
       });
@@ -134,7 +134,7 @@ describe('Upstream interface:', function() {
       });
 
       it('should send a notification', function() {
-        expect(notified).to.be('toRed');
+        expect(notified).to.equal('toRed');
       });
     });
   });
@@ -157,33 +157,33 @@ describe('Upstream interface:', function() {
         Model.remove(done);
       });
       it('should create and save', function() {
-        expect(upstreams.length).to.be(1);
+        expect(upstreams.length).to.equal(1);
       });
       it('should set the type as "haProxy"', function() {
-        expect(upstream.type).to.be('haProxy');
+        expect(upstream.type).to.equal('haProxy');
       });
       it('should set the name as "HA Proxy"', function() {
-        expect(upstream.name).to.be('HA Proxy');
+        expect(upstream.name).to.equal('HA Proxy');
       });
       it('should set the status as "good"', function() {
-        expect(upstream.status).to.be('good');
+        expect(upstream.status).to.equal('good');
       });
       it('should set the meta.codes', function() {
-        expect(upstream.meta.codes).to.be.an(Object);
-        expect(upstream.meta.codes['2xx']).to.be(599);
-        expect(upstream.meta.codes['3xx']).to.be(300);
-        expect(upstream.meta.codes['4xx']).to.be(100);
-        expect(upstream.meta.codes['5xx']).to.be(1);
-        expect(upstream.meta.codes.total).to.be(1000);
+        expect(upstream.meta.codes).to.be.an.instanceof(Object);
+        expect(upstream.meta.codes['2xx']).to.equal(599);
+        expect(upstream.meta.codes['3xx']).to.equal(300);
+        expect(upstream.meta.codes['4xx']).to.equal(100);
+        expect(upstream.meta.codes['5xx']).to.equal(1);
+        expect(upstream.meta.codes.total).to.equal(1000);
       });
       it('should set and round the error rate to 2 decimal places', function() {
-        expect(upstream.meta.error_rate).to.be(1);
+        expect(upstream.meta.error_rate).to.equal(1);
       });
       it('should set created_at', function() {
-        expect(upstream.created_at).to.be.a(Date);
+        expect(upstream.created_at).to.be.an.instanceof(Date);
       });
       it('should save the raw data as _raw', function() {
-        expect(upstream._raw).to.be.an(Object);
+        expect(upstream._raw).to.be.an.instanceof(Object);
         expect(upstream._raw).to.eql(data);
       });
     });
@@ -192,7 +192,7 @@ describe('Upstream interface:', function() {
         Model.haFromSplunk().then(
           function doNotWant() {},
           function rejected(err) {
-            expect(err).to.be.an(Error);
+            expect(err).to.be.an.instanceof(Error);
             done();
           });
       });
@@ -214,7 +214,7 @@ describe('Upstream interface:', function() {
         Model.remove(done);
       });
       it('should set the status as "good"', function() {
-        expect(upstream.status).to.be('good');
+        expect(upstream.status).to.equal('good');
       });
     });
 
@@ -234,7 +234,7 @@ describe('Upstream interface:', function() {
         Model.remove(done);
       });
       it('should set the status as "warning"', function() {
-        expect(upstream.status).to.be('warning');
+        expect(upstream.status).to.equal('warning');
       });
     });
 
@@ -254,7 +254,7 @@ describe('Upstream interface:', function() {
         Model.remove(done);
       });
       it('should set the status as "warning"', function() {
-        expect(upstream.status).to.be('warning');
+        expect(upstream.status).to.equal('warning');
       });
     });
 
@@ -274,7 +274,7 @@ describe('Upstream interface:', function() {
         Model.remove(done);
       });
       it('should set the status as "down"', function() {
-        expect(upstream.status).to.be('down');
+        expect(upstream.status).to.equal('down');
       });
     });
     describe('Given a status change, haFromSplunk', function() {
@@ -298,7 +298,7 @@ describe('Upstream interface:', function() {
       });
 
       it('should send a notification', function() {
-        expect(notified).to.be('toDown');
+        expect(notified).to.equal('toDown');
       });
     });
   });

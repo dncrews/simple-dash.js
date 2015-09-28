@@ -1,4 +1,4 @@
-var expect = require('expect.js')
+var expect = require('chai').expect
   , db = require('../../db')
   , Model = require('../../../Models/Change')
   , Q = require('q');
@@ -39,17 +39,17 @@ describe('Changes interface:', function() {
       });
 
       it('should attempt a restart', function() {
-        expect(restartCalled).to.be(1);
-        expect(appRestarted).to.be(appName);
+        expect(restartCalled).to.equal(1);
+        expect(appRestarted).to.equal(appName);
       });
       it('should create a Marrow restart change', function() {
-        expect(change.type).to.be('marrow');
-        expect(change.action).to.be('restart');
+        expect(change.type).to.equal('marrow');
+        expect(change.action).to.equal('restart');
       });
       it('should save the change', function(done) {
         Model.find(function(err, docs) {
-          expect(docs.length).to.be(1);
-          expect(docs[0].name).to.be('fs-testName-prod');
+          expect(docs.length).to.equal(1);
+          expect(docs[0].name).to.equal('fs-testName-prod');
           done();
         });
       });
@@ -86,24 +86,24 @@ describe('Changes interface:', function() {
 
       it('should restart and send a "restart" notification on first attempt', function(done) {
         Model.restartHerokuApp(appName, reason).then(function() {
-          expect(restartCalled).to.be(true);
-          expect(notifyCalled).to.be('restart');
+          expect(restartCalled).to.equal(true);
+          expect(notifyCalled).to.equal('restart');
           done();
         });
       });
 
       it('should restart but not notify on second attempt', function(done) {
         Model.restartHerokuApp(appName, reason).then(function() {
-          expect(restartCalled).to.be(true);
-          expect(notifyCalled).to.be(false);
+          expect(restartCalled).to.equal(true);
+          expect(notifyCalled).to.equal(false);
           done();
         });
       });
 
       it('should restart and send a "restarts" notification on the third attempt', function(done) {
         Model.restartHerokuApp(appName, reason).then(function() {
-          expect(restartCalled).to.be(true);
-          expect(notifyCalled).to.be('restarts');
+          expect(restartCalled).to.equal(true);
+          expect(notifyCalled).to.equal('restarts');
           done();
         });
       });
@@ -114,7 +114,7 @@ describe('Changes interface:', function() {
         Model.restartHerokuApp(appName).then(
           function doNotWant() {},
           function rejected(doc) {
-            expect(doc).to.be.an(Error);
+            expect(doc).to.be.an.instanceof(Error);
             done();
           });
       });
@@ -125,7 +125,7 @@ describe('Changes interface:', function() {
         Model.restartHerokuApp(null, reason).then(
           function doNotWant() {},
           function rejected(doc) {
-            expect(doc).to.be.an(Error);
+            expect(doc).to.be.an.instanceof(Error);
             done();
           });
       });
@@ -140,21 +140,21 @@ describe('Changes interface:', function() {
         expect(change._raw).to.eql(data);
       });
       it('should set the name and repo_name', function() {
-        expect(change.name).to.be('testAppOrg/testAppName');
-        expect(change.repo_name).to.be('testAppName');
+        expect(change.name).to.equal('testAppOrg/testAppName');
+        expect(change.repo_name).to.equal('testAppName');
       });
       it('should set created_at', function() {
-        expect(change.created_at).to.be.a(Date);
+        expect(change.created_at).to.be.an.instanceof(Date);
       });
       it('should set the type to "github"', function() {
-        expect(change.type).to.be('github');
+        expect(change.type).to.equal('github');
       });
       it('should set the action to "merge"', function() {
-        expect(change.action).to.be('merge');
+        expect(change.action).to.equal('merge');
       });
       it('should set the meta data', function() {
-        expect(change.meta.message).to.be('Commit Message goes here');
-        expect(change.meta.url).to.be('Url Goes Here');
+        expect(change.meta.message).to.equal('Commit Message goes here');
+        expect(change.meta.url).to.equal('Url Goes Here');
         expect(change.meta.author).to.eql({
           "name":"Test Testerson",
           "email":"test@testerson.com",
@@ -166,14 +166,14 @@ describe('Changes interface:', function() {
     describe('Given Github data and an action, fromGithub', function() {
       var change = Model.fromGithub(data, 'newType');
       it('should set the action passed', function() {
-        expect(change.action).to.be('newType');
+        expect(change.action).to.equal('newType');
       });
     });
 
     describe('Given no data, fromGithub', function() {
       var change = Model.fromGithub();
       it('should return an Error', function() {
-        expect(change).to.be.an(Error);
+        expect(change).to.be.an.instanceof(Error);
       });
     });
   });
@@ -186,34 +186,34 @@ describe('Changes interface:', function() {
         expect(change._raw).to.eql(data);
       });
       it('should set the name and repo_name', function() {
-        expect(change.name).to.be('fs-newAppName');
-        expect(change.repo_name).to.be('newAppName');
+        expect(change.name).to.equal('fs-newAppName');
+        expect(change.repo_name).to.equal('newAppName');
       });
       it('should set created_at', function() {
-        expect(change.created_at).to.be.a(Date);
+        expect(change.created_at).to.be.an.instanceof(Date);
       });
       it('should set the type to "jenkins"', function() {
-        expect(change.type).to.be('jenkins');
+        expect(change.type).to.equal('jenkins');
       });
       it('should set the action to "build"', function() {
-        expect(change.action).to.be('build');
+        expect(change.action).to.equal('build');
       });
       it('should not set meta data', function() {
-        expect(change.meta).to.be(undefined);
+        expect(change.meta).to.equal(undefined);
       });
     });
 
     describe('Given Jenkins data and an action, fromJenkins', function() {
       var change = Model.fromJenkins(data, 'anotherType');
       it('should set the action passed', function() {
-        expect(change.action).to.be('anotherType');
+        expect(change.action).to.equal('anotherType');
       });
     });
 
     describe('Given no data, fromJenkins', function() {
       var change = Model.fromJenkins();
       it('should return an Error', function() {
-        expect(change).to.be.an(Error);
+        expect(change).to.be.an.instanceof(Error);
       });
     });
   });
@@ -226,44 +226,44 @@ describe('Changes interface:', function() {
     describe('Given an app_name, fromMarrow', function() {
       var change = Model.fromMarrow(appName);
       it('should not set a _raw', function() {
-        expect(change._raw).to.be(undefined);
+        expect(change._raw).to.equal(undefined);
       });
       it('should set the name and repo_name', function() {
-        expect(change.name).to.be(appName);
-        expect(change.repo_name).to.be('someApp');
+        expect(change.name).to.equal(appName);
+        expect(change.repo_name).to.equal('someApp');
       });
       it('should set created_at', function() {
-        expect(change.created_at).to.be.a(Date);
+        expect(change.created_at).to.be.an.instanceof(Date);
       });
       it('should set the type to "marrow"', function() {
-        expect(change.type).to.be('marrow');
+        expect(change.type).to.equal('marrow');
       });
       it('should set the action to "restart"', function() {
-        expect(change.action).to.be('restart');
+        expect(change.action).to.equal('restart');
       });
       it('should not set meta data', function() {
-        expect(change.meta).to.be(undefined);
+        expect(change.meta).to.equal(undefined);
       });
     });
 
     describe('Given a reason, fromMarrow', function() {
       var change = Model.fromMarrow(appName, null, reason);
       it('should set the meta.reason', function() {
-        expect(change.meta.reason).to.be(reason);
+        expect(change.meta.reason).to.equal(reason);
       });
     });
 
     describe('Given app_name and an action, fromMarrow', function() {
       var change = Model.fromMarrow(appName, action);
       it('should set the action passed', function() {
-        expect(change.action).to.be(action);
+        expect(change.action).to.equal(action);
       });
     });
 
     describe('Given no appName, fromMarrow', function() {
       var change = Model.fromMarrow();
       it('should return an Error', function() {
-        expect(change).to.be.an(Error);
+        expect(change).to.be.an.instanceof(Error);
       });
     });
   });
@@ -276,37 +276,37 @@ describe('Changes interface:', function() {
         expect(change._raw).to.eql(data);
       });
       it('should set the name and repo_name', function() {
-        expect(change.name).to.be('frontier-newAppName');
-        expect(change.repo_name).to.be('newAppName');
+        expect(change.name).to.equal('frontier-newAppName');
+        expect(change.repo_name).to.equal('newAppName');
       });
       it('should set created_at', function() {
-        expect(change.created_at).to.be.a(Date);
+        expect(change.created_at).to.be.an.instanceof(Date);
       });
       it('should set the type to "electricCommander"', function() {
-        expect(change.type).to.be('electricCommander');
+        expect(change.type).to.equal('electricCommander');
       });
       it('should set the action to "build"', function() {
-        expect(change.action).to.be('build');
+        expect(change.action).to.equal('build');
       });
       it('should set the url', function() {
-        expect(change.meta.url).to.be('https://build.fsglobal.net');
+        expect(change.meta.url).to.equal('https://build.fsglobal.net');
       });
       it('should set the git_commit', function() {
-        expect(change.meta.git_commit).to.be('dsjk2u834jkkdsfjkwer394324');
+        expect(change.meta.git_commit).to.equal('dsjk2u834jkkdsfjkwer394324');
       });
     });
 
     describe('Given EC data and an action, fromEC', function() {
       var change = Model.fromEC(data, 'anotherType');
       it('should set the action passed', function() {
-        expect(change.action).to.be('anotherType');
+        expect(change.action).to.equal('anotherType');
       });
     });
 
     describe('Given no data, fromEC', function() {
       var change = Model.fromEC();
       it('should return an Error', function() {
-        expect(change).to.be.an(Error);
+        expect(change).to.be.an.instanceof(Error);
       });
     });
   });

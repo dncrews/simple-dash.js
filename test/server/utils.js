@@ -1,4 +1,4 @@
-var expect = require('expect.js')
+var expect = require('chai').expect
   , utils = require('../../lib/utils')
   , Q = require('q');
 
@@ -20,8 +20,8 @@ describe('utils.js interface', function() {
   //     utils.restartApp(testAppName, testReason, function(err, resp) {
   //       if (err) throw err;
   //
-  //       expect(restartCalled).to.be(1);
-  //       expect(appRestarted).to.be(testAppName);
+  //       expect(restartCalled).to.equal(1);
+  //       expect(appRestarted).to.equal(testAppName);
   //     });
   //   });
   // });
@@ -29,8 +29,8 @@ describe('utils.js interface', function() {
   describe('Given no appName, restartApp', function() {
     it('should fail with a `invalidRequest` message', function() {
       utils.restartApp(null, testReason, function(err, resp) {
-        expect(err.name).to.be('invalidRequest');
-        expect(err.message).to.be('No marrow appName supplied');
+        expect(err.name).to.equal('invalidRequest');
+        expect(err.message).to.equal('No marrow appName supplied');
       });
     });
   });
@@ -38,8 +38,8 @@ describe('utils.js interface', function() {
   describe('Given no reason, restartApp', function() {
     it('should fail with a `invalidRequest` message', function() {
       utils.restartApp(testAppName, null, function(err, resp) {
-        expect(err.name).to.be('invalidRequest');
-        expect(err.message).to.be('No restart reason supplied');
+        expect(err.name).to.equal('invalidRequest');
+        expect(err.message).to.equal('No restart reason supplied');
       });
     });
   });
@@ -53,8 +53,8 @@ describe('utils.js interface', function() {
     });
     it('should fail with a `notConfigured` message', function() {
       utils.restartApp(testAppName, testReason, function(err, resp) {
-        expect(err.name).to.be('notConfigured');
-        expect(err.message).to.be('Restart Requested; Heroku not configured. Cause: ' + testReason);
+        expect(err.name).to.equal('notConfigured');
+        expect(err.message).to.equal('Restart Requested; Heroku not configured. Cause: ' + testReason);
       });
     });
   });

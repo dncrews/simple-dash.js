@@ -1,4 +1,4 @@
-var expect = require('expect.js')
+var expect = require('chai').expect
   , db = require('../../db')
   , Model = require('../../../Models/App_Bucket')
   , Status = require('../../../Models/App_Status')
@@ -19,8 +19,8 @@ describe('App_Bucket interface:', function() {
         , sut = new Model();
 
       expect(sut.bucket_time).to.eql(bucket);
-      expect(sut.app).to.be(null);
-      expect(sut.app_errors).to.be(null);
+      expect(sut.app).to.equal(null);
+      expect(sut.app_errors).to.equal(null);
 
     });
 
@@ -48,11 +48,11 @@ describe('App_Bucket interface:', function() {
           }
         }
 
-        expect(items.length).to.be(6);
+        expect(items.length).to.equal(6);
 
         Status.create(items, function() {
           Status.find(function(err, docs) {
-            expect(docs.length).to.be(6);
+            expect(docs.length).to.equal(6);
 
             Model.generateBuckets().then(function(buckets) {
               verifyApps(apps, buckets, 6, done);
@@ -125,8 +125,8 @@ describe('App_Bucket interface:', function() {
 
         Model.addApp('appName', id).then(function() {
           Model.find({ name : 'appName', app : id }, function(err, docs) {
-            expect(docs.length).to.be(1);
-            expect(docs[0].app_errors).to.be(null);
+            expect(docs.length).to.equal(1);
+            expect(docs[0].app_errors).to.equal(null);
             done();
           });
         });
@@ -147,8 +147,8 @@ describe('App_Bucket interface:', function() {
 
         Model.addErrors('appName', id).then(function() {
           Model.find({ name : 'appName', app_errors : id }, function(err, docs) {
-            expect(docs.length).to.be(1);
-            expect(docs[0].app).to.be(null);
+            expect(docs.length).to.equal(1);
+            expect(docs[0].app).to.equal(null);
             done();
           });
         });
@@ -162,7 +162,7 @@ describe('App_Bucket interface:', function() {
       it('should generate buckets', function(done) {
         Model.addApp('appName', id).then(function() {
           Model.find({ name : 'appName' }, function(err, docs) {
-            expect(docs.length).to.be(3);
+            expect(docs.length).to.equal(3);
             done();
           });
         });
@@ -175,7 +175,7 @@ describe('App_Bucket interface:', function() {
       it('should generate buckets', function(done) {
         Model.addErrors('appName', id).then(function() {
           Model.find({ name : 'appName' }, function(err, docs) {
-            expect(docs.length).to.be(3);
+            expect(docs.length).to.equal(3);
             done();
           });
         });
@@ -202,13 +202,13 @@ function verifyApps(apps, buckets, total, done) {
     }
 
     Model.find({ name : app, bucket_time : time }, function(err, docs) {
-      expect(docs.length).to.be(1);
+      expect(docs.length).to.equal(1);
       verifyEach();
     });
   }
 
   Model.find(function(err, docs) {
-    expect(docs.length).to.be(total);
+    expect(docs.length).to.equal(total);
     return verifyEach();
   });
 }

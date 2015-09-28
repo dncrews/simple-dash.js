@@ -2,7 +2,7 @@ var connection, mongoose;
 
 mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect(process.env.MONGO_TEST_URL || 'mongodb://localhost/test');
 
 connection = mongoose.connection;
 

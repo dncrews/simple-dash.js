@@ -1,4 +1,4 @@
-var expect = require('expect.js')
+var expect = require('chai').expect
   , Q = require('q')
   , db = require('../../db')
   , Model = require('../../../Models/App_Error')
@@ -46,7 +46,7 @@ describe('App Errors interface:', function() {
       Model.find(function(err, docs) {
         if (err) return expect().fail();
 
-        expect(docs.length).to.be(2);
+        expect(docs.length).to.equal(2);
         done();
       });
     });
@@ -61,17 +61,17 @@ describe('App Errors interface:', function() {
         });
       });
       it('should set the name and repo_name', function() {
-        expect(status.name).to.be('fs-appName-prod');
-        expect(status.repo_name).to.be('appName');
+        expect(status.name).to.equal('fs-appName-prod');
+        expect(status.repo_name).to.equal('appName');
       });
       it('should create a codes array', function() {
-        expect(status.codes.length).to.be(2);
-        expect(status.codes[0].code).to.be('H17');
-        expect(status.codes[1].code).to.be('H12');
+        expect(status.codes.length).to.equal(2);
+        expect(status.codes[0].code).to.equal('H17');
+        expect(status.codes[1].code).to.equal('H12');
       });
       it('should call App_Bucket.addApp with the generated ids', function(done) {
         Bucket.find({ repo_name : 'appName', app_errors : { $ne : null } }, function(err, docs) {
-          expect(docs.length).to.be(1);
+          expect(docs.length).to.equal(1);
           expect(docs[0].app_errors).to.eql(status._id);
           done();
         });
@@ -87,7 +87,7 @@ describe('App Errors interface:', function() {
       Model.fromSplunk().then(
         function doNotWant() {},
         function rejected(err) {
-          expect(err).to.be.an(Error);
+          expect(err).to.be.an.instanceof(Error);
           done();
         });
     });
@@ -99,7 +99,7 @@ describe('App Errors interface:', function() {
       Model.fromSplunk(getMockData('noName')).then(
         function doNotWant() {},
         function rejected(err) {
-          expect(err).to.be.an(Error);
+          expect(err).to.be.an.instanceof(Error);
           done();
         });
     });
@@ -121,7 +121,7 @@ describe('App Errors interface:', function() {
     after(clearDB);
     it('should trigger a Heroku restart', function(done) {
       Model.fromSplunk(getMockData('restart')).then(function() {
-        expect(restartCalled).to.be(1);
+        expect(restartCalled).to.equal(1);
         done();
       });
     });

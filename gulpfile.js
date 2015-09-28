@@ -9,16 +9,18 @@ var cssBase64  = require("gulp-css-base64");
 var ngmin      = require("gulp-ngmin");
 var clean      = require('gulp-clean');
 var appCSS = [
-  './assets/vendor/bootstrap/css/bootstrap.css',
-  './assets/vendor/bootstrap/css/bootstrap-theme.css',
-  './assets/vendor/rickshaw.min.css',
+  './vendor/bootstrap/css/bootstrap.css',
+  './vendor/bootstrap/css/bootstrap-theme.css',
+  './vendor/rickshaw.min.css',
   './assets/css/dashboard.styl'
 ];
 var appJS = [
   // './assets/vendor/jquery-2.1.0.min.js',
-  './assets/vendor/angular.min.js',
+  './vendor/angular/angular.min.js',
+  './vendor/angular/angular-route.min.js',
+  //'./vendor/angular-route.min.js',
   // './assets/vendor/bootstrap/js/bootstrap.js',
-  './assets/vendor/moment.min.js',
+  './vendor/moment.min.js',
   './assets/js/routes.js',
   './assets/js/routesHTML5.js',
   './assets/js/controllers.js',
