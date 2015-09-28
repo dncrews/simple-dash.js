@@ -35,7 +35,6 @@
     "express": "^4.13.3",
     "express-session": "^1.11.3",
     "express-static-cache": "0.0.6",
-    "gulp": "^3.9.0",
     "heroku-client": "^2.2.2",
     "method-override": "^2.3.5",
     "moment": "^2.10.6",
