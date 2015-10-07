@@ -7,18 +7,16 @@
     , ENDPOINT = mountPath + 'api/';
 
   app.factory('httpInterceptors', [
-    '$location',
+    '$q',
 
-    function($location) {
-      return function(promise) {
-        return promise.then(function(response) {
+    function($q) {
+      return {
+        response: function(response) {
           if (response.status > 399) {
-            return promise.reject(response);
+            return $q.reject(response);
           }
           return response;
-        }, function(response) {
-          return response;
-        });
+        }
       };
     }
   ]);
@@ -27,7 +25,7 @@
     '$httpProvider',
 
     function($httpProvider) {
-      $httpProvider.responseInterceptors.push('httpInterceptors');
+      $httpProvider.interceptors.push('httpInterceptors');
     }
   ]);
 

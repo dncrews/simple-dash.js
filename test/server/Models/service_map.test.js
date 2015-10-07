@@ -1,4 +1,4 @@
-var expect = require('expect.js')
+var expect = require('chai').expect
   , db = require('../../db')
   , Model = require('../../../Models/Service_Map');
 
@@ -29,7 +29,7 @@ describe('Service Map interface:', function() {
       Model.find(function(err, docs) {
         if (err) return expect().fail();
 
-        expect(docs.length).to.be(10);
+        expect(docs.length).to.equal(10);
         done();
       });
     });
@@ -38,7 +38,7 @@ describe('Service Map interface:', function() {
       Model.find( { services : "DONOTWANT" }, function(err, docs) {
         if (err) return expect().fail();
 
-        expect(docs.length).to.be(0);
+        expect(docs.length).to.equal(0);
         done();
       });
     });
@@ -57,19 +57,19 @@ describe('Service Map interface:', function() {
       });
 
       it('should be created once', function() {
-        expect(maps.length).to.be(1);
+        expect(maps.length).to.equal(1);
       });
 
       it('should trim the repo_name', function() {
-        expect(map.repo_name).to.be('first-run');
+        expect(map.repo_name).to.equal('first-run');
       });
 
       it('should set created_at', function() {
-        expect(map.created_at).to.be.a(Date);
+        expect(map.created_at).to.be.an.instanceof(Date);
       });
 
       it('should all concatenate dependencies into a single services array', function() {
-        expect(map.services.length).to.be(6);
+        expect(map.services.length).to.equal(6);
       });
 
     });
@@ -95,7 +95,7 @@ describe('Service Map interface:', function() {
       Model.find({ repo_name : 'new-app' }, function(err, docs) {
         if (err) return expect().fail();
 
-        expect(docs.length).to.be(1);
+        expect(docs.length).to.equal(1);
         done();
       });
     });
@@ -104,7 +104,7 @@ describe('Service Map interface:', function() {
       Model.find({ repo_name : 'ask' }, function(err, docs) {
         if (err) return expect().fail();
 
-        expect(docs.length).to.be(1);
+        expect(docs.length).to.equal(1);
         expect(docs[0].services).to.contain('cas-public-api');
       });
     });
@@ -114,14 +114,14 @@ describe('Service Map interface:', function() {
         var services, count=0, i;
         if (err) return expect().fail();
 
-        expect(docs.length).to.be(1);
+        expect(docs.length).to.equal(1);
         services = docs[0].services;
         for (i =services.length; i--;) {
           if (services[i] === 'solr') {
             count++;
           }
         }
-        expect(count).to.be(1);
+        expect(count).to.equal(1);
       });
     });
 

@@ -6,11 +6,20 @@ var express = require('express')
   , passport = require('passport')
   , GitHubStrategy = require('passport-github').Strategy
   , debug = require('debug')('marrow:routing')
-  , RedisStore = require('connect-redis')(express)
   , base = require('connect-base')
   , manifest = require('./dist/rev-manifest.json')
   , compression = require('compression')
   , staticCache = require('express-static-cache');
+
+var path = require('path');
+var favicon = require('serve-favicon');
+var logger = require('morgan');
+var methodOverride = require('method-override');
+var session = require('express-session');
+var RedisStore = require('connect-redis')(session);
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var errorHandler = require('errorhandler');
 
 /**
  * Local Dependencies
@@ -43,6 +52,12 @@ var app = module.exports = express()
  * Express Configuration
  */
 
+app.set('port', process.env.PORT || 5000);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+app.use(favicon(path.join(__dirname, 'assets', 'img', 'favicon.ico')));
+
 /* compress responses */
 app.use(compression());
 
@@ -58,15 +73,17 @@ passport.deserializeUser(function(obj, done) {
 var rtg = require('url').parse(process.env.REDISTOGO_URL)
   , rtgAuth = rtg.auth.split(':');
 
-app.use(express.cookieParser(process.env.COOKIE_SECRET || 'what does the fox say?'));
-app.use(express.session({
+app.use(cookieParser(process.env.COOKIE_SECRET || 'what does the fox say?'));
+app.use(session({
   secret: process.env.SESSION_SECRET || 'ringydingidyindingdindga ding',
   store : new RedisStore({
     host : rtg.hostname,
     port : rtg.port,
     user : rtgAuth[0],
     pass : rtgAuth[1]
-  })
+  }),
+  resave: true,
+  saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -103,8 +120,9 @@ var assetConfig = {
 /* set distconfig to empty when in localdev, so dev isn't troubled by old cached content */
 // distConfig = process.env.NODE_ENV !== 'development' ? distConfig : {};
 
-app.use(express.json());
-app.use(express.urlencoded());
+app.use(methodOverride());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 /* settings for heroku-mounted url */
 app.use(stylus.middleware(__dirname + '/assets'));
@@ -124,9 +142,7 @@ app.use('/status', staticCache(__dirname + '/assets', assetConfig));
 app.use('/status', staticCache(__dirname + '/dist', distConfig));
 app.use('/status/vendor',staticCache(__dirname + '/vendor', distConfig));
 
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
-if ('development' === app.get('env')) app.use(express.logger('dev'));
+if ('development' === app.get('env')) app.use(logger('dev'));
 
 // Set req.mountPath for use as Heroku app and HAProxy reversed app
 app.use(function(req, res, next) {
@@ -189,17 +205,17 @@ app.use('/api', require('./lib/api'));
  * Should alwasy return a responeCode
  */
 app.post('/', function(req, res){
-  debug('POST /: ' + req);
+  debug('POST /: ' + JSON.stringify(req.body));
   new Logger(req.body).log(function(code) {
     debug('Logger code: ' + code);
-    res.send(code);
+    res.sendStatus(code);
   });
 });
 
 /**
  * Adding items to the changelog
  *
- * Should alwasy return a responseCode
+ * Should always return a responseCode
  */
 app.post('/change', function(req, res){
   debug('POST /change');
@@ -274,6 +290,7 @@ app.get('/logout', function(req, res){
 
 app.use(angularDashboard);
 
+app.use(errorHandler);
 
 app.listen(PORT, function() {
   console.info('Listening on ' + PORT);

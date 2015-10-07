@@ -126,7 +126,7 @@ ServiceSchema.virtual('status').get(function() {
  */
 ServiceSchema.statics.findCurrent = function(cb) {
   var date = new Date()
-    , then = new Date(date.setDate(date.getDate() - 2))
+    , then = new Date(date.setDate(date.getDate() - 7))
     , _this = this;
 
   this.aggregate()
@@ -161,7 +161,7 @@ ServiceSchema.statics.findCurrent = function(cb) {
  */
 ServiceSchema.statics.findCurrentByRepo = function(repo_name, cb) {
   var date = new Date()
-    , then = new Date(date.setDate(date.getDate() - 2))
+    , then = new Date(date.setDate(date.getDate() - 7))
     , _this = this;
 
   Service_Map.findOne({

@@ -14,9 +14,7 @@
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , Q = require('q')
-  , HerokuAPI = require('heroku.js')
-  , debug = require('debug')('marrow:models:change')
-  , sendgrid = require('sendgrid')(process.env.SENDGRID_USERNAME, process.env.SENDGRID_PASSWORD);
+  , debug = require('debug')('marrow:models:change');
 
 /**
  * Local Dependencies
@@ -25,8 +23,7 @@ var utils = require('../lib/utils');
 /**
  * Local Declarations
  */
-var heroku
-  , restart = utils.restartApp
+var restart = utils.restartApp
   , notify = utils.sendNotification
   , Change;
 
@@ -43,20 +40,6 @@ var ChangeSchema = new Schema({
   meta : Schema.Types.Mixed,
   _raw : Schema.Types.Mixed
 });
-
-/**
- * Api Configurations
- */
-if (! sendgrid.api_user) {
-  // If sendgrid isn't configured, don't try to send emails
-  sendgrid = undefined;
-}
-
-try {
-  heroku = new HerokuAPI({"email" : process.env.HEROKU_EMAIL, "apiToken" : process.env.HEROKU_API_TOKEN});
-} catch (e) {
-  debug('HerokuAPI not configured'); // No penalty if Heroku configuration isn't defined
-}
 
 /**
  * Pre Save Notifications Handler

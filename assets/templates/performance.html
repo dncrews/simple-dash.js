@@ -9,6 +9,20 @@
   <div class="history section graph">
     <h2 class="section_heading">Performance Graphs</h2>
 
+    <div class='graph' data-fs-graph='{
+      "title" : "Page Ready over Time",
+      "data" : "pageReadyGraph",
+      "multiSeries" : true,
+      "height" : "125"
+    }'></div>
+
+    <div class='graph nonTimeGraph' data-fs-graph='{
+      "title" : "Page Ready Histogram (4hr rollup)",
+      "data" : "histogramGraph",
+      "type" : "X",
+      "height" : "200"
+    }'></div>
+
     <div class="graph">
       <h3 class="graph-title">PageReady by Page Names (4hr rollup)</h3>
       <table class="table table-striped table-hover table-condensed">
@@ -32,18 +46,6 @@
       </table>
     </div>
 
-    <div class='graph nonTimeGraph' data-fs-graph='{
-      "title" : "Page Ready Histogram (4hr rollup)",
-      "data" : "histogramGraph",
-      "type" : "X",
-      "height" : "200"
-    }'></div>
-    <div class='graph' data-fs-graph='{
-      "title" : "Page Ready over Time",
-      "data" : "pageReadyGraph",
-      "multiSeries" : true,
-      "height" : "125"
-    }'></div>
   </div><!-- /.history.section -->
 
 </div> <!-- /.detail -->

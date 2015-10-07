@@ -134,14 +134,10 @@ PerformanceSchema.statics.fromSplunkHistogram = function(data) {
 
   data.map(function(datum) {
     var key = datum.page_ready
-      , app;
-    for (var i in datum) {
-      if (i === 'page_ready') continue;
-      if (! datum.hasOwnProperty(i)) continue;
-
-      app = appData[i] = appData[i] || {};
-      app[key] = datum[i];
-    }
+      , appName = datum.app
+      , value = parseInt(datum.count);
+    var app = appData[appName] = appData[appName] || {};
+    app[key] = value;
   });
 
   for (var i in appData) {

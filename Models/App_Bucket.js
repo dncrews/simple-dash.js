@@ -255,12 +255,12 @@ function generateBucket(name, time) {
 BucketSchema.statics.findCurrent = function(cb) {
 
   var date = new Date()
-    , then = new Date(date.setDate(date.getDate() - 2))
+    , then = new Date(date.setDate(date.getDate() - 7))
     , _this = this;
 
   this.aggregate()
     .match({
-      // FIXME: We want to get all emtpies that are older than 5 minutes ago
+      // FIXME: We want to get all empties that are older than 5 minutes ago
       $or : [
         { app : { $ne : null } },
         { app_errors : { $ne : null } },

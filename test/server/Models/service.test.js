@@ -1,4 +1,4 @@
-var expect = require('expect.js')
+var expect = require('chai').expect
   , db = require('../../db')
   , Model = require('../../../Models/Service');
 
@@ -31,39 +31,39 @@ describe('Services interface:', function() {
 
     it('should save', function(done) {
       Model.find(function(err, docs) {
-        expect(docs.length).to.be(1);
+        expect(docs.length).to.equal(1);
         expect(docs[0]._id).to.eql(service._id);
         done();
       });
     });
 
     it('should set the raw data as _raw', function() {
-      expect(service._raw).to.be.an(Object);
+      expect(service._raw).to.be.an.instanceof(Object);
       expect(service._raw).to.eql(mockData);
     });
 
     it('should set name', function() {
-      expect(service.name).to.be('api_name');
+      expect(service.name).to.equal('api_name');
     });
 
     it('should create a time object', function() {
-      expect(service.time.p95).to.be(170);
+      expect(service.time.p95).to.equal(170);
     });
 
     it('create a time and a codes object', function() {
-      expect(service.codes['2xx']).to.be(3211);
-      expect(service.codes['3xx']).to.be(3);
-      expect(service.codes['4xx']).to.be(4);
-      expect(service.codes['5xx']).to.be(5);
-      expect(service.codes.total).to.be(3223);
+      expect(service.codes['2xx']).to.equal(3211);
+      expect(service.codes['3xx']).to.equal(3);
+      expect(service.codes['4xx']).to.equal(4);
+      expect(service.codes['5xx']).to.equal(5);
+      expect(service.codes.total).to.equal(3223);
     });
 
     it('should round up the error_rate', function() {
-      expect(service.error_rate).to.be(1);
+      expect(service.error_rate).to.equal(1);
     });
 
     it('should calculate a "good" status', function() {
-      expect(service.status).to.be('good');
+      expect(service.status).to.equal('good');
     });
 
   });
@@ -73,7 +73,7 @@ describe('Services interface:', function() {
       Model.fromSplunk().then(
         function doNotWant() {},
         function rejected(err) {
-          expect(err).to.be.an(Error);
+          expect(err).to.be.an.instanceof(Error);
           done();
         });
     });
@@ -84,7 +84,7 @@ describe('Services interface:', function() {
       Model.fromSplunk().then(
         function doNotWant() {},
         function rejected(err) {
-          expect(err).to.be.an(Error);
+          expect(err).to.be.an.instanceof(Error);
           done();
         });
     });
@@ -96,7 +96,7 @@ describe('Services interface:', function() {
 
     it('should calculate a "good" status', function(done) {
       Model.fromSplunk(getMockData('almostSlow')).then(function(doc) {
-        expect(doc.status).to.be('good');
+        expect(doc.status).to.equal('good');
         done();
       });
     });
@@ -105,7 +105,7 @@ describe('Services interface:', function() {
   describe('Given a "slow" sample, fromSplunk', function() {
     it('should calculate a "slow" status', function(done) {
       Model.fromSplunk(getMockData('slow')).then(function(doc) {
-        expect(doc.status).to.be('slow');
+        expect(doc.status).to.equal('slow');
         done();
       });
     });
@@ -114,7 +114,7 @@ describe('Services interface:', function() {
   describe('Given an almost-"down" sample, fromSplunk', function() {
     it('should calculate a "good" status', function(done) {
       Model.fromSplunk(getMockData('almostDown')).then(function(doc) {
-        expect(doc.status).to.be('good');
+        expect(doc.status).to.equal('good');
         done();
       });
     });
@@ -123,7 +123,7 @@ describe('Services interface:', function() {
   describe('Given a "down" sample, fromSplunk', function() {
     it('should calculate a "down" status', function(done) {
       Model.fromSplunk(getMockData('down')).then(function(doc) {
-        expect(doc.status).to.be('down');
+        expect(doc.status).to.equal('down');
         done();
       });
     });
@@ -132,7 +132,7 @@ describe('Services interface:', function() {
   describe('Given a "slow" and "down", fromSplunk', function() {
     it('should calculate a "down" status', function(done) {
       Model.fromSplunk(getMockData('slowAndDown')).then(function(doc) {
-        expect(doc.status).to.be('down');
+        expect(doc.status).to.equal('down');
         done();
       });
     });

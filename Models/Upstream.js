@@ -118,13 +118,14 @@ UpstreamSchema.statics.fetchHeroku = function() {
   request
     .get('https://status.heroku.com/api/v3/current-status')
     .set('Accept', 'application/json')
-    .on('error', function(err) {
-      debug('Heroku Status Error', err);
-    })
-    .end(function(res){
-      debug('Heroku status retrieved');
-      verbose(res.body);
-      _this.fromHeroku(res.body).then(dfd.resolve, dfd.reject);
+    .end(function(err, res) {
+      if (err) {
+        debug('Heroku Status Error', err);
+      } else {
+        debug('Heroku status retrieved');
+        verbose(res.body);
+        _this.fromHeroku(res.body).then(dfd.resolve, dfd.reject);
+      }
     });
 
   return dfd.promise;
@@ -217,7 +218,7 @@ UpstreamSchema.statics.haFromSplunk = function(data) {
  */
 UpstreamSchema.statics.findCurrent = function(cb) {
   var date = new Date()
-    , then = new Date(date.setDate(date.getDate() - 2))
+    , then = new Date(date.setDate(date.getDate() - 7))
     , _this = this;
 
   this.aggregate()

@@ -209,7 +209,7 @@
       $rootScope.refresh = load;
       $rootScope.pageType = 'app';
       $scope.pageTitle = name + ' Status';
-      setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasServices', 'hasEvents', 'hasPeformanceTabs']);
+      setFeatures($scope, ['hasThroughput','hasRespTime','hasMemory','hasErrorRate','hasStatus','isHeroku','hasServices', 'hasEvents', 'hasPerformanceTabs']);
       $scope.loading = {
         'main' : true,
         'services' : true,
@@ -320,7 +320,7 @@
       $rootScope.refresh = load;
       $rootScope.pageType = 'performance';
       $scope.pageTitle = name + ' Performance';
-      setFeatures($scope, ['hasPerformance', 'hasPeformanceTabs']);
+      setFeatures($scope, ['hasPerformance', 'hasPerformanceTabs']);
 
       $scope.loading = {
         'main' : true
@@ -365,16 +365,30 @@
 
         dfds[1].then(function(histData) {
           var meta = histData.meta;
-          histData.graphData = [];
+          histData.graphData = [{ label: '0ms', x: 0, y: 0 }];
           for (var k in meta) {
             if (! meta.hasOwnProperty(k)) continue;
 
-            histData.graphData.push({
-              label : k + 'ms',
-              x : Number(k.split('-')[1]),
-              y : Number(meta[k])
-            });
+            // limit to 20000ms or the graph gets compressed too much
+            var pageReady = Number(k.split('-')[1]);
+            if (pageReady <= 20000) {
+              histData.graphData.push({
+                label: k + 'ms',
+                x: pageReady,
+                y: Number(meta[k])
+              });
+            }
           }
+          // sort data by x values so it will display properly in the graph
+          histData.graphData.sort(function (a, b) {
+            if (a.x > b.x) {
+              return 1;
+            }
+            if (a.x < b.x) {
+              return -1;
+            }
+            return 0;
+          });
           $scope.histogramGraph = histData;
           $scope.histData = histData;
         });
