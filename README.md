@@ -44,7 +44,7 @@ you don't, then you can set the `MONGO_TEST_URL` environment variable and the te
 Ordered by date of first contribution. [Auto-generated](https://github.com/dtrejo/node-authors) on Mon, 23 Feb 2015 00:05:38 GMT.
 
 - [Jamis Charles](https://github.com/jamischarles) aka `jamischarles`
-- [Dan Crews](https://github.com/DannyCrews) aka `DannyCrews`
+- [Dan Crews](https://github.com/dncrews) aka `dncrews`
 - [Nic Johnson](https://github.com/nicjohnson) aka `nicjohnson`
 - [Aaron King](https://github.com/waaronking) aka `waaronking`
 - [Jakob Anderson](https://github.com/spacerockzero) aka `spacerockzero`
